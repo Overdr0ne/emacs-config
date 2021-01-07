@@ -6,76 +6,101 @@
 (setq evil-collection-key-blacklist
       (list "<escape>"))
 
-;; (defadvice! +default-evil-collection-disable-blacklist-a (orig-fn)
-;;   :around #'evil-collection-vterm-toggle-send-escape  ; allow binding to ESC
-;;   (let (evil-collection-key-blacklist)
-;;     (apply orig-fn)))
-
 (add-hook 'term-mode-hook (lambda ()
                             (define-key term-raw-map (kbd "M-p") 'term-primary-yank)))
-
-;; (evil-define-key '(normal insert) lispyville-mode-map
-;;   (kbd "M-(") 'lispy-wrap-round
-;;   (kbd "M-[") 'lispy-wrap-brackets
-;;   (kbd "M-{") 'lispy-wrap-braces
-;;   (kbd "C-)") 'lispy-forward-slurp-sexp
-;;   (kbd "A-)") 'lispy-forward-barf-sexp
-;;   (kbd "C-(") 'lispy-backward-slurp-sexp
-;;   (kbd "A-(") 'lispy-backward-barf-sexp
-;;   (kbd "A-j") 'evil-scroll-line-down
-;;   (kbd "A-k") 'evil-scroll-line-up)
-
-;; (general-define-key
-;;  :states 'normal
-;;  :keymaps 'Info-mode-map
-;;  )
 
 (general-define-key
  :states 'normal
  :prefix "C-e"
- ""        nil
+ ""	 nil
  "C-e" #'+eval-this-sexp
  "C-b" #'eval-buffer)
 
-(general-define-key
- :states 'normal
- "1" #'rotate-text
- "2" #'evil-execute-macro
- "3" #'evil-ex-search-word-backward
- "4" #'evil-end-of-line
- "5" #'evil-jump-item
- "6" #'evil-first-non-blank
- "7" #'evil-ex-repeat-substitute
- "8" #'evil-ex-search-word-forward
- "9" #'evil-backward-sentence-begin
- "0" #'evil-beginning-of-line)
+;; (general-define-key
+;;  :states 'normal
+;;  "1" #'evil-shell-command
+;;  "2" #'evil-execute-macro
+;;  "3" #'evil-ex-search-word-backward
+;;  "4" #'evil-end-of-line
+;;  "5" #'evil-jump-item
+;;  "6" #'evil-first-non-blank
+;;  "7" #'evil-ex-repeat-substitute
+;;  "8" #'swiper-isearch-thing-at-point
+;;  "9" #'evil-backward-sentence-begin
+;;  "0" #'evil-beginning-of-line)
 
-(general-define-key
- :states 'normal
- :keymaps 'evil-cleverparens-mode-map
- "9" #'evil-cp-backward-up-sexp
- "0" #'evil-cp-up-sexp)
+;; (general-define-key
+;;  :states 'normal
+;;  :keymaps 'evil-cleverparens-mode-map
+;;  "9" #'evil-cp-backward-up-sexp
+;;  "0" #'evil-cp-up-sexp)
 
-;;
 ;;; Global keybindings
 (general-define-key
- [remap quit-window] #'kill-current-buffer
+ ;; [remap quit-window] #'kill-current-buffer
  ;; "A-b"  #'persp-ibuffer
  ;; "A-p"  #'sam-projectile-ibuffer
  "M-;" #'eval-expression
  "<C-m>" #'evilmi-jump-items)
 
+(defvar hs-showing t)
+(defun sam-hs-toggle-all ()
+  "Toggle showing all top-level blocks"
+  (interactive)
+  (if hs-showing
+      (progn
+	(hs-hide-all)
+	(setq hs-showing nil))
+    (progn
+      (hs-show-all)
+      (setq hs-showing t))))
+(general-define-key
+ :states 'normal
+ :keymaps '(global evil-cleverparens-mode-map)
+ ;; "TAB" #'evil-toggle-fold
+ "M-w" #'forward-word
+
+ "M-j" #'(lambda () (interactive)
+           (progn (evil-next-line)
+                  (back-to-indentation)))
+ "M-k" #'(lambda () (interactive)
+           (progn (evil-previous-line)
+                  (back-to-indentation)))
+
+ "j"   #'evil-next-visual-line
+ "k"   #'evil-previous-visual-line
+
+ "C-j"  #'evil-scroll-line-down
+ "C-k"  #'evil-scroll-line-up
+
+ "C-h"  help-map
+ "n"  #'isearch-repeat-forward
+ "N"  #'isearch-repeat-backward
+ "K"  #'delete-indentation
+ "J"  #'evil-join
+ "t"   #'(lambda () (interactive) (avy-goto-word-or-subword-1))
+ "C"   #'+multiple-cursors/evil-mc-toggle-cursors
+ "<C-return>" #'sam-hs-toggle-all
+ "C-d" #'dired-jump
+ "C-u" #'universal-argument
+ "C-q" #'evil-quit
+ "C-w" #'evil-window-map
+ "C-/" #'counsel-grep-or-swiper
+ "C-]" #'xref-find-definitions
+ "M-]" #'xref-find-references
+ ","   #'macrostep-expand
+ "-"   #'treemacs-add-and-display-current-project
+ "/"   #'swiper-isearch)
+
 (general-define-key
  :states 'insert
- ;; [tab]            #'indent-relative
- ;; [backtab]        #'indent-relative-below
  "C-a"           #'beginning-of-line
  "C-e"           #'end-of-line
  "C-f"           #'forward-char
  "C-b"           #'backward-char
  "C-n"           #'next-line
  "C-p"           #'previous-line
- "C-h"           #'evil-delete-backward-char
+ "C-h"           #'backward-delete-char-untabify
  "M-w"           #'forward-word
  "M-b"           #'backward-word
  ;; Smarter newlines
@@ -93,39 +118,6 @@
  "z=" #'flyspell-correct-word-generic
  ";"   #'(lambda () (interactive) (counsel-M-x ""))
  )
-
-(general-define-key
- :states 'normal
- :keymaps '(global evil-cleverparens-mode-map)
- ;; "TAB" #'evil-toggle-fold
- "M-w" #'forward-word
- "M-j" #'(lambda () (interactive)
-           (progn (evil-next-line)
-                  (back-to-indentation)))
- "M-k" #'(lambda () (interactive)
-           (progn (evil-previous-line)
-                  (back-to-indentation)))
- "K" #'delete-indentation
- "J" #'evil-join
- "j"   #'evil-next-visual-line
- "k"   #'evil-previous-visual-line
- "C-j"  #'evil-scroll-line-down
- "C-k"  #'evil-scroll-line-up
- "t"   #'(lambda () (interactive) (avy-goto-word-or-subword-1))
- "C"   #'+multiple-cursors/evil-mc-toggle-cursors
- ;; "`"   #'sr-speedbar-toggle
- "C-d" #'dired-jump
- ;; "C-j" #'insert-line-below
- ;; "C-k" #'insert-line-above
- "C-u" #'universal-argument
- "C-q" #'kill-current-buffer
- "C-w" #'evil-quit
- "C-/" #'counsel-grep-or-swiper
- "C-]" #'xref-find-definitions
- "M-]" #'xref-find-references
- ","   #'macrostep-expand
- "-"   #'treemacs
- "/"   #'swiper)
 
 (defhydra hydra-undo-tree (:color yellow
                                   :hint nil)
@@ -211,12 +203,6 @@
  "[u"    #'+evil:url-decode
  "]y"    #'+evil:c-string-encode
  "[y"    #'+evil:c-string-decode)
-;; NOTE hl-todo-{next,previous} have ]t/[t, use ]F/[F instead
-;; NOTE {next,previous}-error have ]e/[e, use ddp/ddP or gx instead
-;; (:when (featurep! :lang web)
-;;  "]x" #'+web:encode-html-entities
-;;  "[x" #'+web:decode-html-entities)
-
 
 ;; evil surround
 (general-define-key
@@ -243,6 +229,11 @@
 
 ;;
 ;;; Module keybinds
+
+(general-define-key
+ :keymaps 'treemacs-mode-map
+ :states 'normal
+ "-" #'treemacs-quit)
 
 ;; ivy
 (general-define-key
@@ -280,15 +271,16 @@
  :keymaps 'dired-mode-map
  :state 'normal
  :prefix "y"
- ""      nil
- "y"     #'dired-ranger-copy
- "m"     #'dired-ranger-move
- "p"     #'dired-ranger-paste)
+ ""    nil
+ "y"   #'dired-ranger-copy
+ "m"   #'dired-ranger-move
+ "p"   #'dired-ranger-paste)
 (general-define-key
  :keymaps 'dired-mode-map
  :states 'normal
  ""      nil
- "\C-l" #'dired-do-symlink
+ "C-/" #'dired-narrow
+ "C-l" #'dired-do-symlink
  "h"   #'dired-up-directory
  "l"   #'dired-find-file)
 ;; (define-key dired-mode-map (kbd "<normal-state> y y") 'dired-ranger-copy)
@@ -307,52 +299,6 @@
   "\C-e" #'+sclang-eval-this-expression)
 
 ;;; :ui
-;; (map! (:when (featurep! :ui hl-todo)
-;;         :m "]t" #'hl-todo-next
-;;         :m "[t" #'hl-todo-previous)
-
-;;       (:when (featurep! :ui popup)
-;;         :n "C-`"   #'+popup/toggle
-;;         :n "C-~"   #'+popup/raise
-;;         :g "C-x p" #'+popup/other)
-
-;;       (:when (featurep! :ui vc-gutter)
-;;         :m "]d"    #'git-gutter:next-hunk
-;;         :m "[d"    #'git-gutter:previous-hunk)
-
-;;     ;;; <leader> w --- windowing
-;;       (:map evil-window-map
-;;             ;; Navigation
-;;             "C-h"     #'evil-window-left
-;;             "C-j"     #'evil-window-down
-;;             "C-k"     #'evil-window-up
-;;             "C-l"     #'evil-window-right
-;;             "C-w"     #'other-window
-;;             "C-n"     #'evil-window-vnew
-;;             "C-q"     #'evil-quit-all
-;;             ;; Swapping windows
-;;             "H"       #'+evil/window-move-left
-;;             "J"       #'+evil/window-move-down
-;;             "K"       #'+evil/window-move-up
-;;             "L"       #'+evil/window-move-right
-;;             "C-S-w"   #'ace-swap-window
-;;             ;; Window undo/redo
-;;             (:prefix "m"
-;;                      "m"       #'doom/window-maximize-buffer
-;;                      "v"       #'doom/window-maximize-vertically
-;;                      "s"       #'doom/window-maximize-horizontally)
-;;             (:prefix "C-m"
-;;                      "m"       #'doom/window-maximize-buffer
-;;                      "v"       #'doom/window-maximize-vertically
-;;                      "s"       #'doom/window-maximize-horizontally)
-;;             "u"       #'winner-undo
-;;             "C-u"     #'winner-undo
-;;             "C-r"     #'winner-redo
-;;             ;; "o"       #'doom/window-enlargen
-;;             "o"       #'delete-other-windows
-;;             ;; Delete window
-;;             "C-C"     #'ace-delete-window))
-
 (general-define-key
  :keymaps '(evil-window-map)
  ;; Navigation
@@ -360,26 +306,19 @@
  "C-j"     #'evil-window-down
  "C-k"     #'evil-window-up
  "C-l"     #'evil-window-right
+ "C-q"     #'delete-window
+ "C-t"     #'window-toggle-side-windows
  "C-w"     #'other-window
  "C-n"     #'evil-window-vnew
- "C-q"     #'evil-quit-all
  ;; Swapping windows
  "H"       #'+evil/window-move-left
  "J"       #'+evil/window-move-down
  "K"       #'+evil/window-move-up
  "L"       #'+evil/window-move-right
- "C-S-w"   #'ace-swap-window
- ;; Window undo/redo
- ;; "m m"       #'doom/window-maximize-buffer
- ;; "m v"       #'doom/window-maximize-vertically
- ;; "m s"       #'doom/window-maximize-horizontally
- ;; "C-m m"       #'doom/window-maximize-buffer
- ;; "C-m v"       #'doom/window-maximize-vertically
- ;; "C-m s"       #'doom/window-maximize-horizontally
+ "C-a"   #'ace-swap-window
  "u"       #'winner-undo
  "C-u"     #'winner-undo
  "C-r"     #'winner-redo
- ;; "o"       #'doom/window-enlargen
  "o"       #'delete-other-windows
  ;; Delete window
  "C-C"     #'ace-delete-window)
@@ -580,11 +519,17 @@
  "RET" #'evil-commentary-line)
 
 (general-define-key
- :states '(normal)
+ :states 'normal
  :keymaps 'evil-org-mode-map
- "t" #'org-set-tags-command
- "pp" #'evil-paste-after
- "pl" #'org-insert-link)
+ "<return>" #'org-toggle-narrow-to-subtree
+ "t" 	    #'org-set-tags-command
+ "pp" 	    #'evil-paste-after
+ "pl" 	    #'org-insert-link)
+(general-define-key
+ :states 'insert
+ :keymaps 'evil-org-mode-map
+ "<tab>"     #'org-do-demote
+ "<backtab>" #'org-do-promote)
 
 (setq light-theme t)
 
@@ -608,6 +553,7 @@
  "DEL" #'+nav-flash/blink-cursor
  "RET" #'bookmark-jump
  "SPC" #'projectile-persp-switch-project
+ "C-SPC" #'tmm-menubar
  "TAB" #'mode-line-other-buffer
 
  "a" '(:ignore t :which-key "admin")
@@ -617,12 +563,6 @@
  "al" #'list-packages
  "ap" #'proced
  "as" #'helm-systemd
- ;; :desc "arch packages"  "a"   #'helm-system-packages
- ;; :desc "daemons"        "d"   #'daemons
- ;; :desc "emacs packages" "e"   #'counsel-package
- ;; :desc "list-packages"  "l"   #'list-packages
- ;; :desc "proced"         "p"   #'proced
- ;; :desc "systemd"        "s"   #'helm-systemd
 
  "b"   #'persp-counsel-switch-buffer
  "B"   #'counsel-switch-buffer
@@ -631,6 +571,7 @@
  "["   #'previous-buffer
  "]"   #'next-buffer
 
+ "C-c" #'sfs-recollect
  "c" '(:ignore t :which-key "code")
  "cc"   #'sam-compile
  "ce"   #'+eval/buffer-or-region
@@ -638,7 +579,6 @@
  "cf"   #'+format/region-or-buffer
  "cr"   #'+eval/open-repl-other-window
  "cw"   #'delete-trailing-whitespace
- "cW"   #'doom/delete-trailing-newlines
  "cx"   #'flycheck-list-errors
 
  "d" '(:ignore t :which-key "debug")
@@ -647,24 +587,26 @@
  "ds"   #'serial-term
 
  "e" '(:ignore t :which-key "edit")
- "eb"   #'(lambda () (interactive) (find-file "~/.doom.d/+bindings.el"))
+ "eb"   #'(lambda () (interactive) (find-file "~/.emacs.d/overdr0ne/+bindings.el"))
  "ez"   #'(lambda () (interactive) (find-file "~/.zshrc"))
  "eh"   #'(lambda () (interactive) (find-file "/etc/httpd/conf/httpd.conf"))
  "ei"   #'(lambda () (interactive) (find-file "~/.config/i3/config"))
 
+ "C-f"  #'sfs-research
  "f"    #'counsel-find-file
 
  "g" '(:ignore t :which-key "go")
  "g."   #'(lambda () (interactive) (find-file "."))
- "gd"   #'(lambda () (interactive) (find-file "~/.doom.d"))
  "gh"   #'(lambda () (interactive) (find-file "~"))
  "gl"   #'(lambda () (interactive) (find-file "~/src"))
  "gn"   #'(lambda () (interactive) (find-file "~/notes"))
+ "go"   #'(lambda () (interactive) (find-file "~/.emacs.d/overdr0ne"))
  "gs"   #'(lambda () (interactive) (find-file "~/sites"))
  "gt"   #'(lambda () (interactive) (find-file "~/test"))
 
  "h" help-map
 
+;;; <leader> i --- imenu
  "i" '(:ignore t :which-key "imenu")
  "if"   #'((lambda () (interactive) (sam-counsel-imenu "functions: ")) :which-key "functions")
  "ii"   #'counsel-imenu
@@ -673,28 +615,17 @@
  "is"   #'(lambda () (interactive) (sam-counsel-imenu "section: "))
  "iv"   #'(lambda () (interactive) (sam-counsel-imenu "variables: "))
  "it"   #'(lambda () (interactive) (find-file "~/test"))
-;;; <leader> i --- imenu
- ;; (:prefix-map ("i" . "imenu")
- ;;              :desc "functions" "f"   #'(lambda () (interactive) (sam-counsel-imenu "functions: "))
- ;;              :desc "default"   "i"   #'counsel-imenu
- ;;              :desc "macros"    "m"   #'(lambda () (interactive) (sam-counsel-imenu "macros: "))
- ;;              :desc "packages"  "p"   #'(lambda () (interactive) (sam-counsel-imenu "package "))
- ;;              :desc "sections"  "s"   #'(lambda () (interactive) (sam-counsel-imenu "section: "))
- ;;              :desc "variables" "v"   #'(lambda () (interactive) (sam-counsel-imenu "variables: "))
- ;;              :desc "test"      "t"   #'(lambda () (interactive) (find-file "~/test")))
+
  "j"    #'(lambda () (interactive) (avy-goto-word-or-subword-1))
 
- "k" '(:ignore t :which-key "kill")
- "kb" #'kill-buffer
- "kc" #'kill-buffer-and-window
- "kk" #'kill-this-buffer
- "kw" #'delete-window
  ;; ;;; <leader> k --- kill
- ;;   (:prefix-map ("k" . "kill")
- ;;                :desc "kill buffer"            "b" #'kill-buffer
- ;;                :desc "kill buffer and window" "c" #'kill-buffer-and-window
- ;;                :desc "kill this buffer"       "k" #'kill-this-buffer
- ;;                :desc "kill window"            "w" #'delete-window)
+ "k" #'kill-this-buffer
+ "C-k" #'kill-buffer-and-window
+ ;; "k" '(:ignore t :which-key "kill")
+ ;; "kb" #'kill-buffer
+ ;; "kc" #'kill-buffer-and-window
+ ;; "kk" #'kill-this-buffer
+ ;; "kw" #'delete-window
 
  "l" '(:ignore t :which-key "lookup")
  "la" #'ace-link
@@ -710,13 +641,10 @@
  "lx" #'sx-search
 
  "m" '(:ignore t :which-key "modes")
- "mb" #'doom-big-font-mode
  "mf" #'flycheck-mode
  "mF" #'toggle-frame-fullscreen
  "mg" #'evil-goggles-mode
  "mi" #'highlight-indent-guides-mode
- "mI" #'doom/toggle-indent-style
- "ml" #'doom/toggle-line-numbers
  "mm" #'menu-bar-mode
  "mw" #'+word-wrap-mode
  "mp" #'+org-present/start
@@ -751,10 +679,8 @@
  "p;" #'projectile-repeat-last-command
  "p]" #'persp-next
  "p[" #'persp-prev
- "p>" #'doom/browse-in-other-project
  "pf" #'projectile-find-file
- "p?" #'doom/find-file-in-other-project
- "p!" #'projectile-run-shell-command-in-root
+ "p!"  #'projectile-run-shell-command-in-root
  "pa" #'projectile-add-known-project
  "pb" #'projectile-switch-to-buffer
  "pc" #'projectile-compile-project
@@ -773,18 +699,10 @@
  "ps" #'persp-switch
  "pt" #'+default/project-tasks
  "pT" #'projectile-test-project
- "px" #'doom/open-project-scratch-buffer
- "pX" #'doom/switch-to-project-scratch-buffer
 
  "q" '(:ignore t :which-key "quit")
  "qq" #'save-buffers-kill-terminal
  "qQ" #'evil-quit-all-with-error-code
- "qS" #'doom/quicksave-session
- "qL" #'doom/quickload-session
- "qs" #'doom/save-session
- "ql" #'doom/load-session
- "qr" #'doom/restart-and-restore
- "qR" #'doom/restart
 
  "r" '(:ignore t :which-key "remote")
  "ru" #'ssh-deploy-upload-handler
@@ -821,12 +739,12 @@
  "t;" #'(lambda () (interactive) (multi-term-dedicated-toggle))
 
  "u" '(:ignore t :which-key "utilities")
- ;; "uc" #'sfs-collections
+ "uc" #'sfs-recollect
  "ud" #'wordnut-search
  "uk" #'browse-kill-ring
  "ur" #'replace-string
  "uR" #'replace-query
- ;; "us" #'sfs
+ "us" #'sfs-research
 
  "v" '(:ignore t :which-key "version control")
  "v]"   #'git-gutter:next-hunk
@@ -880,21 +798,20 @@
  "vR"   #'vc-revert
  "vS"   #'magit-stage-file
 
-    ;;; <leader> w --- windows
+;;; <leader> w --- windows
  "w"    evil-window-map
 
-    ;;; <leader> x --- org capture
+;;; <leader> x --- org capture
  "x"    #'org-capture
 
-    ;;; <leader> y --- hyperbole
+;;; <leader> y --- hyperbole
  "y"    #'hyperbole
 
  "z" '(:ignore t :which-key "scratch")
  "zc" #'((lambda () (interactive) (find-file "~/scratch/c/test.c"))         :which-key "C")
  "zl" #'((lambda () (interactive) (find-file "~/scratch/elisp/test.el"))    :which-key "Elisp")
  "zp" #'((lambda () (interactive) (find-file "~/scratch/py/test.py"))       :which-key "Python")
- "zt" #'((lambda () (interactive) (find-file "~/scratch/text/generic.txt")) :which-key "text")
- "zz" #'(doom/open-scratch-buffer                                           :which-key "generic"))
+ "zt" #'((lambda () (interactive) (find-file "~/scratch/text/generic.txt")) :which-key "text"))
 
 (define-key input-decode-map [?\C-m] [C-m])
 
@@ -939,134 +856,52 @@
  "C-k"    #'previous-line
  "C-S-j"  #'scroll-up-command
  "C-S-k"  #'scroll-down-command)
+
 (general-define-key
  :keymaps 'read-expression-map
  "C-j" #'next-line-or-history-element
  "C-k" #'previous-line-or-history-element)
 
-;;
-;;; Universal evil integration
-
-
-;; (when (featurep! :editor evil +everywhere)
-;;   ;; Have C-u behave similarly to `doom/backward-to-bol-or-indent'.
-;;   ;; NOTE SPC u replaces C-u as the universal argument.
-;;   (map! :gi "C-u" #'doom/backward-kill-to-bol-and-indent
-;;         :gi "C-w" #'backward-kill-word)
-;;   ;; Vimmish ex motion keys
-;;   ;;make insert work more like emacs
-
-
-;;   ;; :gi "C-b" #'backward-word
-;;   ;; :gi "C-f" #'forward-word)
-
-;;   (after! view
-;;     (define-key view-mode-map [escape] #'View-quit-all))
-;;   (after! man
-;;     (evil-define-key* 'normal Man-mode-map "q" #'kill-current-buffer))
-
-;;   ;; Minibuffer
-;;   ;; (define-key! evil-ex-completion-map
-;;   ;;   ;; "C-a" #'move-beginning-of-line
-;;   ;;   ;; "C-b" #'backward-word
-;;   ;;   "C-a"           #'beginning-of-line
-;;   ;;   "C-e"           #'end-of-line
-;;   ;;   "C-f"           #'forward-char
-;;   ;;   "C-b"           #'backward-char
-;;   ;;   "M-w"           #'forward-word
-;;   ;;   "M-b"           #'backward-word
-;;   ;;   "C-s" (if (featurep! :completion ivy)
-;;   ;;             #'counsel-minibuffer-history
-;;   ;;           #'helm-minibuffer-history))
-
-;;   ;; (define-key! :keymaps +default-minibuffer-maps
-;;   ;;   [escape] #'abort-recursive-edit
-;;   ;;   "C-v"    #'yank
-;;   ;;   "C-z"    (λ! (ignore-errors (call-interactively #'undo)))
-;;   ;;   ;; "C-a"    #'move-beginning-of-line
-;;   ;;   ;; "C-b"    #'backward-word
-;;   ;;   "C-a"           #'beginning-of-line
-;;   ;;   "C-e"           #'end-of-line
-;;   ;;   "C-f"           #'forward-char
-;;   ;;   "C-b"           #'backward-char
-;;   ;;   "M-w"           #'forward-word
-;;   ;;   "M-b"           #'backward-word
-;;   ;;   "C-r"    #'evil-paste-from-register
-;;   ;;   ;; "C-n"    #'next-history-element
-;;   ;;   ;; "C-p"    #'previous-history-element
-;;   ;;   ;; Scrolling lines
-;;   ;;   "C-j"    #'next-line
-;;   ;;   "C-k"    #'previous-line
-;;   ;;   "C-S-j"  #'scroll-up-command
-;;   ;;   "C-S-k"  #'scroll-down-command)
-
-;;   (define-key! read-expression-map
-;;     "C-j" #'next-line-or-history-element
-;;     "C-k" #'previous-line-or-history-element))
-
 (general-define-key
  :keymaps 'help-map
  ;; new keybinds
  "'"    #'describe-char
- "D"    #'doom/help
- "E"    #'doom/sandbox
- "M"    #'doom/describe-active-minor-mode
- "R"    #'doom/reload
- "T"    #'doom/toggle-profiler
- "V"    #'set-variable
- "W"    #'+default/man-or-woman
- "C-k"  #'describe-key-briefly
- "C-l"  #'describe-language-environment
- "C-m"  #'info-emacs-manual
-
  ;; Unbind `help-for-help'. Conflicts with which-key's help command for the
  ;; <leader> h prefix. It's already on ? and F1 anyway.
  "C-h"  nil
-
- ;; replacement keybinds
- ;; replaces `info-emacs-manual' b/c it's on C-m now
- "r"    nil
- "rr"   #'doom/reload
- "rt"   #'doom/reload-theme
- "rp"   #'doom/reload-packages
- "rf"   #'doom/reload-font
- "re"   #'doom/reload-env
-
- ;; replaces `apropos-documentation' b/c `apropos' covers this
- "d"    nil
- "d/"   #'doom/help-search
- "da"   #'doom/help-autodefs
- "db"   #'doom/report-bug
- "dd"   #'doom/toggle-debug-mode
- "df"   #'doom/help-faq
- "dh"   #'doom/help
- "dm"   #'doom/help-modules
- "dn"   #'doom/help-news
- "dN"   #'doom/help-news-search
- "dp"   #'doom/help-packages
- "dP"   #'doom/help-package-homepage
- "dc"   #'doom/help-package-config
- "ds"   #'doom/sandbox
- "dt"   #'doom/toggle-profiler
- "dv"   #'doom/version
-
- ;; replaces `apropos-command'
  "a"    #'counsel-apropos
  "b"    #'helm-descbinds
- ;; replaces `describe-copying' b/c not useful
+ "c" 	#'helpful-command
  "C-c"  #'describe-coding-system
- "f"    #'counsel-describe-function
- ;; replaces `Info-got-emacs-command-node' b/c redundant w/ `Info-goto-node'
+ "f"    #'helpful-callable
  "F"    #'counsel-describe-face
- "h" #'helpful-at-point
- ;; replaces `describe-language-environment' b/c remapped to C-l
+ "h"    #'helpful-at-point
+ "k"    #'helpful-key
+ "C-k"  #'describe-key-briefly
+ "C-l"  #'describe-language-environment
  "L"    #'global-command-log-mode
- ;; replaces `view-emacs-news' b/c it's on C-n too
- "n"    #'doom/help-news
+ "C-m"  #'info-emacs-manual
  ;; replaces `finder-by-keyword'
  "o"    #'ace-link-help
- ;; "p"    #'doom/help-packages
  "p"    #'describe-package
  ;; replaces `describe-package' b/c redundant w/ `doom/describe-package'
  "P"    #'find-library
- "v"    #'counsel-describe-variable)
+ "v"    #'helpful-variable
+ "V"    #'set-variable)
+
+(defhydra evil-window-hydra (:color yellow
+                                    :hint nil)
+  "
+  _h_: window-left  _j_: window-down _k_: window-up _l_: window-right "
+  ("h"   evil-window-left)
+  ("j"   evil-window-down)
+  ("k"   evil-window-up)
+  ("l"   evil-window-right)
+  ("q"   nil "quit" :color blue))
+
+(general-define-key
+ :keymaps 'evil-window-map
+ "h" #'evil-window-hydra/evil-window-left
+ "k" #'evil-window-hydra/evil-window-up
+ "j" #'evil-window-hydra/evil-window-down
+ "l" #'evil-window-hydra/evil-window-right)

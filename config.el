@@ -1,15 +1,23 @@
 ;; (load! "+base")
 (load "./+functions")
-(load "./+core")
 (load "./+modules")
 (load "./+bindings")
 (load "./+langs")
+(load "./+core")
+
+;; (setq custom-file "~/.emacs.d/overdr0ne/customize.el")
+
+(savehist-mode +1)
 
 (blink-cursor-mode -1)
 
 (tool-bar-mode -1)
 
 (scroll-bar-mode -1)
+
+(column-number-mode)
+
+(menu-bar-mode -1)
 
 (set-frame-parameter (selected-frame) 'alpha '(93 . 70))
 (add-to-list 'default-frame-alist '(alpha . (93 . 70)))
@@ -24,8 +32,6 @@
 (setq tags-add-tables nil)
 (setq large-file-warning-threshold nil)
 (set-face-attribute 'default nil :height 140)
-;; (setq doom-font (font-spec :family "Fira Code" :size 18))
-;; (setq doom-font (font-spec :family "Iosevka" :size 18))
 (setq display-line-numbers-type nil)
 (setq user-mail-address "scmorris.dev@gmail.com")
 (turn-off-auto-fill)

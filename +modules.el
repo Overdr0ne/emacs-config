@@ -1,6 +1,15 @@
-;;; ~/.doom.d/+use-package.el -*- lexical-binding: t; -*-
+;;; ~/.emacs.d/+use-package.el -*- lexical-binding: t; -*-
 
 (use-package general)
+
+(use-package dashboard
+  :config
+  (dashboard-setup-startup-hook)
+  (setq dashboard-items '((recents  . 5)
+                          ;; (bookmarks . 5)
+                          (projects . 5)
+                          (agenda . 5)
+                          (registers . 5))))
 
 (use-package erc)
 
@@ -16,7 +25,9 @@
 ;; (use-package company-box)
 
 ;; (use-package counsel-dash)
-(use-package counsel-projectile)
+(use-package counsel-projectile
+  :config
+  (counsel-projectile-mode +1))
 
 (use-package selectrum
   :config
@@ -32,17 +43,24 @@
   (all-the-icons-ivy-rich-mode 1))
 (use-package ivy-rich
   :init (ivy-rich-mode 1))
+(use-package historian)
+(use-package ivy-historian)
 (use-package all-the-icons-ivy
   :init
+  (ivy-mode +1)
+  (historian-mode +1)
   (add-hook 'after-init-hook 'all-the-icons-ivy-setup)
   (setq ivy-initial-inputs-alist nil)
   (setq ivy-re-builders-alist
-        '((t . ivy--regex-ignore-order))))
+        '((t . ivy--regex-ignore-order)))
+  :config
+  (ivy-historian-mode +1))
+
+(use-package swiper)
+
+;;(use-package ivy-historian)
 ;; (use-package ivy-hydra)
-;; (use-package ivy-rich)
 ;; (use-package ivy-xref)
-;; (use-package posframe)
-;; (use-package ivy-posframe)
 ;; (use-package amx)
 
 ;; (use-package wgrep)
@@ -52,10 +70,10 @@
   (global-anzu-mode +1))
 (use-package doom-modeline
   :init
+  (setq doom-modeline-height 1)
   (doom-modeline-mode 1)
   (setq doom-modeline-minor-modes t))
 ;; (use-package shrink-path)
-;;(use-package spaceline-all-the-icons)
 
 (use-package helm
   :config
@@ -198,13 +216,18 @@
 ;;(package! evil-markdown)
 (use-package markdown-toc)
 
-;;(use-package org)
+(use-package org)
 ;;(use-package helm-org)
-;;(use-package evil-org)
-;;(use-package toc-org)
-;;(use-package org-superstar
-;;  :config
-;;  (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1))))
+(use-package evil-org
+  :config
+  (add-hook 'org-mode-hook 'evil-org-mode)
+  (add-hook 'evil-org-mode-hook
+            (lambda ()
+              (evil-org-set-key-theme))))
+(use-package toc-org)
+(use-package org-superstar
+  :config
+  (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1))))
 ;;(use-package org-ref)
 ;; (use-package org-roam
 ;;   :init
@@ -248,6 +271,8 @@
   )
 
 (use-package treemacs)
+(use-package treemacs-perspective)
+(use-package treemacs-projectile)
 
 (use-package vi-tilde-fringe)
 
@@ -345,8 +370,13 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
 ;;   (setq persp-autokill-buffer-on-remove 'kill-weak)
 ;;   (add-hook 'after-init-hook #'(lambda () (persp-mode 1))))
 
+(defun sam-switch-project-action (&optional )
+  (projectile-vc)
+  (delete-other-windows))
+
 (use-package persp-projectile
   :config
+  (add-hook 'projectile-after-switch-project-hook 'delete-other-windows)
   (setq projectile-switch-project-action #'projectile-vc))
 
 (use-package visual-fill-column)
@@ -388,6 +418,8 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
 (use-package macrostep)
 (use-package lispy)
 (use-package smartparens)
+
+(use-package smart-tabs-mode)
 ;; (use-package evil-cleverparens)
 
 ;; (use-package parinfer
@@ -449,6 +481,9 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
   :init
   (setq diredp-hide-details-initially-flag nil))
 (use-package dired-du)
+(use-package dired-subtree)
+(use-package dired-filter)
+(use-package dired-narrow)
 
 (use-package highlight)
 (use-package highlight-defined)
@@ -621,7 +656,17 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
   :config
   (which-key-mode))
 
-;; (use-package sfs)
+;; (use-package sfs
+;;   :straight (sfs :type git
+;; 		 :host github
+;;                  :repo "Overdr0ne/sfs"
+;;                  :branch "devel"
+;;                  :files ("sfs.el"
+;;                          "sfs-recoll.el"
+;;                          "sfs-tui.el"
+;;                          "sfs-tag.el"
+;;                          "sfs-index.el"
+;;                          "service.py")))
 
 ;;; themes
 (use-package dracula-theme
@@ -632,13 +677,19 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
   ;; :config
   ;; (load-theme 'solarized-light t)
   )
-;;(use-package spacemacs-theme
-;; :config
-;; (load-theme 'spacemacs-light t))
+(use-package spacemacs-theme
+  :defer t
+  :init
+  (load-theme 'spacemacs-light t))
 
 (use-package mixed-pitch)
 (use-package writeroom-mode)
 
 (use-package multi-term)
+
+(use-package imenu
+  :config
+  (setq imenu-generic-expression '(("Section"
+				    "^;;;"))))
 
 (provide '+modules)
