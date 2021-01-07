@@ -524,10 +524,6 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
 
   (setq rcirc-server-alist
         '(("irc.freenode.net" :channels ("#emacs" "#rcirc"))))
-  (setq rcirc-authinfo
-        (quote
-         (("irc.freenode.net" nickserv "Overdr0ne" "(9obocohC0)")
-          ("bitlbee" bitlbee "Overdr0ne" "(9obocohC0)"))))
   (setq rcirc-buffer-maximum-lines 1000)
   (setq rcirc-default-nick "Overdr0ne")
   (setq rcirc-default-user-name "Overdr0ne")
