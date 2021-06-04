@@ -1,11 +1,32 @@
 ;; (load! "+base")
+(load "./+core")
 (load "./+functions")
 (load "./+modules")
 (load "./+bindings")
 (load "./+langs")
-(load "./+core")
 
-;; (setq custom-file "~/.emacs.d/overdr0ne/customize.el")
+(set-language-environment "UTF-8")
+(set-default-coding-systems 'utf-8)
+(prefer-coding-system       'utf-8)
+(set-default-coding-systems 'utf-8)
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
+(setq default-buffer-file-coding-system 'utf-8)
+(setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
+
+(setq custom-file "~/.emacs.d/overdr0ne/customize.el")
+(load custom-file)
+(general-add-hook 'kill-emacs-hook
+                  '(customize-save-customized))
+
+;; (setq backup-directory-alist `(("." . "~/.bak")))
+(add-to-list 'backup-directory-alist
+             (cons "." "~/.emacs.d/backups/"))
+;; (setq backup-by-copying t)
+;; (setq delete-old-versions t
+;;   kept-new-versions 6
+;;   kept-old-versions 2
+;;   version-control t)
 
 (savehist-mode +1)
 
@@ -38,17 +59,16 @@
 (auto-fill-mode -1)
 
 (setq browse-url-browser-function 'eww-browse-url)
-;; (add-hook 'eww-mode-hook
-;;           (lambda () (load-theme-buffer-local 'plan9 (current-buffer))))
-
-(setq show-trailing-whitespace t)
 
 (setq load-prefer-newer t)
 
-;; (add-hook! (emacs-lisp-mode) #'(lambda () (add-to-list (make-local-variable 'company-backends) 'company-elisp)))
-;; (add-hook 'emacs-lisp-mode-hook #'(lambda () (rainbow-delimiters-mode)))
-
-
-(setq company-idle-delay 10)
+(setq inhibit-startup-screen 't)
 
 (delete "~/.emacs.d/.local/" projectile-globally-ignored-directories)
+
+(projectile-mode)
+(eval-after-load 'projectile
+    (projectile-persp-switch-project (first (projectile-relevant-known-projects))))
+
+(provide 'config)
+;;; config.el ends here

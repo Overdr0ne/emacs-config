@@ -23,18 +23,18 @@
 (defun empire/haskell/module->test ()
   "Jump from a module to a test."
   (let ((filename (->> buffer-file-name
-                       (s-replace "/src/" "/test/")
-                       (s-replace ".hs" "Test.hs")
-                       find-file)))
+                    (s-replace "/src/" "/test/")
+                    (s-replace ".hs" "Test.hs")
+                    find-file)))
     (make-directory (f-dirname filename) t)
     (find-file filename)))
 
 (defun empire/haskell/test->module ()
   "Jump from a test to a module."
   (let ((filename (->> buffer-file-name
-                       (s-replace "/test/" "/src/")
-                       (s-replace "Test.hs" ".hs")
-                       )))
+                    (s-replace "/test/" "/src/")
+                    (s-replace "Test.hs" ".hs")
+                    )))
     (make-directory (f-dirname filename) t)
     (find-file filename)))
 
@@ -287,3 +287,78 @@ current buffer directory."
   (save-excursion
     (mark-whole-buffer)
     (indent-region (point) (mark))))
+
+(defun consult-line-symbol-at-point ()
+  (interactive)
+  (consult-line (symbol-name (symbol-at-point))))
+
+(defun consult-line-repeat ()
+  (interactive)
+  (consult-line (first consult--line-history)))
+
+(defun consult-grep-wd ()
+  (interactive)
+  (consult-grep default-directory))
+
+(defun rgrep-wd (regexp)
+  (interactive
+   (list
+    (progn
+      (grep-compute-defaults)
+      (read-regexp "Search regexp: "))))
+  (rgrep regexp "\*" (pwd))
+  (pop-to-buffer "*grep*"))
+
+(defun replace-string-all ()
+  (interactive)
+  (let* ((sap (symbol-name (symbol-at-point)))
+         (str-orig (read-string "Replace: " sap))
+         (str-replace (read-string "With: " sap)))
+    (replace-string str-orig str-replace nil (point-min) (point-max))))
+
+;; (defvar-local hs-hidden-p nil)
+;; (defun hs-toggle-level ()
+;;   (interactive)
+;;   (if hs-hidden-p
+;;       (progn
+;;         (hs-show-all)
+;;         (setq-local hs-hidden-p nil))
+;;     (progn
+;;       (hs-hide-level 1)
+;;       (setq-local hs-hidden-p t))))
+(defun hs-toggle-level ()
+  (interactive)
+  (if (hs-already-hidden-p)
+      (hs-show-all)
+    (hs-hide-level 1)))
+
+(defun sam-drag-sexp-backward ()
+  "Drag sexp at POINT backwards."
+  (interactive)
+  (save-excursion (transpose-sexps 1))
+  (sp-backward-sexp))
+
+(defun sam-drag-sexp-forward ()
+  "Drag sexp at POINT forwards."
+  (interactive)
+  (sp-next-sexp)
+  (save-excursion
+    (transpose-sexps 1)))
+
+(defun sam-next-line-start ()
+  (interactive)
+  (evil-next-line)
+  (back-to-indentation))
+
+(defun sam-previous-line-start ()
+  (interactive)
+  (evil-previous-line)
+  (back-to-indentation))
+
+(defun sam-switch-to-persp-buffer ()
+  (interactive)
+  (let ((read-buffer-function 'persp-read-buffer))
+    (consult-buffer)))
+
+(provide '+functions)
+;;; +functions.el ends here

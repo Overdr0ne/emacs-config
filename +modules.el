@@ -2,59 +2,71 @@
 
 (use-package general)
 
-(use-package dashboard
-  :config
-  (dashboard-setup-startup-hook)
-  (setq dashboard-items '((recents  . 5)
-                          ;; (bookmarks . 5)
-                          (projects . 5)
-                          (agenda . 5)
-                          (registers . 5))))
+(use-package tree-sitter)
+(use-package tree-sitter-langs)
 
 (use-package erc)
 
-(use-package elfeed)
-
 (use-package helpful)
 
-(use-package company
-  :config
-  (add-hook 'after-init-hook 'global-company-mode))
-;;(use-package company-files)
-;;(use-package company-dict)
-;; (use-package company-box)
-
-;; (use-package counsel-dash)
-(use-package counsel-projectile
-  :config
-  (counsel-projectile-mode +1))
+(use-package winner
+  :init
+  (winner-mode t))
 
 (use-package selectrum
   :config
   (selectrum-mode +1))
+;; (use-package vertico
+;;   :init
+;;   (vertico-mode))
+(use-package savehist
+  :init
+  (savehist-mode))
+(use-package consult
+  :init
+  (advice-add #'register-preview :override #'consult-register-window)
+  (setq xref-show-xrefs-function #'consult-xref
+        xref-show-definitions-function #'consult-xref)
+  :config
+  (autoload 'projectile-project-root "projectile")
+  (setq consult-project-root-function #'projectile-project-root))
+(use-package marginalia
+  :init
+  (marginalia-mode))
 (use-package selectrum-prescient
   :config
-  (selectrum-prescient-mode +1))
+  (selectrum-prescient-mode +1)
+  (prescient-persist-mode +1))
 
-;; (use-package smex)
 (use-package amx)
-(use-package all-the-icons-ivy-rich
-  :init
-  (all-the-icons-ivy-rich-mode 1))
-(use-package ivy-rich
-  :init (ivy-rich-mode 1))
-(use-package historian)
-(use-package ivy-historian)
-(use-package all-the-icons-ivy
-  :init
-  (ivy-mode +1)
-  (historian-mode +1)
-  (add-hook 'after-init-hook 'all-the-icons-ivy-setup)
-  (setq ivy-initial-inputs-alist nil)
-  (setq ivy-re-builders-alist
-        '((t . ivy--regex-ignore-order)))
-  :config
-  (ivy-historian-mode +1))
+
+;; (use-package counsel-dash)
+;; (use-package counsel-projectile
+;;   :config
+;;   (counsel-projectile-mode +1))
+;; (use-package counsel-web
+;;   :straight (counsel-web :type git
+;; 			:host github
+;; 			:repo "mnewt/counsel-web"
+;; 			:branch "master"))
+
+
+;; (use-package all-the-icons-ivy-rich
+;;   :init
+;;   (all-the-icons-ivy-rich-mode 1))
+;; (use-package ivy-rich
+;;   :init (ivy-rich-mode 1))
+;; (use-package ivy-historian)
+;; (use-package all-the-icons-ivy
+;;   :init
+;;   (ivy-mode +1)
+;;   (historian-mode +1)
+;;   (add-hook 'after-init-hook 'all-the-icons-ivy-setup)
+;;   (setq ivy-initial-inputs-alist nil)
+;;   (setq ivy-re-builders-alist
+;;         '((t . ivy--regex-ignore-order)))
+;;   :config
+;;   (ivy-historian-mode +1))
 
 (use-package swiper)
 
@@ -74,22 +86,6 @@
   (doom-modeline-mode 1)
   (setq doom-modeline-minor-modes t))
 ;; (use-package shrink-path)
-
-(use-package helm
-  :config
-  (setq projectile-completion-system 'default))
-(use-package helm-descbinds)
-(use-package helm-rg)
-(use-package helm-c-yasnippet)
-(use-package helm-company)
-(use-package helm-describe-modes)
-(use-package helm-projectile)
-(use-package swiper-helm)
-(use-package helm-flx)
-(use-package helm-lsp)
-(use-package helm-xref)
-(use-package helm-dash)
-(use-package helm-taskswitch)
 
 (use-package expand-region)
 
@@ -205,19 +201,24 @@
 (use-package yasnippet-snippets)
 
 ;;; langs
-(use-package lsp-mode :commands lsp)
-(use-package lsp-ui :commands lsp-ui-mode)
-(use-package company-lsp :commands company-lsp)
-(use-package lsp-ivy)
+(use-package lsp-mode
+  :commands lsp
+  :config
+  (setq gc-cons-threshold 1600000)
+  (setq read-process-output-max (* 1024 1024)))
+(use-package lsp-ui
+  :commands lsp-ui-mode
+  :config
+  (setf (alist-get 'width lsp-ui-doc-frame-parameters) 80))
+
+(use-package pyvenv)
 
 (use-package adaptive-wrap)
 (use-package evil-tex)
 
-;;(package! evil-markdown)
 (use-package markdown-toc)
 
 (use-package org)
-;;(use-package helm-org)
 (use-package evil-org
   :config
   (add-hook 'org-mode-hook 'evil-org-mode)
@@ -238,15 +239,16 @@
 (use-package rainbow-mode)
 (use-package sass-mode)
 (use-package slim-mode)
+(use-package nix-mode)
+(use-package racket-mode)
 
 (use-package rainbow-delimiters)
 
 (use-package cmake-mode)
-(use-package ccls
-  :init
-  (add-hook 'elisp-mode-hook 'lsp)
-  (add-hook 'c-mode-hook 'lsp)
-  (add-hook 'c++-mode-hook 'lsp))
+;; (use-package ccls
+;;   :init
+;;   (add-hook 'c-mode-hook 'lsp)
+;;   (add-hook 'c++-mode-hook 'lsp))
 (use-package modern-cpp-font-lock)
 (use-package demangle-mode)
 
@@ -255,20 +257,11 @@
 (use-package py-isort)
 (use-package pyimport)
 
-(use-package company
+(use-package bash-completion
   :config
-  (setq company-auto-commit t)
-  (setq company-auto-commit-chars " ")
-  (let ((bg (face-attribute 'default :background)))
-    (custom-set-faces
-     `(company-tooltip ((t (:inherit default :background ,(color-lighten-name bg 2)))))
-     `(company-scrollbar-bg ((t (:background ,(color-lighten-name bg 10)))))
-     `(company-scrollbar-fg ((t (:background ,(color-lighten-name bg 5)))))
-     `(company-tooltip-selection ((t (:background "navajo white"))))
-     `(company-tooltip-common ((t (:inherit font-lock-constant-face))))))
-  (add-to-list 'company-backends 'company-files 'company-yasnippet)
-  (general-add-hook 'emacs-lisp-mode-hook #'(lambda () (add-to-list (make-local-variable 'company-backends) 'company-elisp)))
-  )
+  (bash-completion-setup))
+
+(use-package request)
 
 (use-package treemacs)
 (use-package treemacs-perspective)
@@ -276,7 +269,6 @@
 
 (use-package vi-tilde-fringe)
 
-;; (use-package multi-compile)
 (use-package multi-compile
   :config
   (setq multi-compile-alist '(
@@ -286,7 +278,6 @@
 (use-package clipmon
   :init
   (clipmon-mode-start))
-
 
 (use-package multiple-cursors)
 
@@ -307,19 +298,6 @@
   (evil-commentary-mode))
 
 (use-package evil-easymotion)
-;; :config
-;; (setq evil-cp-additional-movement-keys
-;;       '(("L" . evil-cp-forward-sexp)
-;;         ("H" . evil-cp-backward-sexp)
-;;         ("M-l" . evil-cp-end-of-defun)
-;;         ("M-h" . evil-cp-beginning-of-defun)
-;;         ;; ("[" . evil-cp-previous-opening)
-;;         ;; ("]" . evil-cp-next-closing)
-;;         ("{" . evil-cp-next-opening)
-;;         ("}" . evil-cp-previous-closing)
-;;         ("(" . evil-cp-backward-up-sexp)
-;;         (")" . evil-cp-up-sexp))))
-
 
 (use-package evil-matchit
   :config
@@ -355,21 +333,6 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
   :config
   (persp-mode))
 
-;; (use-package persp-mode
-;;   :config
-;;   (define-ibuffer-filter persp-files
-;;       "show ibuffer with buffers in current perspective"
-;;     (:reader nil :description nil)
-;;     (memq buf (persp-buffer-list)))
-
-;;   (defun persp-ibuffer ()
-;;     (interactive)
-;;     (ibuffer t (format "*%s persp buffers" (persp-name (get-current-persp)))
-;;              (list (cons 'persp-files ())) nil t))
-;;   (setq wg-morph-on nil) ;; switch off animation
-;;   (setq persp-autokill-buffer-on-remove 'kill-weak)
-;;   (add-hook 'after-init-hook #'(lambda () (persp-mode 1))))
-
 (defun sam-switch-project-action (&optional )
   (projectile-vc)
   (delete-other-windows))
@@ -381,14 +344,33 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
 
 (use-package visual-fill-column)
 
-(use-package helm-recoll)
-
 (use-package find-file-in-project)
 
 (use-package bookmark+)
 
-(use-package system-packages)
-(use-package helm-system-packages)
+(use-package system-packages
+  :config
+  (add-to-list 'system-packages-supported-package-managers
+	       '(pacaur .
+                        ((default-sudo . nil)
+                         (install . "pacaur -S")
+                         (search . "pacaur -Ss")
+                         (uninstall . "pacaur -Rs")
+                         (update . "pacaur -Syu")
+                         (clean-cache . "pacaur -Sc")
+                         (log . "cat /var/log/pacman.log")
+                         (get-info . "pacaur -Qi")
+                         (get-info-remote . "pacaur -Si")
+                         (list-files-provided-by . "pacaur -Ql")
+                         (verify-all-packages . "pacaur -Qkk")
+                         (verify-all-dependencies . "pacaur -Dk")
+                         (remove-orphaned . "pacaur -Rns $(pacman -Qtdq)")
+                         (list-installed-packages . "pacaur -Qe")
+                         (list-installed-packages-all . "pacaur -Q")
+                         (list-dependencies-of . "pacaur -Qi")
+                         (noconfirm . "--noconfirm"))))
+  (setq system-packages-use-sudo nil)
+  (setq system-packages-package-manager 'pacaur))
 ;; (use-package arch-packer)
 
 (use-package web-search)
@@ -396,11 +378,9 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
 (use-package load-theme-buffer-local)
 ;; (use-package nofrils-acme-theme)
 ;; (use-package plan9-theme)
-
 ;; (use-package cyberpunk-2019-theme
 ;;   :config
 ;;   (load-theme 'cyberpunk-2019 t))
-
 ;; (use-package acme-theme
 ;;   :config
 ;;   (load-theme 'acme t))
@@ -420,66 +400,29 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
 (use-package smartparens)
 
 (use-package smart-tabs-mode)
-;; (use-package evil-cleverparens)
-
-;; (use-package parinfer
-;;   ;; :ensure t
-;;   ;; :bind
-;;   ;; (("M-," . parinfer-toggle-mode))
-;;   :init
-;;   (progn
-;;     (setq parinfer-extensions
-;;           '(defaults       ; should be included.
-;;              pretty-parens  ; different paren styles for different modes.
-;;              evil           ; If you use Evil.
-;;              ;; lispy          ; If you use Lispy. With this extension, you should install Lispy and do not enable lispy-mode directly.
-;;              paredit        ; Introduce some paredit commands.
-;;              smart-tab      ; C-b & C-f jump positions and smart shift with tab & S-tab.
-;;              smart-yank))   ; Yank behavior depend on mode.
-;;     (setq parinfer-lighters '(" (Indent)" . " (Paren)"))))
-
-;; (use-package parinfer)
-;; (use-package smartparens)
-;; (use-package paredit)
+(use-package smartparens)
+(use-package lispy)
 (use-package evil-cleverparens
   :init
   (setq evil-cleverparens-use-regular-insert 't))
 
-;; (use-package lispy)
-;; :config
-;; (add-hook 'emacs-lisp-mode-hook #'(lambda () (evil-cleverparens-mode)))
-;; (add-hook 'clojure-mode-hook #'(lambda () (evil-cleverparens-mode))))
-
-;; (use-package evil-smartparens
-;;   :config
-;;   (add-hook 'smartparens-enabled-hook #'evil-smartparens-mode)
-;;   (general-add-hook '(emacs-lisp-mode-hook clojure-mode-hook) #'evil-smartparens-mode))
-
-;; (use-package lispyville
-;;   :config
-;;   (add-hook 'emacs-lisp-mode-hook 'lispy-mode)
-;;   (lispyville-set-key-theme '((operators normal)
-;; 							  c-w
-;; 							  (prettify insert)
-;; 							  (atom-movement normal visual)
-;; 							  slurp/barf-lispy
-;; 							  additional
-;; 							  additional-insert)))
+(use-package clojure-mode)
+(use-package elein)
 
 (use-package systemd)
-(use-package helm-systemd)
 
-(use-package dired-rainbow)
+(use-package diredfl
+  :config
+  (diredfl-global-mode))
 (use-package all-the-icons-dired
   :config
-  (add-hook 'dired-mode-hook
-            'all-the-icons-dired-mode
-            'append))
+  (add-hook 'dired-mode-hook 'all-the-icons-dired-mode))
 (use-package dired-ranger)
 (use-package dired-filter)
 (use-package dired+
   :init
-  (setq diredp-hide-details-initially-flag nil))
+  (setq diredp-hide-details-initially-flag nil)
+  (add-hook 'dired-mode-hook 'hl-line-mode))
 (use-package dired-du)
 (use-package dired-subtree)
 (use-package dired-filter)
@@ -487,17 +430,6 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
 
 (use-package highlight)
 (use-package highlight-defined)
-
-;;(use-package wuxch-dired-copy-paste)
-;; (use-package ranger
-;;   :config
-;;   (setq ranger-override-dired-mode t)
-;;   (setq ranger-cleanup-eagerly t)
-;;   (setq ranger-cleanup-on-disable nil))
-
-;; (use-package smart-tabs-mode
-;;   :config
-;;   (smart-tabs-insinuate 'c 'python))
 
 (use-package deft
   :config
@@ -563,57 +495,123 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
 
 ;; (use-package queue)
 
+;; (use-package nnhackernews)
+
+(use-package bbdb
+  :config
+  (setq
+   bbdb-file "~/.bbdb"
+   bbdb-offer-save 'auto
+   bbdb-notice-auto-save-file t
+   bbdb-expand-mail-aliases t
+   bbdb-canonicalize-redundant-nets-p t
+   bbdb-always-add-addresses t
+   bbdb-complete-name-allow-cycling t))
+
+(use-package all-the-icons-gnus
+  :config
+  (all-the-icons-gnus-setup))
 (use-package gnus
-  :init
+  :config
   (setq user-mail-address "scmorris.dev@gmail.com"
         user-full-name "Sam")
+  (setq gnus-asynchronous t)
+  (setq gnus-use-article-prefetch 15)
 
-  (setq gnus-select-method
-        '(nnimap "gmail"
-                 (nnimap-address "imap.gmail.com")  ; it could also be imap.googlemail.com if that's your server.
-                 (nnimap-server-port "imaps")
-                 (nnimap-stream ssl)))
+  (setq gnus-select-method '(nnnil ""))
+  (setq gnus-secondary-select-methods
+        '((nnimap "Mail"
+                  (nnimap-address "localhost")
+                  (nnimap-stream network)
+                  (nnimap-authenticator login)
+                  (nnir-search-engine imap))
+          (nntp "news.gwene.org")))
+  (setq mail-user-agent 'gnus-user-agent)
+  (setq read-mail-command 'gnus)
 
-  (setq smtpmail-smtp-server "smtp.gmail.com"
-        smtpmail-smtp-service 587
-        gnus-ignored-newsgroups "^to\\.\\|^[0-9. ]+\\( \\|$\\)\\|^[\"]\"[#'()]"))
-;; (setq gnus-select-method
-;;       '(nnimap "dev"
-;;                (nnimap-address "imap.gmail.com")
-;;                (nnimap-server-port "imaps")
-;;                (nnimap-stream ssl)
-;;                (nnimap-authinfo-file "~/.authinfo.gpg")
-;;                (nnmail-expiry-wait immediate)))
-;; :init
-;; (setq gnus-select-method '(nnnil nil))
-;; (setq gnus-secondary-select-methods
-;;       '((nnimap "me"
-;;                 (nnimap-address "imap.gmail.com")
-;;                 (nnimap-server-port "imaps")
-;;                 (nnimap-stream ssl)
-;;                 (nnir-search-engine imap)
-;;                 (nnmail-expiry-target "nnimap+home:[Gmail]/Trash")
-;;                 (nnmail-expiry-wait 'immediate))
-;;         (nnimap "dev"
-;;                 (nnimap-address "imap.gmail.com")
-;;                 (nnimap-server-port "imaps")
-;;                 (nnimap-stream ssl)
-;;                 (nnir-search-engine imap)
-;;                 (nnmail-expiry-target "nnimap+work:[Gmail]/Trash")
-;;                 (nnmail-expiry-wait 'immediate))))
-;; ;; Reply to mails with matching email address
-;; (setq gnus-posting-styles
-;;       '((".*" ; Matches all groups of messages
-;;          (address "S. C. Morris <scmorris.me@gmail.com>"))
-;;         ("dev" ; Matches Gnus group called "dev"
-;;          (address "S. C. Morris <scmorris.dev@gmail.com>")
-;;          ;; (organization "Corp")
-;;          ;; (signature-file "~/.signature-work")
-;;          ("X-Message-SMTP-Method" "smtp smtp.gmail.com 587 scmorris.dev@gmail.com")
-;;          )))
+  (setq nnir-method-default-engines
+        '((nnmaildir . notmuch)))
 
-(use-package all-the-icons-gnus)
-(use-package nnhackernews)
+  ;; threading
+  (setq gnus-thread-sort-functions
+        '(gnus-thread-sort-by-most-recent-number
+          gnus-thread-sort-by-subject
+          (not gnus-thread-sort-by-total-score)
+          gnus-thread-sort-by-most-recent-date))
+  (setq gnus-summary-thread-gathering-function 'gnus-gather-threads-by-references)
+  (setq gnus-summary-make-false-root-always 'adopt)
+
+  ;; groups
+  (setq gnus-group-line-format "%M%p%P%5y:%B%(%g%)\n")
+  (setq gnus-group-mode-line-format "%%b")
+  (add-hook 'gnus-group-mode-hook 'hl-line-mode)
+  (add-hook 'gnus-select-group-hook 'gnus-group-set-timestamp)
+  (add-hook 'gnus-group-mode-hook 'gnus-topic-mode)
+  (setq gnus-parameters
+        '((".."
+           (display . 200))
+          ("nnimap\\\\..*"
+           (display . 200))
+          ("list\\..*"
+           (total-expire . t)
+           (broken-reply-to . t))))
+
+  ;; summary
+  (add-hook 'gnus-summary-mode-hook 'hl-line-mode)
+  (setq gnus-auto-select-first nil)
+  (setq gnus-summary-ignore-duplicates t)
+  (setq gnus-suppress-duplicates t)
+  (setq gnus-save-duplicate-list t)
+  (setq gnus-summary-goto-unread nil)
+  (setq gnus-summary-make-false-root 'adopt)
+  (setq gnus-summary-thread-gathering-function
+        'gnus-gather-threads-by-subject)
+  (setq gnus-summary-gather-subject-limit 'fuzzy)
+  (setq gnus-thread-sort-functions
+        '((not gnus-thread-sort-by-date)
+          (not gnus-thread-sort-by-number)))
+  (setq gnus-subthread-sort-functions
+        'gnus-thread-sort-by-date)
+  (setq gnus-thread-hide-subtree nil)
+  (setq gnus-thread-ignore-subject nil)
+  (setq gnus-user-date-format-alist
+        '(((gnus-seconds-today) . "Today at %R")
+          ((+ (* 60 60 24) (gnus-seconds-today)) . "Yesterday, %R")
+          (t . "%Y-%m-%d %R")))
+
+  ;; topics
+  (setq gnus-topic-line-format "%i[ %(%{%n -- %A%}%) ]%v\n")
+  ;; format
+  (copy-face 'font-lock-variable-name-face 'gnus-face-6)
+  (setq gnus-face-6 'gnus-face-6)
+  (copy-face 'font-lock-warning-face 'gnus-face-7)
+  (setq gnus-face-7 'gnus-face-7)
+  (copy-face 'gnus-face-7 'gnus-summary-normal-unread)
+  (copy-face 'font-lock-function-name-face 'gnus-face-8)
+  (set-face-foreground 'gnus-face-8 "gray50")
+  (setq gnus-face-8 'gnus-face-8)
+  (copy-face 'font-lock-type-face 'gnus-face-9)
+  (set-face-foreground 'gnus-face-9 "gray70")
+  (setq gnus-face-9 'gnus-face-9)
+  (setq gnus-summary-line-format
+        (concat
+         "%0{%U%R%z%}"
+         "%3{│%}" "%1{%d%}" "%3{│%}"
+         "  "
+         "%4{%-20,20f%}"
+         "  "
+         "%3{│%}"
+         " "
+         "%1{%B%}"
+         "%s\n"))
+  (setq gnus-summary-line-format "%8{%4k│%}%8{%d│%}%9{%U%R%z%}%8{│%}%*%(%-23,23f%)%7{║%} %6{%B%} %S\n"
+        gnus-sum-thread-tree-indent " "
+        gnus-sum-thread-tree-root " ┏● "
+        gnus-sum-thread-tree-false-root " ○ "
+        gnus-sum-thread-tree-single-indent " ● "
+        gnus-sum-thread-tree-leaf-with-other "┣━━► "
+        gnus-sum-thread-tree-vertical "┃"
+        gnus-sum-thread-tree-single-leaf "┗━━► "))
 
 (use-package wordnut)
 
@@ -646,28 +644,31 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
   :init
   (global-undo-tree-mode))
 
-;;(use-package hyperbole)
+;; (use-package hyperbole)
 
 (use-package which-key
   :config
   (which-key-mode))
 
-;; (use-package sfs
-;;   :straight (sfs :type git
-;; 		 :host github
-;;                  :repo "Overdr0ne/sfs"
-;;                  :branch "devel"
-;;                  :files ("sfs.el"
-;;                          "sfs-recoll.el"
-;;                          "sfs-tui.el"
-;;                          "sfs-tag.el"
-;;                          "sfs-index.el"
-;;                          "service.py")))
+(use-package sfs
+  :straight (sfs :type git
+                 :host github
+                 :repo "Overdr0ne/sfs"
+                 :branch "master"
+                 :files ("sfs.el"
+                         "sfs-recoll.el"
+                         "sfs-tui.el"
+                         "sfs-tag.el"
+                         "sfs-reindex.el"
+                         "service.py"
+                         "evil-collection-sfs.el"))
+  :config
+  (evil-collection-sfs-setup))
 
 ;;; themes
 (use-package dracula-theme
-  ;; :config
-  ;; (load-theme 'dracula t)
+  :config
+  (load-theme 'dracula t)
   )
 (use-package solarized-theme
   ;; :config
@@ -675,8 +676,9 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
   )
 (use-package spacemacs-theme
   :defer t
-  :init
-  (load-theme 'spacemacs-light t))
+  ;; :init
+  ;; (load-theme 'spacemacs-light t)
+  )
 
 (use-package mixed-pitch)
 (use-package writeroom-mode)
@@ -686,6 +688,73 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
 (use-package imenu
   :config
   (setq imenu-generic-expression '(("Section"
-				    "^;;;"))))
+                                    "^;;;"))))
+
+(use-package disk-usage)
+
+(use-package good-scroll
+  :config
+  (good-scroll-mode +1))
+
+(use-package command-mode
+  :straight (command-mode :type git
+                          :host github
+                          :repo "Overdr0ne/command-mode"
+                          :branch "master"))
+
+(use-package bash-completion
+  :init
+  (add-hook 'shell-dynamic-complete-functions
+            'bash-completion-dynamic-complete))
+
+(use-package shelldon
+  :straight (shelldon :type git
+                      :host github
+                      :repo "Overdr0ne/shelldon"
+                      :branch "master"
+                      :files ("shelldon.el"))
+  :config
+  ;; (require 'shelldon)
+  (setq shell-command-switch "-ic")
+  (add-to-list 'evil-normal-state-modes 'shell-mode)
+  ;; (setenv "TERM" "eterm-color")
+  (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
+  (add-to-list 'comint-output-filter-functions 'ansi-color-process-output)
+  (autoload 'ansi-color-for-comint-mode-on "ansi-color" nil t))
+
+;; (use-package emacs-application-framework
+;;   :straight (emacs-application-framework :type git
+;; 					 :host github
+;; 					 :repo "manateelazycat/emacs-application-framework"
+;; 					 :files ("*")))
+
+;; (use-package webkit
+;;   :straight (webkit :type git
+;; 		    :host github
+;; 		    :repo "akirakyle/emacs-webkit"
+;; 		    :branch "main"
+;; 		    :files (:defaults "*.js" "*.css" "*.so")
+;; 		    :build ("make")))
+
+(use-package corfu
+  :config
+  (add-hook 'prog-mode-hook 'corfu-mode)
+  (defun corfu-setup-advice ()
+    (defvar corfu-mode-map-alist)
+    (setq corfu-mode-map-alist `((completion-in-region-mode . ,corfu-map)))
+    (add-to-list 'emulation-mode-map-alists 'corfu-mode-map-alist))
+  (advice-add 'corfu-setup-advice :before 'corfu--setup))
+
+(use-package highlight-indentation
+  :straight (highlight-indentation :type git
+                                   :host github
+                                   :repo "antonj/Highlight-Indentation-for-Emacs"
+                                   :branch "master"))
+
+(use-package indent-guide
+  :straight (indent-guide :type git
+                          :host github
+                          :repo "zk-phi/indent-guide"
+                          :branch "master"))
 
 (provide '+modules)

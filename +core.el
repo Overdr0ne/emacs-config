@@ -37,14 +37,13 @@
 
 (setq-default split-height-threshold  4
               split-width-threshold   159)
-
 (setq
  ;; Maximum number of side-windows to create on (left top right bottom)
  window-sides-slots '(1 1 1 1)
  ;; Default rules
  display-buffer-alist
  `(;; Display *Help* buffer at the bottom-most slot
-   ("\\(*\\(info\\|Help\\|help\\|helpful\\|trace-\\|Backtrace\\|RefTeX.*\\)\\)"
+   ("\\(*\\(info\\|grep*\\|.*systemctl.*\\|Help\\|help\\|helpful\\|trace-\\|Backtrace\\|RefTeX.*\\)\\)"
     (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-in-side-window)
     (side . right)
     (slot . 0)
@@ -73,9 +72,22 @@
    ("^\\*e?shell"
     (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-below-selected)
     (window-min-height . 20)
-    (reusable-frames . visible)
-    )
+    (reusable-frames . visible))
    ("magit"
     (display-buffer-reuse-window display-buffer-same-window)))
  )
 
+;; (set-frame-parameter (selected-frame) 'alpha '(85 . 50))
+;; (add-to-list 'default-frame-alist '(alpha . (85 . 50)))
+;; (defun toggle-transparency ()
+;;   (interactive)
+;;   (let ((alpha (frame-parameter nil 'alpha)))
+;;     (set-frame-parameter
+;;      nil 'alpha
+;;      (if (eql (cond ((numberp alpha) alpha)
+;;                     ((numberp (cdr alpha)) (cdr alpha))
+;;                     ;; Also handle undocumented (<active> <inactive>) form.
+;;                     ((numberp (cadr alpha)) (cadr alpha)))
+;;               100)
+;;          '(85 . 50) '(100 . 100)))))
+;; (global-set-key (kbd "C-c t") 'toggle-transparency)
