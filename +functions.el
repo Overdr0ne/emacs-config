@@ -23,18 +23,18 @@
 (defun empire/haskell/module->test ()
   "Jump from a module to a test."
   (let ((filename (->> buffer-file-name
-                    (s-replace "/src/" "/test/")
-                    (s-replace ".hs" "Test.hs")
-                    find-file)))
+                       (s-replace "/src/" "/test/")
+                       (s-replace ".hs" "Test.hs")
+                       find-file)))
     (make-directory (f-dirname filename) t)
     (find-file filename)))
 
 (defun empire/haskell/test->module ()
   "Jump from a test to a module."
   (let ((filename (->> buffer-file-name
-                    (s-replace "/test/" "/src/")
-                    (s-replace "Test.hs" ".hs")
-                    )))
+                       (s-replace "/test/" "/src/")
+                       (s-replace "Test.hs" ".hs")
+                       )))
     (make-directory (f-dirname filename) t)
     (find-file filename)))
 
@@ -309,12 +309,14 @@ current buffer directory."
   (rgrep regexp "\*" (pwd))
   (pop-to-buffer "*grep*"))
 
-(defun replace-string-all ()
+(defun sam-replace-string ()
   (interactive)
-  (let* ((sap (symbol-name (symbol-at-point)))
+  (let* ((sap (if mark-active "" (symbol-name (symbol-at-point))))
          (str-orig (read-string "Replace: " sap))
          (str-replace (read-string "With: " sap)))
-    (replace-string str-orig str-replace nil (point-min) (point-max))))
+    (if mark-active
+        (replace-string str-orig str-replace nil (point) (mark))
+      (replace-string str-orig str-replace nil (point-min) (point-max)))))
 
 ;; (defvar-local hs-hidden-p nil)
 ;; (defun hs-toggle-level ()
@@ -359,6 +361,217 @@ current buffer directory."
   (interactive)
   (let ((read-buffer-function 'persp-read-buffer))
     (consult-buffer)))
+
+(defun sam-sexp-spawn-below ()
+  (interactive)
+  (sp-end-of-sexp)
+  (sp-split-sexp 0)
+  (newline-and-indent)
+  (forward-char))
+
+(defun sam-sexp-eject-below ()
+  (interactive)
+  (sp-end-of-sexp)
+  (forward-char)
+  (newline-and-indent))
+
+(defun sam-sexp-spawn-right ()
+  (interactive)
+  (sp-end-of-sexp)
+  (sp-split-sexp 0)
+  (insert " ")
+  (forward-char))
+
+(defun sam-sexp-eject-right ()
+  (interactive)
+  (sp-end-of-sexp)
+  (forward-char)
+  (insert " "))
+
+(defun sam-sexp-reparent ()
+  (interactive)
+  (sp-beginning-of-sexp)
+  (backward-char)
+  (paredit-wrap-sexp)
+  (insert " ")
+  (backward-char))
+
+;; (defun sam-insert-at-end-of-form ()
+;;   (interactive)
+;;   (evil-cp-insert-at-end-of-form)
+;;   (insert " "))
+
+(defun sam-insert-at-end-of-form ()
+  (interactive)
+  (sp-end-of-sexp)
+  (evil-insert 1)
+  (insert " "))
+
+(defun sam-insert-at-end-of-form ()
+  (interactive)
+  (let ((line-end (point-at-eol)))
+    (when (or (when (sp-up-sexp 1) (backward-char) t)
+              (-when-let (enc-end (cdr (evil-cp--top-level-bounds)))
+                (goto-char (1- enc-end))))
+      (if (<= (point) line-end)
+          (progn
+            (evil-insert 1)
+            (insert " "))
+        (insert "\n")
+        (indent-according-to-mode)
+        (evil-insert 1)))))
+
+(defun xah-delete-backward-char-or-bracket-text ()
+  "Delete backward 1 character, but if it's a \"quote\" or bracket ()[]{}【】「」 etc, delete bracket and the inner text, push the deleted text to `kill-ring'.
+
+What char is considered bracket or quote is determined by current syntax table.
+
+If `universal-argument' is called first, do not delete inner text.
+
+URL `http://ergoemacs.org/emacs/emacs_delete_backward_char_or_bracket_text.html'
+Version 2017-07-02"
+  (interactive)
+  (if (and delete-selection-mode (region-active-p))
+      (delete-region (region-beginning) (region-end))
+    (cond
+     ((looking-back "\\s)" 1)
+      (if current-prefix-arg
+          (xah-delete-backward-bracket-pair)
+        (xah-delete-backward-bracket-text)))
+     ((looking-back "\\s(" 1)
+      (progn
+        (backward-char)
+        (forward-sexp)
+        (if current-prefix-arg
+            (xah-delete-backward-bracket-pair)
+          (xah-delete-backward-bracket-text))))
+     ((looking-back "\\s\"" 1)
+      (if (nth 3 (syntax-ppss))
+          (progn
+            (backward-char )
+            (xah-delete-forward-bracket-pairs (not current-prefix-arg)))
+        (if current-prefix-arg
+            (xah-delete-backward-bracket-pair)
+          (xah-delete-backward-bracket-text))))
+     (t
+      (delete-char -1)))))
+
+(defun xah-delete-backward-bracket-text ()
+  "Delete the matching brackets/quotes to the left of cursor, including the inner text.
+
+This command assumes the left of point is a right bracket, and there's a matching one before it.
+
+What char is considered bracket or quote is determined by current syntax table.
+
+URL `http://ergoemacs.org/emacs/emacs_delete_backward_char_or_bracket_text.html'
+Version 2017-07-02"
+  (interactive)
+  (progn
+    (forward-sexp -1)
+    (mark-sexp)
+    (kill-region (region-beginning) (region-end))))
+
+(defun xah-delete-backward-bracket-pair ()
+  "Delete the matching brackets/quotes to the left of cursor.
+
+After the command, mark is set at the left matching bracket position, so you can `exchange-point-and-mark' to select it.
+
+This command assumes the left of point is a right bracket, and there's a matching one before it.
+
+What char is considered bracket or quote is determined by current syntax table.
+
+URL `http://ergoemacs.org/emacs/emacs_delete_backward_char_or_bracket_text.html'
+Version 2017-07-02"
+  (interactive)
+  (let (( $p0 (point)) $p1)
+    (forward-sexp -1)
+    (setq $p1 (point))
+    (goto-char $p0)
+    (delete-char -1)
+    (goto-char $p1)
+    (delete-char 1)
+    (push-mark (point) t)
+    (goto-char (- $p0 2))))
+
+(defun xah-delete-forward-bracket-pairs ( &optional @delete-inner-text-p)
+  "Delete the matching brackets/quotes to the right of cursor.
+If *delete-inner-text-p is true, also delete the inner text.
+
+After the command, mark is set at the left matching bracket position, so you can `exchange-point-and-mark' to select it.
+
+This command assumes the char to the right of point is a left bracket or quote, and have a matching one after.
+
+What char is considered bracket or quote is determined by current syntax table.
+
+URL `http://ergoemacs.org/emacs/emacs_delete_backward_char_or_bracket_text.html'
+Version 2017-07-02"
+  (interactive)
+  (if @delete-inner-text-p
+      (progn
+        (mark-sexp)
+        (kill-region (region-beginning) (region-end)))
+    (let (($pt (point)))
+      (forward-sexp)
+      (delete-char -1)
+      (push-mark (point) t)
+      (goto-char $pt)
+      (delete-char 1))))
+
+(defun sam-lookup-symbol-at-point ()
+  (interactive)
+  (info-lookup-symbol (symbol-at-point)))
+
+(defun sam-evil-append ()
+  (interactive)
+  (call-interactively #'evil-append)
+  (indent-according-to-mode))
+
+(defun sam-helpful-click ()
+  (interactive)
+  (call-interactively #'mouse-set-point)
+  (call-interactively #'helpful-at-point))
+
+(defvar-local sam-last-cursor-type t)
+(defvar-local sam-last-hl-line -1)
+(defun sam-toggle-cursor ()
+  (interactive)
+  (if cursor-type
+      (progn
+        (rotatef sam-last-cursor-type cursor-type)
+        (setq-local cursor-type nil)
+        (rotatef sam-last-hl-line hl-line-mode)
+        (hl-line-mode -1))
+    (rotatef cursor-type sam-last-cursor-type)
+    (hl-line-mode sam-last-hl-line)))
+
+(defun sam-sudo-find-file ()
+  (interactive)
+  (find-file (read-file-name "File: " (concat "/su::" default-directory))))
+
+(defun sam-sudo-find-root ()
+  (interactive)
+  (find-file (read-file-name "File: " "/su::/" )))
+
+(defun sam-find-root ()
+  (interactive)
+  (find-file (read-file-name "File: " "/" )))
+
+(defun d2h (dec-num)
+  (interactive "nNum: ")
+  (message (format "%x" dec-num)))
+
+(defun h2d (hex-num)
+  (interactive "sNum: ")
+  (message "%d" (string-to-number hex-num 16)))
+
+(defvar sam-file-ring (make-ring 10))
+(defun sam-dired-kill-path-at-point ()
+  (interactive)
+  (ring-insert sam-file-ring (dired-file-name-at-point)))
+
+(defun sam-dired-yank-here ()
+  (interactive)
+  (copy-file (ring-ref sam-file-ring 0) (read-file-name "Target: ")))
 
 (provide '+functions)
 ;;; +functions.el ends here

@@ -1,9 +1,15 @@
 ;;; ~/.emacs.d/+use-package.el -*- lexical-binding: t; -*-
 
+;; (use-package no-littering)
+
 (use-package general)
 
-(use-package tree-sitter)
 (use-package tree-sitter-langs)
+(use-package tree-sitter
+  :config
+  (require 'tree-sitter-langs)
+  (global-tree-sitter-mode)
+  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
 
 (use-package erc)
 
@@ -16,12 +22,6 @@
 (use-package selectrum
   :config
   (selectrum-mode +1))
-;; (use-package vertico
-;;   :init
-;;   (vertico-mode))
-(use-package savehist
-  :init
-  (savehist-mode))
 (use-package consult
   :init
   (advice-add #'register-preview :override #'consult-register-window)
@@ -29,7 +29,26 @@
         xref-show-definitions-function #'consult-xref)
   :config
   (autoload 'projectile-project-root "projectile")
-  (setq consult-project-root-function #'projectile-project-root))
+  (setq consult-project-root-function #'projectile-project-root)
+  (defalias #'consult-imenu-variables #'consult-imenu)
+  (defalias #'consult-imenu-functions #'consult-imenu)
+  (defalias #'consult-imenu-macros #'consult-imenu)
+  (defalias #'consult-imenu-packages #'consult-imenu)
+  (defalias #'consult-imenu-types #'consult-imenu)
+  ;; Configure initial narrowing per command
+  (setq consult-initial-narrow-config
+    '((consult-imenu-functions . ?f)
+      (consult-imenu-variables . ?v)
+      (consult-imenu-packages . ?p)
+      (consult-imenu-types . ?t)
+      (consult-imenu-macros . ?m)))
+
+  ;; Add initial narrowing hook
+  (defun consult-initial-narrow ()
+    (when-let (key (alist-get this-command consult-initial-narrow-config))
+      (setq unread-command-events (append unread-command-events (list key 32)))))
+  (add-hook 'minibuffer-setup-hook #'consult-initial-narrow)
+  (remove-hook 'minibuffer-setup-hook #'consult-initial-narrow))
 (use-package marginalia
   :init
   (marginalia-mode))
@@ -39,43 +58,6 @@
   (prescient-persist-mode +1))
 
 (use-package amx)
-
-;; (use-package counsel-dash)
-;; (use-package counsel-projectile
-;;   :config
-;;   (counsel-projectile-mode +1))
-;; (use-package counsel-web
-;;   :straight (counsel-web :type git
-;; 			:host github
-;; 			:repo "mnewt/counsel-web"
-;; 			:branch "master"))
-
-
-;; (use-package all-the-icons-ivy-rich
-;;   :init
-;;   (all-the-icons-ivy-rich-mode 1))
-;; (use-package ivy-rich
-;;   :init (ivy-rich-mode 1))
-;; (use-package ivy-historian)
-;; (use-package all-the-icons-ivy
-;;   :init
-;;   (ivy-mode +1)
-;;   (historian-mode +1)
-;;   (add-hook 'after-init-hook 'all-the-icons-ivy-setup)
-;;   (setq ivy-initial-inputs-alist nil)
-;;   (setq ivy-re-builders-alist
-;;         '((t . ivy--regex-ignore-order)))
-;;   :config
-;;   (ivy-historian-mode +1))
-
-(use-package swiper)
-
-;;(use-package ivy-historian)
-;; (use-package ivy-hydra)
-;; (use-package ivy-xref)
-;; (use-package amx)
-
-;; (use-package wgrep)
 
 (use-package anzu
   :config
@@ -93,8 +75,11 @@
   :init
   (setq evil-want-integration t)
   (setq evil-want-keybinding nil)
+  (setq evil-disable-insert-state-bindings t)
   :config
-  (evil-mode 1))
+  (evil-mode 1)
+  ;; (advice-add 'evil-goto-mark :after #'(lambda () (evil-scroll-line-to-center (line-number-at-pos))))
+  )
 (use-package evil-collection
   :config
   (evil-collection-init))
@@ -137,14 +122,9 @@
 (use-package magit-gitflow)
 (use-package magithub)
 (use-package git-timemachine)
-;; (use-package magithub
-;;   :after magit
-;;   :config
-;;   (magithub-feature-autoinject t)
-;;   (setq magithub-clone-default-directory "~/src"))
 (use-package git-gutter-fringe
   :config
-  (if (fboundp 'fringe-mode) (fringe-mode '4))
+  (if (fboundp 'fringe-mode) (fringe-mode '8))
 
   ;; places the git gutter outside the margins.
   (setq-default fringes-outside-margins t)
@@ -154,41 +134,7 @@
   (define-fringe-bitmap 'git-gutter-fr:modified [224]
     nil nil '(center repeated))
   (define-fringe-bitmap 'git-gutter-fr:deleted [128 192 224 240]
-    nil nil 'bottom)
-  ;; Please adjust fringe width if your own sign is too big.
-  ;; (setq-default left-fringe-width  8)
-  ;; (setq-default right-fringe-width 8)
-
-  ;; (fringe-helper-define 'git-gutter-fr:added nil
-  ;;   ".XXXXXX."
-  ;;   "XXXXXXXX"
-  ;;   "XXX..XXX"
-  ;;   "XX....XX"
-  ;;   "XXXXXXXX"
-  ;;   "XXXXXXXX"
-  ;;   "XX....XX"
-  ;;   "XX....XX")
-
-  ;; (fringe-helper-define 'git-gutter-fr:deleted nil
-  ;;   "XXXXXX.."
-  ;;   "XXXXXXX."
-  ;;   "XX...XXX"
-  ;;   "XX....XX"
-  ;;   "XX....XX"
-  ;;   "XX...XXX"
-  ;;   "XXXXXXX."
-  ;;   "XXXXXX..")
-
-  ;; (fringe-helper-define 'git-gutter-fr:modified nil
-  ;;   "XXXXXXXX"
-  ;;   "XXXXXXXX"
-  ;;   "X..XX..X"
-  ;;   "X..XX..X"
-  ;;   "X..XX..X"
-  ;;   "X..XX..X"
-  ;;   "X..XX..X"
-  ;;   "X..XX..X")
-  )
+    nil nil 'bottom))
 
 (use-package format-all)
 
@@ -224,7 +170,9 @@
   (add-hook 'org-mode-hook 'evil-org-mode)
   (add-hook 'evil-org-mode-hook
             (lambda ()
-              (evil-org-set-key-theme))))
+              (evil-org-set-key-theme)))
+  (require 'evil-org-agenda)
+  (evil-org-agenda-set-keys))
 (use-package toc-org)
 (use-package org-superstar
   :config
@@ -245,10 +193,6 @@
 (use-package rainbow-delimiters)
 
 (use-package cmake-mode)
-;; (use-package ccls
-;;   :init
-;;   (add-hook 'c-mode-hook 'lsp)
-;;   (add-hook 'c++-mode-hook 'lsp))
 (use-package modern-cpp-font-lock)
 (use-package demangle-mode)
 
@@ -282,12 +226,6 @@
 (use-package multiple-cursors)
 
 (use-package cider)
-
-;; sclang installed with emacs on arch
-(use-package sclang)
-(setq sclang-help-path '("/home/sam/.local/share/SuperCollider/Help"))
-(use-package sclang-extensions)
-(use-package sclang-snippets)
 
 (use-package w3m)
 
@@ -327,20 +265,36 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
                              (projectile-relevant-known-projects))
                           (projectile-project-root))))
 
-      (sam-projectile-ibuffer-by-project project-root))))
+      (sam-projectile-ibuffer-by-project project-root)))
+  (defun sam-projectile-vc-or-dired ()
+    (interactive)
+    (if (not (string-equal (projectile-project-vcs) "none"))
+        (projectile-vc)
+      (dired default-directory)
+      ))
+  (setq projectile-switch-project-action #'sam-projectile-vc-or-dired)
+  (add-hook 'projectile-after-switch-project-hook 'delete-other-windows))
+
+(use-package workgroups)
 
 (use-package perspective
   :config
   (persp-mode))
 
-(defun sam-switch-project-action (&optional )
-  (projectile-vc)
-  (delete-other-windows))
-
 (use-package persp-projectile
   :config
   (add-hook 'projectile-after-switch-project-hook 'delete-other-windows)
-  (setq projectile-switch-project-action #'projectile-vc))
+  ;; (defun sam-dired-if-not-vc ()
+  ;;   (when (string-equal (projectile-project-vcs) "none")
+  ;;     (projectile-dired)))
+  ;; (add-hook 'projectile-after-switch-project-hook 'sam-dired-if-not-vc)
+
+  (defun sam-projectile-vc-or-dired ()
+    (interactive)
+    (if (not (string-equal (projectile-project-vcs) "none"))
+        (projectile-vc)
+      (dired default-directory)))
+  (setq projectile-switch-project-action #'sam-projectile-vc-or-dired))
 
 (use-package visual-fill-column)
 
@@ -397,7 +351,9 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
 (use-package paredit)
 (use-package macrostep)
 (use-package lispy)
-(use-package smartparens)
+(use-package smartparens
+  :config
+  (require 'smartparens-config))
 
 (use-package smart-tabs-mode)
 (use-package smartparens)
@@ -455,7 +411,8 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
                                (rcirc-omit-mode)))
 
   (setq rcirc-server-alist
-        '(("irc.freenode.net" :channels ("#emacs" "#rcirc"))))
+        '(("irc.libera.chat" :channels ("#emacs"))))
+  (evil-set-initial-state 'rcirc-mode 'insert)
   (setq rcirc-buffer-maximum-lines 1000)
   (setq rcirc-default-nick "Overdr0ne")
   (setq rcirc-default-user-name "Overdr0ne")
@@ -477,25 +434,14 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
 
 (use-package names)
 
-;; (use-package exwm)
-
 (use-package sx
   :config
   (evil-set-initial-state 'sx-question-list-mode 'emacs))
-
-(use-package md4rd)
 
 (use-package multiple-cursors)
 (use-package evil-mc)
 
 (use-package quelpa)
-
-;; (use-package evil-vimish-fold)
-;; (use-package vimish-fold)
-
-;; (use-package queue)
-
-;; (use-package nnhackernews)
 
 (use-package bbdb
   :config
@@ -622,15 +568,6 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
 ;; (add-hook 'proced-mode-hook 'proced-settings)
 
 (use-package calfw)
-;; :config
-;; (setq cfw:fchar-junction ??
-;;       cfw:fchar-vertical-line ??
-;;       cfw:fchar-horizontal-line ??
-;;       cfw:fchar-left-junction ??
-;;       cfw:fchar-right-junction ??
-;;       cfw:fchar-top-junction ??
-;;       cfw:fchar-top-left-corner ??
-;;       cfw:fchar-top-right-corner ??))
 
 (use-package minions
   :custom
@@ -663,13 +600,12 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
                          "service.py"
                          "evil-collection-sfs.el"))
   :config
-  (evil-collection-sfs-setup))
+  (global-sfs-mode 1))
 
 ;;; themes
 (use-package dracula-theme
   :config
-  (load-theme 'dracula t)
-  )
+  (load-theme 'dracula t))
 (use-package solarized-theme
   ;; :config
   ;; (load-theme 'solarized-light t)
@@ -737,13 +673,14 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
 ;; 		    :build ("make")))
 
 (use-package corfu
-  :config
-  (add-hook 'prog-mode-hook 'corfu-mode)
+  :init
   (defun corfu-setup-advice ()
     (defvar corfu-mode-map-alist)
     (setq corfu-mode-map-alist `((completion-in-region-mode . ,corfu-map)))
     (add-to-list 'emulation-mode-map-alists 'corfu-mode-map-alist))
-  (advice-add 'corfu-setup-advice :before 'corfu--setup))
+  ;; (advice-add 'corfu--setup :before #'corfu-setup-advice)
+  :config
+  (add-hook 'prog-mode-hook 'corfu-mode))
 
 (use-package highlight-indentation
   :straight (highlight-indentation :type git
@@ -757,4 +694,55 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
                           :repo "zk-phi/indent-guide"
                           :branch "master"))
 
+;; (use-package sclang)
+;; (use-package sclang
+;;   :straight (sclang :type git
+;;                     :host github
+;;                     :repo "Overdr0ne/scel"
+;;                     :branch "master"))
+;; (setq sclang-help-path '("/home/sam/.local/share/SuperCollider/Help"))
+(use-package sclang-extensions)
+(use-package sclang-snippets)
+
+(use-package haskell-mode)
+
+;; (use-package golden-ratio
+;;   :config
+;;   (golden-ratio-mode +1))
+
+(use-package gumshoe
+  :straight (gumshoe :type git
+                     :host github
+                     :repo "Overdr0ne/gumshoe"
+                     :branch "master")
+  :config
+  (global-gumshoe-mode 1)
+  (global-gumshoe-persp-mode 1)
+  (global-gumshoe-buf-mode 1)
+  (defun consult-gumshoe ()
+    (interactive)
+    (consult-global-mark (ring-elements (oref gumshoe--global-backlog log))))
+  (defun consult-gumshoe-persp ()
+    (interactive)
+    (consult-global-mark (ring-elements (oref gumshoe--persp-backlog log))))
+  (defun consult-gumshoe-buf ()
+    (interactive)
+    (consult-global-mark (ring-elements (oref gumshoe--buf-backlog log)))))
+
+(use-package embark
+  :config
+  (setq embark-action-indicator
+        (lambda (map _target)
+          (which-key--show-keymap "Embark" map nil nil 'no-paging)
+          #'which-key--hide-popup-ignore-command)
+        embark-become-indicator embark-action-indicator))
+(use-package embark-consult
+  :hook
+  (embark-collect-mode . consult-preview-at-point-mode))
+
+(use-package better-jumper)
+
+(use-package esup)
+
 (provide '+modules)
+;;; +modules.el ends here

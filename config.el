@@ -16,8 +16,8 @@
 
 (setq custom-file "~/.emacs.d/overdr0ne/customize.el")
 (load custom-file)
-(general-add-hook 'kill-emacs-hook
-                  '(customize-save-customized))
+;; (general-add-hook 'kill-emacs-hook
+;;                   '(customize-save-customized))
 
 ;; (setq backup-directory-alist `(("." . "~/.bak")))
 (add-to-list 'backup-directory-alist

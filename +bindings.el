@@ -1,5 +1,9 @@
 ;;; config/default/+bindings.el -*- lexical-binding: t; -*-
 
+(require 'profiler)
+(profiler-reset)
+(profiler-start 'cpu)
+
 ;; Fix Ascii character conflation
 (setq function-key-map (delq '(kp-tab . [9]) function-key-map))
 ;; this is C-i
@@ -37,22 +41,19 @@
 (general-define-key
  :keymaps 'code-keymap
  "c"   #'compile
- "e"   #'+eval/buffer-or-region
- "E"   #'+eval:replace-region
- "f"   #'+format/region-or-buffer
  "r"   #'+eval/open-repl-other-window
  "w"   #'delete-trailing-whitespace
  "x"   #'flycheck-list-errors)
 (defvar go-keymap (make-sparse-keymap))
 (general-define-key
  :keymaps 'go-keymap
- "."   #'(lambda () (interactive) (find-file "."))
- "h"   #'(lambda () (interactive) (find-file "~"))
- "l"   #'(lambda () (interactive) (find-file "~/src"))
- "n"   #'(lambda () (interactive) (find-file "~/notes"))
- "o"   #'(lambda () (interactive) (find-file "~/.emacs.d/overdr0ne"))
- "s"   #'(lambda () (interactive) (find-file "~/sites"))
- "t"   #'(lambda () (interactive) (find-file "~/test")))
+ "."   (lambda () (interactive) (find-file "."))
+ "h"   (lambda () (interactive) (find-file "~"))
+ "l"   (lambda () (interactive) (find-file "~/src"))
+ "n"   (lambda () (interactive) (find-file "~/notes"))
+ "o"   (lambda () (interactive) (find-file "~/.emacs.d/overdr0ne"))
+ "s"   (lambda () (interactive) (find-file "~/sites"))
+ "t"   (lambda () (interactive) (find-file "~/test")))
 (defvar lookup-keymap (make-sparse-keymap))
 (general-define-key
  :keymaps 'lookup-keymap
@@ -75,42 +76,40 @@
  "/"   #'magit-dispatch
  "'"   #'forge-dispatch
  "a" '(:ignore t :which-key "create")
- "ai"   #'forge-create-issue
- "ap"   #'forge-create-pullreq
+ "ai"  #'forge-create-issue
+ "ap"  #'forge-create-pullreq
  "b" '(:ignore t :which-key "branch")
  "B"   #'magit-blame-addition
- "bb"   #'magit-branch
- "bc"   #'magit-branch-and-checkout
+ "bb"  #'magit-branch
+ "bc"  #'magit-branch-and-checkout
  "c" '(:ignore t :which-key "commit")
- "cc"   #'magit-commit-create
- "cf"   #'magit-commit-fixup
+ "cc"  #'magit-commit-create
+ "cf"  #'magit-commit-fixup
  "f" '(:ignore t :which-key "file")
- "ff"   #'magit-find-file
- "fg"   #'magit-find-git-config-file
- "fc"   #'magit-show-commit
- "fi"   #'forge-visit-issue
- "fp"   #'forge-visit-pullreq
+ "ff"  #'magit-find-file
+ "fg"  #'magit-find-git-config-file
+ "fc"  #'magit-show-commit
+ "fi"  #'forge-visit-issue
+ "fp"  #'forge-visit-pullreq
  "F"   #'magit-fetch
  "h" '(:ignore t :which-key "checkout")
- "hb"   #'magit-branch-checkout
- "hh"   #'magit-checkout
+ "hb"  #'magit-branch-checkout
+ "hh"  #'magit-checkout
  "i"   #'magit-init
  "l" '(:ignore t :which-key "list")
- "lg"   #'+gist:list
- "lr"   #'magit-list-repositories
- "ls"   #'magit-list-submodules
- "li"   #'forge-list-issues
- "lp"   #'forge-list-pullreqs
- "ln"   #'forge-list-notifications
+ "lr"  #'magit-list-repositories
+ "ls"  #'magit-list-submodules
+ "li"  #'forge-list-issues
+ "lp"  #'forge-list-pullreqs
+ "ln"  #'forge-list-notifications
  "n"   #'magit-clone
  "o" '(:ignore t :which-key "browse")
- "o."   #'+vc/git-browse-region-or-line
- "or"   #'forge-browse-remote
- "oc"   #'forge-browse-commit
- "oi"   #'forge-browse-issue
- "op"   #'forge-browse-pullreq
- "oI"   #'forge-browse-issues
- "oP"   #'forge-browse-pullreqs
+ "or"  #'forge-browse-remote
+ "oc"  #'forge-browse-commit
+ "oi"  #'forge-browse-issue
+ "op"  #'forge-browse-pullreq
+ "oI"  #'forge-browse-issues
+ "oP"  #'forge-browse-pullreqs
  "r"   #'git-gutter:revert-hunk
  "s"   #'git-gutter:stage-hunk
  "t"   #'git-timemachine-toggle
@@ -121,21 +120,21 @@
  "R"   #'vc-revert
  "S"   #'magit-stage-file)
 
+(defun sam-avy ()
+  (interactive)
+  (avy-goto-word-or-subword-1))
+
 (defvar command-mode-map (make-sparse-keymap))
 (general-define-key
  :keymaps 'command-mode-map
  "-"    #'ranger
  ";"    #'execute-extended-command
  ":"    #'eval-expression
- "~"    #'+popup/toggle
  ","    #'switch-to-buffer
  "."    #'find-file
  "`"    #'evil-switch-to-windows-last-buffer
  "'"    #'ivy-resume
  "/"    #'web-search
- "*" #'+default/search-project-for-symbol-at-point
-
- "DEL" #'+nav-flash/blink-cursor
  "RET" #'bookmark-jump
  "SPC" #'projectile-persp-switch-project
  "<tab>" #'mode-line-other-buffer
@@ -155,12 +154,13 @@
  "ds"   #'serial-term
 
  "e" '(:ignore t :which-key "edit")
- "eb"   #'(lambda () (interactive) (find-file "~/.emacs.d/overdr0ne/+bindings.el"))
- "ez"   #'(lambda () (interactive) (find-file "~/.zshrc"))
- "eh"   #'(lambda () (interactive) (find-file "/etc/httpd/conf/httpd.conf"))
- "ei"   #'(lambda () (interactive) (find-file "~/.config/i3/config"))
+ "eb"   (lambda () (interactive) (find-file "~/.emacs.d/overdr0ne/+bindings.el"))
+ "ez"   (lambda () (interactive) (find-file "~/.zshrc"))
+ "eh"   (lambda () (interactive) (find-file "/etc/httpd/conf/httpd.conf"))
+ "ei"   (lambda () (interactive) (find-file "~/.config/i3/config"))
 
  "f"    #'find-file
+ "S-f"    #'sam-find-root
 
  "g" go-keymap
 
@@ -168,15 +168,14 @@
 
 ;;; <leader> i --- imenu
  "i" '(:ignore t :which-key "imenu")
- "if"   #'((lambda () (interactive) (sam-counsel-imenu "functions: ")) :which-key "functions")
  "ii"   #'consult-imenu
- "im"   #'(lambda () (interactive) (sam-counsel-imenu "macros: "))
- "ip"   #'(lambda () (interactive) (sam-counsel-imenu "package "))
- "is"   #'(lambda () (interactive) (sam-counsel-imenu "section: "))
- "iv"   #'(lambda () (interactive) (sam-counsel-imenu "variables: "))
- "it"   #'(lambda () (interactive) (find-file "~/test"))
+ "if"   #'consult-imenu-functions
+ "im"   #'consult-imenu-macros
+ "ip"   #'consult-imenu-packages
+ "it"   #'consult-imenu-types
+ "iv"   #'consult-imenu-variables
 
- "j"    #'(lambda () (interactive) (avy-goto-word-or-subword-1))
+ "j"    #'avy-goto-word-or-subword-1
 
  ;; ;;; <leader> k --- kill
  "k" #'kill-this-buffer
@@ -192,24 +191,18 @@
  "mf" #'flycheck-mode
  "mF" #'toggle-frame-fullscreen
  "mg" #'evil-goggles-mode
- "mi" #'highlight-indent-guides-mode
+ "mh" #'hl-line-mode
  "mm" #'menu-bar-mode
- "mw" #'+word-wrap-mode
- "mp" #'+org-present/start
  "ms" #'flyspell-mode
+ "mv" #'visual-line-mode
  "mz" #'writeroom-mode
 
  "n" '(:ignore t :which-key "notes")
- "n." #'+default/browse-notes
- "n/" #'+default/org-notes-search
- "n*" #'+default/search-notes-for-symbol-at-point
  "na" #'org-agenda
  "nc" #'org-capture
  "nd" #'deft
- "nh" #'+default/org-notes-headlines
  "nl" #'org-store-link
- "nn" #'+default/find-in-notes
- "nN" #'+default/browse-notes
+ "nn" (lambda () (interactive) (find-file "~/notes/"))
  "nm" #'org-tags-view
  "nv" #'org-search-view
  "nt" #'org-todo-list
@@ -220,7 +213,6 @@
  "od" #'cfw:open-calendar-buffer
  "oe" #'eww
  "og" #'gnus
- "oP" #'+treemacs/find-file
  "oD" #'docker
 
  "p" '(:ignore t :which-key "project")
@@ -238,12 +230,11 @@
  "pf" #'find-file-in-project-at-point
  "pi" #'projectile-invalidate-cache
  "pk" #'persp-kill
- "pl" #'+default/browse-project
  "pn" #'persp-switch
  "po" #'projectile-find-other-file
  "pp" #'persp-switch
  "pr" #'persp-remove-buffer
- "p/" #'(lambda () (interactive) (find-file (projectile-project-root)))
+ "p/" (lambda () (interactive) (find-file (projectile-project-root)))
  "pR" #'projectile-run-project
  "ps" #'persp-switch
  "pT" #'projectile-test-project
@@ -266,24 +257,18 @@
  "r>" #'ssh-deploy-remote-changes-handler
 
  "s" '(:ignore t :which-key "snippets")
- "s/" #'+snippets/find-for-current-mode
- "s?" #'+snippets/find
- "sc" #'+snippets/edit
- "sf" #'+snippets/find-private
  "si" #'yas-insert-snippet
- "sn" #'+snippets/new
- "sN" #'+snippets/new-alias
  "sr" #'yas-reload-all
  "ss" #'aya-create
  "se" #'aya-expand
 
  "t" '(:ignore t :which-key "terminal")
- "tj" #'(lambda () (interactive) (multi-term-next))
- "tk" #'(lambda () (interactive) (multi-term-prev))
- "tt" #'(lambda () (interactive) (multi-term))
+ "tj" (lambda () (interactive) (multi-term-next))
+ "tk" (lambda () (interactive) (multi-term-prev))
+ "tt" (lambda () (interactive) (multi-term))
  "tr" #'+eval/open-repl-other-window
  "tR" #'+eval/open-repl-same-window
- "t;" #'(lambda () (interactive) (multi-term-dedicated-toggle))
+ "t;" (lambda () (interactive) (multi-term-dedicated-toggle))
 
  "u" '(:ignore t :which-key "utilities")
  "uc" #'sfs-recollect
@@ -306,9 +291,9 @@
  "y"    #'hyperbole
 
  "z" '(:ignore t :which-key "scratch")
- "zc" #'((lambda () (interactive) (find-file "~/scratch/c/scratch.c"))         :which-key "C")
- "zl" #'((lambda () (interactive) (find-file "~/scratch/elisp/scratch.el"))    :which-key "Elisp")
- "zp" #'((lambda () (interactive) (find-file "~/scratch/py/scratch.py"))       :which-key "Python")
+ "zc" #'((lambda () (interactive) (find-file "~/scratch/c/scratch.c")) :which-key "C")
+ "zl" #'((lambda () (interactive) (find-file "~/scratch/elisp/scratch.el")) :which-key "Elisp")
+ "zp" #'((lambda () (interactive) (find-file "~/scratch/py/scratch.py")) :which-key "Python")
  "zt" #'((lambda () (interactive) (find-file "~/scratch/text/generic.txt")) :which-key "text")
  "zz" #'((lambda () (interactive) (find-file "~/scratch/generic")) :which-key "generic"))
 
@@ -330,30 +315,53 @@
  "C-g" #'consult-bookmark
  "C-k" #'kill-buffer-and-window
  "C-m" #'bookmark-set
- "C-r" #'replace-string-all
- "C-t" #'(lambda () (interactive)
-           (setq light-theme (not light-theme))
-           (if light-theme
-               (load-theme 'spacemacs-light t)
-             (load-theme 'dracula t))))
+ "C-t" (lambda () (interactive)
+         (setq light-theme (not light-theme))
+         (if light-theme
+             (load-theme 'spacemacs-light t)
+           (load-theme 'dracula t))))
 
 (defvar metallic-keymap (make-sparse-keymap))
 (general-define-key
  :keymaps 'metallic-keymap
  "M-;"  #'execute-extended-command
- "M-b" #'persp-ibuffer)
+ "M-b" #'persp-ibuffer
+ "M-f" #'counsel-recentf)
 
 (defvar shifty-keymap (make-sparse-keymap))
 (general-define-key
  :keymaps 'shifty-keymap
- "B"   #'consult-buffer)
+ "S-b" #'consult-buffer
+ "S-f" #'sam-sudo-find-file
+ "f" #'sam-sudo-find-root
+ "S-r" #'sam-sudo-find-root)
 
 (general-define-key
  :states 'normal
+ :keymaps '(lisp-mode-map lisp-interaction-mode-map emacs-lisp-mode-map)
  :prefix "C-e"
  ""   nil
  "C-e" #'+eval-this-sexp
  "C-b" #'eval-buffer)
+(general-define-key
+ :states 'visual
+ :keymaps '(lisp-mode-map lisp-interaction-mode-map emacs-lisp-mode-map)
+ "C-e" #'eval-region)
+
+;;; Language-specific bindings
+(general-define-key
+ :states 'normal
+ :keymaps 'clojure-mode-map
+ :prefix "C-e"
+ ""   nil
+ "C-e" #'cider-eval-sexp-at-point
+ "C-f" #'cider-eval-file
+ "C-b" #'cider-eval-buffer)
+
+(general-define-key
+ :states '(normal insert)
+ :keymaps 'racket-repl-mode-map
+ "C-w" evil-window-map)
 
 ;;; Global keybindings
 (general-define-key
@@ -361,6 +369,28 @@
  "M-;" #'iedit-mode
  "<C-m>" #'evilmi-jump-items)
 
+(general-define-key
+ :states 'normal
+ :keymaps '(global prog-mode-map)
+ "A-f" #'evil-avy-goto-word-or-subword-1
+ "A-j" #'evilem-motion-next-visual-line
+ "A-k" #'evilem-motion-previous-visual-line
+ "A-w" #'evilem-motion-forward-WORD-begin
+ "A-b" #'evilem-motion-backward-WORD-begin
+ "A-]" #'evilem-motion-forward-section-begin
+ "A-[" #'evilem-motion-backward-section-begin)
+
+(evilem-make-motion
+ evilem-motion-next-sexp #'sp-next-sexp)
+(evilem-make-motion
+ evilem-motion-backward-sexp #'sp-backward-sexp)
+(general-define-key
+ :states 'normal
+ :keymaps '(lisp-mode-map emacs-lisp-mode-map)
+ "A-M-w" #'evilem-motion-next-sexp
+ "A-M-b" #'evilem-motion-backward-sexp)
+
+;;; normal bindings
 (defvar hs-showing t)
 (defun sam-hs-toggle-all ()
   "Toggle showing all top-level blocks"
@@ -375,54 +405,119 @@
 (general-define-key
  :states 'normal
  :keymaps '(global prog-mode-map lisp-mode-map)
- "A-j" #'evilem-motion-next-visual-line
- "A-k" #'evilem-motion-previous-visual-line
- "A-w" #'evilem-motion-forward-WORD-begin
- "A-b" #'evilem-motion-backward-WORD-begin
- "A-]" #'evilem-motion-forward-section-begin
- "A-[" #'evilem-motion-backward-section-begin
 
- "M-h" #'evil-digit-argument-or-evil-beginning-of-line
- "M-j" #'sam-next-line-start
- "M-k" #'sam-previous-line-start
- "M-l" #'evil-end-of-line
+ "<M-mouse-3>" #'sam-toggle-cursor
+ "<mouse-2>" #'sam-helpful-click
 
- "u"   #'undo
-
- "j"   #'evil-next-visual-line
- "k"   #'evil-previous-visual-line
-
- "C-j"  #'evil-scroll-line-down
- "C-k"  #'evil-scroll-line-up
- "C-h"  help-map
- "C-r" #'replace-string-all
- "n"  #'consult-line-repeat
- ;; "N"  #'isearch-repeat-backward
- "K"  #'delete-indentation
- "J"  #'evil-join
- "t"   #'(lambda () (interactive) (avy-goto-word-or-subword-1))
- "C"   #'+multiple-cursors/evil-mc-toggle-cursors
- "C-p" #'consult-yank-from-kill-ring
- "C-o" #'evil-jump-backward
- "C-i" #'evil-jump-forward
  "<tab>" #'hs-toggle-level
- "M-;" #'shelldon
- "M-:" #'shelldon-loop
- "C-M-;" #'shelldon-hist
- "C-;"   #'eval-expression
- "C-d" #'dired-jump
- "C-u" #'universal-argument
- "C-q" #'evil-quit
- "C-w" #'evil-window-map
- "C-/" #'counsel-grep-or-swiper
  "C-]" #'xref-find-definitions
  "M-]" #'xref-find-references
+ "C-'" #'consult-mark
  ","   #'macrostep-expand
  ;; "-"   #'treemacs-add-and-display-current-project
  "-"   #'neotree-toggle
  "/"   #'consult-line
- "\\"   #'(lambda () (interactive) (avy-goto-word-or-subword-1))
- "*"   #'consult-line-symbol-at-point)
+ "C-/" #'counsel-grep-or-swiper
+ "\\"   #'avy-goto-word-or-subword-1
+ "\""  #'evil-use-register
+ "&"   #'evil-ex-repeat-substitute
+ "*"   #'consult-line-symbol-at-point
+ "@"    #'evil-execute-macro
+ ;; "==" #'evil-indent-line
+ ;; "=s" #'indent-sexp
+ ;; "=a" #'sam-indent-all
+ ;; "=g" #'indent-rigidly
+ "<"   #'evil-shift-left
+ ">"   #'evil-shift-right
+ "C-." #'evil-repeat-pop
+
+ "C-;"   #'eval-expression
+ "M-;" #'shelldon
+ "M-:" #'shelldon-loop
+ "M-C-;" #'shelldon-output-history
+
+ "a" #'sam-evil-append
+ "A" #'evil-append-line
+
+ "b" #'backward-word
+
+ "c" #'evil-change
+ ;; "C"   #'+multiple-cursors/evil-mc-toggle-cursors
+
+ "d" #'evil-delete
+ "C-d" #'dired-jump
+ "D" #'evil-delete-line
+
+ "e" #'forward-word
+
+ "C-h"  help-map
+ "M-h" #'back-to-indentation
+
+ "i" #'evil-insert
+ "I" #'evil-insert-line
+ "C-i" #'gumshoe-buf-backtrack-forward
+ "M-i" #'gumshoe-persp-backtrack-forward
+ "C-M-i" #'gumshoe-backtrack-forward
+ "C-S-i" #'consult-gumshoe-buf
+ "M-S-i" #'consult-gumshoe-persp
+ "C-M-S-i" #'consult-gumshoe
+
+ "j"   #'evil-next-visual-line
+ "J"  #'evil-join
+ "C-j"  #'evil-scroll-line-down
+ "M-j" #'sam-next-line-start
+
+ "k"   #'evil-previous-visual-line
+ "K"  #'delete-indentation
+ "C-k"  #'evil-scroll-line-up
+ "M-k" #'sam-previous-line-start
+
+ "m" #'evil-set-marker
+
+ "M-l" #'evil-end-of-line
+
+ "C-n" #'evil-paste-pop-next
+ "n"  #'consult-line-repeat
+ ;; "N"  #'isearch-repeat-backward
+
+ "o"   #'evil-open-below
+ "O"   #'evil-open-above
+ "C-o" #'gumshoe-backtrack-back
+ "M-o" #'gumshoe-persp-backtrack-back
+ "C-M-o" #'consult-gumshoe
+ "C-o" #'gumshoe-buf-backtrack-back
+ "M-o" #'gumshoe-persp-backtrack-back
+ "C-M-o" #'gumshoe-backtrack-back
+
+ "p"   #'evil-paste-after
+ "P"   #'evil-paste-before
+ "C-p" #'consult-yank-from-kill-ring
+
+ "q"   #'evil-record-macro
+ "C-q" #'evil-quit
+
+ "r"   #'evil-replace
+ "R"   #'evil-replace-state
+ "C-r" #'iedit-mode
+ "M-r" #'sam-replace-string
+
+ "s"   #'evil-substitute
+ "S"   #'evil-change-whole-line
+
+ "t"   #'sam-avy
+
+ "u"   #'undo
+ "C-u" #'universal-argument
+
+ "w"   #'forward-word
+ "C-w" #'evil-window-map
+
+ "x"  #'delete-char
+ "X"  #'delete-pair
+
+ "y"  #'evil-yank
+ "Y"  #'evil-yank-line
+ )
 
 (general-define-key
  :states 'insert
@@ -432,7 +527,7 @@
  "C-b" #'backward-char
  "C-n" #'next-line
  "C-p" #'previous-line
- "C-h" #'backward-delete-char-untabify
+ "C-h" #'xah-delete-backward-char-or-bracket-text
  "M-w" #'forward-word
  "M-b" #'backward-word
  ;; Smarter newlines
@@ -442,16 +537,23 @@
  "<mouse-2>" 'evil-paste-after)
 
 (general-define-key
+ :states 'insert
+ :keymaps 'emacs-lisp-mode-map
+ "<C-return>" #'eval-last-sexp)
+
+(general-define-key
+ :states 'normal
+ :keymaps '(global prog-mode-map)
+ "w"  #'forward-to-word
+ "e"  #'forward-word
+ "b"  #'backward-word)
+(general-define-key
  :states '(normal visual)
  :keymaps '(global prog-mode-map)
  "j"   #'evil-next-visual-line
  "k"   #'evil-previous-visual-line
  "f"  #'evil-snipe-f
  "F"  #'evil-snipe-F
- "w"  #'forward-to-word
- "e"  #'forward-word
- "b"  #'backward-word
- "z=" #'flyspell-correct-word-generic
  ";"   #'execute-extended-command)
 
 (defhydra hydra-undo-tree (:color yellow
@@ -479,29 +581,14 @@
  "v"   #'er/expand-region
  "C-j" #'evil-join
  "A-s" #'shell-command-on-region
- "x"   #'+multiple-cursors/evil-mc-make-cursor-here
- "@"   #'+evil:apply-macro
  "<"   #'evil-shift-left
  ">"   #'evil-shift-right)
 
-(general-define-key
- :states 'motion
- "]m"  #'+evil/next-beginning-of-method
- "[m"  #'+evil/previous-beginning-of-method
- "]M"  #'+evil/next-end-of-method
- "[M"  #'+evil/previous-end-of-method
- "]#"  #'+evil/next-preproc-directive
- "[#"  #'+evil/previous-preproc-directive
- "]*"  #'+evil/next-comment
- "[*"  #'+evil/previous-comment
- "]\\" #'+evil/next-comment
- "[\\" #'+evil/previous-comment)
-
-(define-key evil-cleverparens-mode-map (kbd "<normal-state> [") nil)
-(define-key evil-cleverparens-mode-map (kbd "<normal-state> ]") nil)
+(define-key emacs-lisp-mode-map (kbd "<normal-state> [") nil)
+(define-key emacs-lisp-mode-map (kbd "<normal-state> ]") nil)
 (general-define-key
  :states '(normal motion)
- :keymaps 'evil-cleverparens-mode-map
+ :keymaps 'emacs-lisp-mode-map
  "]]" 'evil-forward-section-begin
  "][" 'evil-forward-section-end
  "[[" 'evil-backward-section-begin
@@ -528,16 +615,7 @@
 (general-define-key
  :states 'normal
  "]b"    #'next-buffer
- "[b"    #'previous-buffer
- "]f"    #'+evil/next-file
- "[f"    #'+evil/previous-file)
-
-(general-define-key
- :states 'motion
- "]u" #'+evil:url-encode
- "[u" #'+evil:url-decode
- "]y" #'+evil:c-string-encode
- "[y" #'+evil:c-string-decode)
+ "[b"    #'previous-buffer)
 
 ;; evil surround
 (general-define-key
@@ -561,6 +639,10 @@
  "S-SPC" shifty-keymap
  "A-SPC" alter-keymap
  "SPC" command-mode-map)
+
+(general-define-key
+ :states '(normal insert visual)
+ "<home>" help-map)
 
 ;;; Module keybinds
 (general-define-key
@@ -593,8 +675,8 @@
  "C-n" #'Info-forward-node
  "C-p" #'Info-backward-node
  "C-h" #'Info-history-back
- "C-j" #'evil-window-down
- "C-k" #'evil-window-up
+ "C-j" #'evil-scroll-line-down
+ "C-k" #'evil-scroll-line-up
  "C-l" #'Info-history-forward
  "M-h" #'Info-prev
  "M-k" #'Info-up
@@ -604,28 +686,31 @@
  )
 
 ;;; :completion
+;; (general-define-key
+;;  :keymaps 'prog-mode-map
+;;  "<tab>" #'completion-at-point)
 (general-define-key
  :keymaps 'prog-mode-map
  :states 'insert
- "C-j" #'completion-at-point)
+ "C-l" #'completion-at-point
+ )
+(general-define-key
+ :keymaps '(prog-mode-map org-mode-map)
+ :states 'insert
+ "`" (lambda () (interactive) (insert "`")))
 (general-define-key
  :keymaps 'corfu-map
- :state 'insert
+ "C-j" #'corfu-next
+ "C-k" #'corfu-previous
+ "C-l" #'corfu-complete)
+(general-define-key
+ :keymaps 'corfu-map
+ :states 'insert
  "C-j" #'corfu-next
  "C-k" #'corfu-previous
  "C-l" #'corfu-complete)
 
 (define-key dired-mode-map (kbd "<normal-state> ;") nil)
-(general-define-key
- :keymaps 'dired-mode-map
- :state 'normal
- :prefix "y"
- ""  nil
- ";" #'execute-extended-command
- "d" #'(lambda () (interactive) (kill-new (pwd)))
- "y" #'dired-ranger-copy
- "m" #'dired-ranger-move
- "p" #'dired-ranger-paste)
 (general-define-key
  :keymaps 'dired-mode-map
  :states 'normal
@@ -634,7 +719,9 @@
  "C-/" #'dired-narrow
  "C-l" #'dired-do-symlink
  "h"   #'dired-up-directory
- "l"   #'dired-find-file)
+ "l"   #'dired-find-file
+ "p"   #'sam-dired-yank-here
+ "y"   #'sam-dired-kill-path-at-point)
 ;; (define-key dired-mode-map (kbd "<normal-state> y y") 'dired-ranger-copy)
 ;; (define-key dired-mode-map (kbd "y m") 'dired-ranger-move)
 ;; (evil-define-key 'normal
@@ -690,6 +777,10 @@
  "SPC" nil)
 
 (general-define-key
+ :keymaps '(gnus-mode-map gnus-topic-mode-map gnus-group-mode-map gnus-browse-mode-map gnus-summary-mode-map gnus-article-mode-map)
+ "SPC" command-mode-map)
+
+(general-define-key
  :keymaps 'evil-magit
  ;; fix conflicts with private bindings
  :map '(magit-mode-map magit-status-mode-map magit-revision-mode-map)
@@ -697,101 +788,43 @@
  "C-d" 'dired-jump
  "C-j" nil
  "C-k" nil)
-;; (map! (:when (featurep! :tools eval)
-;;         :g  "M-r" #'+eval/buffer
-;;         :nv "gr"  #'+eval:region
-;;         :n  "gR"  #'+eval/buffer
-;;         :v  "gR"  #'+eval:replace-region)
 
-;;       ;; (:when (featurep! :tools spell)
-;;         ;; Keybinds that have no Emacs+evil analogues (i.e. don't exist):
-;;         ;;   zq - mark word at point as good word
-;;         ;;   zw - mark word at point as bad
-;;         ;;   zu{q,w} - undo last marking
-;;         ;; Keybinds that evil define:
-;;         ;;   z= - correct flyspell word at point
-;;         ;;   ]s - jump to previous spelling error
-;;         ;;   [s - jump to next spelling error
-;;         ;; (:map flyspell-mouse-map
-;;         ;;       "RET"     #'flyspell-correct-word-generic
-;;         ;;       [return]  #'flyspell-correct-word-generic
-;;         ;;       [mouse-1] #'flyspell-correct-word-generic))
-
-;;       ;;      (:when (featurep! :checkers syntax)
-;;       ;;        (:after flycheck
-;;       ;;          :map flycheck-error-list-mode-map
-;;       ;;          :n "C-n"    #'flycheck-error-list-next-error
-;;       ;;          :n "C-p"    #'flycheck-error-list-previous-error
-;;       ;;          :n "j"      #'flycheck-error-list-next-error
-;;       ;;          :n "k"      #'flycheck-error-list-previous-error
-;;       ;;          :n "RET"    #'flycheck-error-list-goto-error
-;;       ;;          :n [return] #'flycheck-error-list-goto-error))
-
-;;       ;; (:when (featurep! :tools gist)
-;;       ;;   :after gist
-;;       ;;   :map gist-list-menu-mode-map
-;;       ;;   :n "go"  #'gist-browse-current-url
-;;       ;;   :n "gr"  #'gist-list-reload
-;;       ;;   :n "c"   #'gist-add-buffer
-;;       ;;   :n "d"   #'gist-kill-current
-;;       ;;   :n "e"   #'gist-edit-current-description
-;;       ;;   :n "f"   #'gist-fork
-;;       ;;   :n "q"   #'kill-current-buffer
-;;       ;;   :n "s"   #'gist-star
-;;       ;;   :n "S"   #'gist-unstar
-;;       ;;   :n "y"   #'gist-print-current-url)
-
-;;       (:when (featurep! :tools lookup)
-;;         :nv "gk"  #'+lookup/documentation
-;;         :nv "gd" #'+lookup/definition
-;;         :nv "gD" #'+lookup/references
-;;         :nv "gf" #'+lookup/file)
-
-;;       (:when (featurep! :tools magit)
-;;         (:after evil-magit
-;;                 ;; fix conflicts with private bindings
-;;                 :map (magit-mode-map magit-status-mode-map magit-revision-mode-map)
-;;                 "k"   'magit-checkout
-;;                 "C-d" 'dired-jump
-;;                 "C-j" nil
-;;                 "C-k" nil)
-;;         (:map transient-map
-;;               "q" #'transient-quit-one)))
-
-;; (:map package-menu-mode-map
-;;  )
-
-;;; :lang
-;; (evil-define-key '(normal visual) evil-cleverparens-mode-map
-;;   (kbd "M-w") #'sp-next-sexp
-;;   (kbd "M-e") #'sp-forward-sexp
-;;   (kbd "M-b") #'sp-backward-sexp)
 (general-define-key
  :states '(normal visual)
- :keymaps 'evil-cleverparens-mode-map
+ :keymaps '(lisp-mode-map emacs-lisp-mode-map)
  "("   #'sp-backward-up-sexp
  ")"   #'sp-up-sexp
+ "C-h" #'sp-backward-slurp-sexp
+ "C-l" #'sp-forward-slurp-sexp
+ "M-h" #'back-to-indentation
+ "M-j" #'sam-next-line-start
+ "M-k" #'sam-previous-line-start
+ "M-l" #'evil-end-of-line
  "M-w" #'sp-next-sexp
  "M-e" #'sp-forward-sexp
  "M-b" #'sp-backward-sexp)
 
 (general-define-key
  :states '(normal insert)
- :keymaps 'evil-cleverparens-mode-map
- "M-i" #'evil-cp-insert-at-beginning-of-form
- "M-a" #'evil-cp-insert-at-end-of-form)
+ :keymaps '(lisp-mode-map emacs-lisp-mode-map)
+ "M-I" #'evil-cp-insert-at-beginning-of-form
+ "M-A" #'sam-insert-at-end-of-form)
+
+(general-define-key
+ :states '(insert)
+ :keymaps '(lisp-mode-map emacs-lisp-mode-map)
+ "M-j" #'sam-sexp-spawn-below
+ "M-l" #'sam-sexp-eject-right
+ "M-p" #'sam-sexp-reparent)
 
 (general-define-key
  :states 'normal
- :keymaps 'evil-cleverparens-mode-map
+ :keymaps '(lisp-mode-map emacs-lisp-mode-map)
  ;; (kbd "M-<tab>") #'parinfer-toggle-mode
  "M-p" #'evil-cp-copy-paste-form
  "M-y" #'evil-cp-yank-sexp
  "M-d" #'evil-cp-delete-sexp
- "M-h" #'evil-digit-argument-or-evil-beginning-of-line
- "M-j" #'sam-next-line-start
- "M-k" #'sam-previous-line-start
- "M-l" #'evil-end-of-line
+ ;; "M-h" #'evil-digit-argument-or-evil-beginning-of-line
  "H"   #'evil-window-top
  "L"   #'evil-window-bottom
  "w"   #'forward-to-word
@@ -822,7 +855,9 @@
 (general-define-key
  :states '(normal visual)
  :keymaps 'prog-mode-map
- "RET" #'evil-commentary-line)
+
+ "<return>" #'embark-act
+ "<C-return>" #'evil-commentary-line)
 
 (general-define-key
  :states 'normal
@@ -848,12 +883,12 @@
  :keymaps 'evil-ex-completion-map
  ;; "C-a" #'move-beginning-of-line
  ;; "C-b" #'backward-word
- "C-a"           #'beginning-of-line
- "C-e"           #'end-of-line
- "C-f"           #'forward-char
- "C-b"           #'backward-char
- "M-w"           #'forward-word
- "M-b"           #'backward-word
+ "C-a" #'beginning-of-line
+ "C-e" #'end-of-line
+ "C-f" #'forward-char
+ "C-b" #'backward-char
+ "M-w" #'forward-word
+ "M-b" #'backward-word
  "C-s" #'counsel-minibuffer-history)
 (defvar +default-minibuffer-maps
   `(minibuffer-local-map
@@ -872,6 +907,7 @@
  "C-e"    #'end-of-line
  "C-f"    #'forward-char
  "C-b"    #'backward-char
+ "C-g"    #'abort-recursive-edit
  "C-h"    #'backward-delete-char-untabify
  "C-l"    #'completion-at-point
  "M-w"    #'forward-word
@@ -889,14 +925,14 @@
 (general-define-key
  :keymaps +minibuffer-completion-maps
  "<tab>" #'minibuffer-complete
+ "<home>" help-map
  "C-v" #'yank
  "C-a" #'beginning-of-line
  "C-e" #'end-of-line
  "C-f" #'forward-char
  "C-b" #'backward-char
- "C-g" #'exit-minibuffer
+ "C-g" #'abort-recursive-edit
  "C-h" #'backward-delete-char-untabify
- "C-l" #'ivy-partial-or-done
  "M-w" #'forward-word
  "M-b" #'backward-word
  "M-h" #'backward-kill-word
@@ -905,6 +941,7 @@
  "C-k" #'previous-line)
 (general-define-key
  :keymaps 'selectrum-minibuffer-map
+ "<home>" help-map
  "<tab>" #'selectrum-insert-current-candidate
  "C-l"   #'selectrum-insert-current-candidate)
 
@@ -923,6 +960,7 @@
  "f"    #'helpful-callable
  "F"    #'counsel-describe-face
  "h"    #'helpful-at-point
+ "H"    #'sam-lookup-symbol-at-point
  "k"    #'helpful-key
  "C-k"  #'which-key-show-top-level
  "C-l"  #'describe-language-environment
@@ -931,7 +969,6 @@
  ;; replaces `finder-by-keyword'
  "o"    #'ace-link-help
  "p"    #'describe-package
- ;; replaces `describe-package' b/c redundant w/ `doom/describe-package'
  "P"    #'find-library
  "v"    #'helpful-variable
  "V"    #'set-variable)
@@ -956,3 +993,6 @@
  :states '(insert visual)
  :keymaps '(global prog-mode-map)
  "<C-[>" #'evil-force-normal-state)
+
+(provide '+bindings)
+;;; +bindings.el ends here

@@ -6,7 +6,11 @@
 (smart-tabs-mode +1)
 (setq indent-tabs-mode nil)
 
-;;; prog mode
+;;; special modes
+(general-add-hook 'special-mode-hook
+                  '(hl-line-mode))
+
+;;; prog modes
 (general-add-hook 'prog-mode-hook
                   '(hl-line-mode hs-minor-mode flycheck-mode rainbow-delimiters-mode indent-guide-mode (lambda () (setq show-trailing-whitespace t))))
 (general-add-hook '(c-mode-hook c++-mode-hook)
@@ -14,7 +18,7 @@
 
 ;;; sexps
 (general-add-hook '(closure-mode-hook elisp-mode-hook emacs-lisp-mode-hook lisp-mode-hook racket-mode-hook sexpy-mode-hook)
-                  '(show-paren-mode visual-line-mode  electric-pair-mode electric-quote-mode electric-layout-mode evil-cleverparens-mode))
+                  '(show-paren-mode visual-line-mode  electric-pair-mode electric-quote-mode electric-layout-mode))
 ;;; lisps
 (general-add-hook '(closure-mode-hook elisp-mode-hook emacs-lisp-mode-hook lisp-mode-hook racket-mode-hook)
                   '(highlight-defined-mode))
