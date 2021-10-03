@@ -1,4 +1,4 @@
-;;; config.el --- Personal config.      -*- lexical-binding: t; -*-
+;;; +splash.el --- Splash screen on startup.    -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2021  Sam
 
@@ -20,18 +20,16 @@
 
 ;;; Commentary:
 
-;; Top-level of my personal config.
+;; Make a start page.
 
 ;;; Code:
 
-(require '+macros)
-(require '+functions)
-(require '+core)
-(require '+modules)
-(require '+bindings)
-(require '+langs)
-(load custom-file)
-(require '+splash)
+(require 'projectile)
 
-(provide 'config)
-;;; config.el ends here
+;; (projectile-persp-switch-project (first (projectile-relevant-known-projects)))
+;; (windmove-display-same-window)
+(sfs-recollect)
+(call-interactively #'projectile-persp-switch-project)
+
+(provide '+splash)
+;;; +splash.el ends here

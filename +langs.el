@@ -1,8 +1,35 @@
+;;; +langs.el --- personal lang-specific configuration    -*- lexical-binding: t; -*-
+
+;; Copyright (C) 2021  Sam
+
+;; Author: Sam;;; ~/.emacs.d/+use-package.el -*- lexical-binding: t; -*- <scmorris.dev@gmail.com>
+;; Keywords: local
+
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;; Set up hooks for major-modes.
+
+;;; Code:
+(require 'general)
+
 (setq auto-insert-mode 't)
 
 (setq global-whitespace-mode +1)
 ;; (setq-default show-trailing-whitespace t)
-(setq whitespace-style '(face tabs spaces trailing lines space-before-tab newline indentation empty space-after-tab space-mark tab-mark))
+(defvar whitespace-style '(face tabs spaces trailing lines space-before-tab newline indentation empty space-after-tab space-mark tab-mark))
 (smart-tabs-mode +1)
 (setq indent-tabs-mode nil)
 
@@ -34,3 +61,6 @@
 
 ;;; markdown
 (remove-hook 'markdown-mode-hook 'auto-fill-mode)
+
+(provide '+langs)
+;;; +langs.el ends here

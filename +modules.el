@@ -1,4 +1,30 @@
-;;; ~/.emacs.d/+use-package.el -*- lexical-binding: t; -*-
+;;; +modules.el --- personal module configuration    -*- lexical-binding: t; -*-
+
+;; Copyright (C) 2021  Sam
+
+;; Author: Sam;;; ~/.emacs.d/+use-package.el -*- lexical-binding: t; -*- <scmorris.dev@gmail.com>
+;; Keywords: local
+
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;; Set up my modules.
+
+;;; Code:
+
+(require 'use-package)
 
 ;; (use-package no-littering)
 
@@ -37,18 +63,17 @@
   (defalias #'consult-imenu-types #'consult-imenu)
   ;; Configure initial narrowing per command
   (setq consult-initial-narrow-config
-    '((consult-imenu-functions . ?f)
-      (consult-imenu-variables . ?v)
-      (consult-imenu-packages . ?p)
-      (consult-imenu-types . ?t)
-      (consult-imenu-macros . ?m)))
+        '((consult-imenu-functions . ?f)
+          (consult-imenu-variables . ?v)
+          (consult-imenu-packages . ?p)
+          (consult-imenu-types . ?t)
+          (consult-imenu-macros . ?m)))
 
   ;; Add initial narrowing hook
   (defun consult-initial-narrow ()
     (when-let (key (alist-get this-command consult-initial-narrow-config))
       (setq unread-command-events (append unread-command-events (list key 32)))))
-  (add-hook 'minibuffer-setup-hook #'consult-initial-narrow)
-  (remove-hook 'minibuffer-setup-hook #'consult-initial-narrow))
+  (add-hook 'minibuffer-setup-hook #'consult-initial-narrow))
 (use-package marginalia
   :init
   (marginalia-mode))
@@ -71,11 +96,17 @@
 
 (use-package expand-region)
 
+;; (use-package kbd-mode)
+
 (use-package evil
   :init
   (setq evil-want-integration t)
   (setq evil-want-keybinding nil)
   (setq evil-disable-insert-state-bindings t)
+  (defun +default|disable-delete-selection-mode ()
+    (delete-selection-mode -1))
+  (add-hook 'evil-insert-state-entry-hook #'delete-selection-mode)
+
   :config
   (evil-mode 1)
   ;; (advice-add 'evil-goto-mark :after #'(lambda () (evil-scroll-line-to-center (line-number-at-pos))))
@@ -109,7 +140,10 @@
 (use-package flyspell-correct-popup)
 (use-package flycheck
   :config
-  (setq flycheck-indication-mode 'right-fringe))
+  (setq flycheck-emacs-lisp-load-path 'inherit)
+  (setq flycheck-indication-mode 'right-fringe)
+  (add-hook 'flycheck-error-list-mode-hook visual-line-mode)
+  )
 (use-package flycheck-aspell)
 (use-package flycheck-ledger)
 (use-package flycheck-popup-tip)
@@ -118,23 +152,26 @@
 ;; (use-package transient)
 
 (use-package forge)
+(use-package diff-hl
+  :config
+  (global-diff-hl-mode))
 (use-package magit)
 (use-package magit-gitflow)
-(use-package magithub)
+;; (use-package magithub)
 (use-package git-timemachine)
-(use-package git-gutter-fringe
-  :config
-  (if (fboundp 'fringe-mode) (fringe-mode '8))
+;; (use-package git-gutter-fringe
+;;   :config
+;;   (if (fboundp 'fringe-mode) (fringe-mode '8))
 
-  ;; places the git gutter outside the margins.
-  (setq-default fringes-outside-margins t)
-  ;; thin fringe bitmaps
-  (define-fringe-bitmap 'git-gutter-fr:added [224]
-    nil nil '(center repeated))
-  (define-fringe-bitmap 'git-gutter-fr:modified [224]
-    nil nil '(center repeated))
-  (define-fringe-bitmap 'git-gutter-fr:deleted [128 192 224 240]
-    nil nil 'bottom))
+;;   ;; places the git gutter outside the margins.
+;;   (setq-default fringes-outside-margins t)
+;;   ;; thin fringe bitmaps
+;;   (define-fringe-bitmap 'git-gutter-fr:added [224]
+;;     nil nil '(center repeated))
+;;   (define-fringe-bitmap 'git-gutter-fr:modified [224]
+;;     nil nil '(center repeated))
+;;   (define-fringe-bitmap 'git-gutter-fr:deleted [128 192 224 240]
+;;     nil nil 'bottom))
 
 (use-package format-all)
 
@@ -164,15 +201,18 @@
 
 (use-package markdown-toc)
 
-(use-package org)
-(use-package evil-org
+(use-package org
   :config
-  (add-hook 'org-mode-hook 'evil-org-mode)
-  (add-hook 'evil-org-mode-hook
-            (lambda ()
-              (evil-org-set-key-theme)))
-  (require 'evil-org-agenda)
-  (evil-org-agenda-set-keys))
+  (setq org-directory "~/notes")
+  (setq org-agenda-files '("~/notes")))
+;; (use-package evil-org
+;;   :config
+;;   (add-hook 'org-mode-hook 'evil-org-mode)
+;;   (add-hook 'evil-org-mode-hook
+;;             (lambda ()
+;;               (evil-org-set-key-theme)))
+;;   (require 'evil-org-agenda)
+;;   (evil-org-agenda-set-keys))
 (use-package toc-org)
 (use-package org-superstar
   :config
@@ -246,7 +286,18 @@
   (push 'ibuffer-mode evil-snipe-disabled-modes))
 
 (use-package projectile
+  :init
+  (projectile-mode +1)
+  (defun sam-projectile-vc-or-dired ()
+    (interactive)
+    (if (not (string-equal (projectile-project-vcs) "none"))
+        (progn (projectile-vc)
+               (call-interactively #'find-file))
+      (dired default-directory)))
+  (setq projectile-switch-project-action #'sam-projectile-vc-or-dired)
+
   :config
+  (delete "~/.emacs.d/.local/" projectile-globally-ignored-directories)
   (add-to-list 'projectile-globally-ignored-directories "build")
   (defun sam-projectile-ibuffer-by-project (project-root)
     "Open an IBuffer window showing all buffers in PROJECT-ROOT."
@@ -266,13 +317,6 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
                           (projectile-project-root))))
 
       (sam-projectile-ibuffer-by-project project-root)))
-  (defun sam-projectile-vc-or-dired ()
-    (interactive)
-    (if (not (string-equal (projectile-project-vcs) "none"))
-        (projectile-vc)
-      (dired default-directory)
-      ))
-  (setq projectile-switch-project-action #'sam-projectile-vc-or-dired)
   (add-hook 'projectile-after-switch-project-hook 'delete-other-windows))
 
 (use-package workgroups)
@@ -281,26 +325,13 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
   :config
   (persp-mode))
 
-(use-package persp-projectile
-  :config
-  (add-hook 'projectile-after-switch-project-hook 'delete-other-windows)
-  ;; (defun sam-dired-if-not-vc ()
-  ;;   (when (string-equal (projectile-project-vcs) "none")
-  ;;     (projectile-dired)))
-  ;; (add-hook 'projectile-after-switch-project-hook 'sam-dired-if-not-vc)
-
-  (defun sam-projectile-vc-or-dired ()
-    (interactive)
-    (if (not (string-equal (projectile-project-vcs) "none"))
-        (projectile-vc)
-      (dired default-directory)))
-  (setq projectile-switch-project-action #'sam-projectile-vc-or-dired))
+(use-package persp-projectile)
 
 (use-package visual-fill-column)
 
-(use-package find-file-in-project)
+;; (use-package find-file-in-project)
 
-(use-package bookmark+)
+;; (use-package bookmark+)
 
 (use-package system-packages
   :config
@@ -420,7 +451,7 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
 
 (use-package explain-pause-mode)
 
-(use-package daemons)
+;; (use-package daemons)
 
 ;; (use-package pretty-mode
 ;;   :config
@@ -650,11 +681,11 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
                       :branch "master"
                       :files ("shelldon.el"))
   :config
-  ;; (require 'shelldon)
   (setq shell-command-switch "-ic")
-  (add-to-list 'evil-normal-state-modes 'shell-mode)
+  (add-to-list 'evil-normal-state-modes 'shelldon-mode)
   ;; (setenv "TERM" "eterm-color")
-  (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
+  (add-hook 'shelldon-mode-hook 'ansi-color-for-comint-mode-on)
+  (add-hook 'shelldon-mode-hook '(lambda () (view-mode -1)))
   (add-to-list 'comint-output-filter-functions 'ansi-color-process-output)
   (autoload 'ansi-color-for-comint-mode-on "ansi-color" nil t))
 
@@ -706,28 +737,17 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
 
 (use-package haskell-mode)
 
-;; (use-package golden-ratio
-;;   :config
-;;   (golden-ratio-mode +1))
-
 (use-package gumshoe
   :straight (gumshoe :type git
                      :host github
                      :repo "Overdr0ne/gumshoe"
                      :branch "master")
-  :config
-  (global-gumshoe-mode 1)
+  ;; :straight (gumshoe :type git
+  ;;                    :url "file:///home/sam/src/gumshoe"
+  ;;                    :branch "perspective")
+  :init
   (global-gumshoe-persp-mode 1)
-  (global-gumshoe-buf-mode 1)
-  (defun consult-gumshoe ()
-    (interactive)
-    (consult-global-mark (ring-elements (oref gumshoe--global-backlog log))))
-  (defun consult-gumshoe-persp ()
-    (interactive)
-    (consult-global-mark (ring-elements (oref gumshoe--persp-backlog log))))
-  (defun consult-gumshoe-buf ()
-    (interactive)
-    (consult-global-mark (ring-elements (oref gumshoe--buf-backlog log)))))
+  (setf gumshoe-slot-schema '(perspective time buffer position line)))
 
 (use-package embark
   :config
@@ -740,9 +760,37 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
   :hook
   (embark-collect-mode . consult-preview-at-point-mode))
 
-(use-package better-jumper)
+;; (use-package better-jumper)
 
-(use-package esup)
+;; (use-package esup)
+
+(use-package package-lint)
+
+;; (use-package bufler)
+
+(use-package burly)
+
+(use-package prism
+  :straight (prism :type git
+                   :host github
+                   :branch "rainbows"
+                   :repo "Overdr0ne/prism.el")
+  :config
+  (setf prism-num-faces 30
+        prism-color-attribute :background
+        prism-colors (list "maroon" "violet" "blue violet" "blue" "light sea green" "green" "yellow green" "yellow" "orange" "red")
+        prism-desaturations (list 0 0 0)
+        prism-lightens (list 0 0 0)
+        prism-opacities (list 10 30 90)
+        prism-comments-fn (lambda (color) color)
+        prism-strings-fn (lambda (color) color)
+        prism-parens-fn (lambda (color) color))
+  (prism-save-colors)
+  )
+
+;; (load "~/src/winblows/winblows.el")
+
+(use-package loccur)
 
 (provide '+modules)
 ;;; +modules.el ends here

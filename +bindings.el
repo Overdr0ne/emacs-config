@@ -1,4 +1,30 @@
-;;; config/default/+bindings.el -*- lexical-binding: t; -*-
+;;; +bindings.el --- personal bindings configuration    -*- lexical-binding: t; -*-
+
+;; Copyright (C) 2021  Sam
+
+;; Author: Sam
+;; Keywords: local
+
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;; Set up my bindings.
+
+;;; Code:
+
+(require 'general)
 
 (require 'profiler)
 (profiler-reset)
@@ -61,7 +87,7 @@
  "b" #'swiper
  "d" #'consult-grep-wd
  "M-d" #'rgrep-wd
- "f" #'counsel-file-jump
+ "f" #'consult-find
  "i" #'imenu
  "l" #'rgrep
  "p" #'projectile-ripgrep
@@ -142,6 +168,7 @@
  "a" admin-keymap
 
  "b"   #'persp-switch-to-buffer*
+ "B"   #'revert-buffer
  ;; "b"   #'sam-switch-to-persp-buffer
  "["   #'previous-buffer
  "]"   #'next-buffer
@@ -216,21 +243,23 @@
  "oD" #'docker
 
  "p" '(:ignore t :which-key "project")
+ "p TAB" #'persp-switch-last
  "p;" #'projectile-repeat-last-command
  "p]" #'persp-next
  "p[" #'persp-prev
  "pf" #'projectile-find-file
- "p!"  #'projectile-run-shell-command-in-root
+ "p!" #'projectile-run-shell-command-in-root
  "pa" #'projectile-add-known-project
  "pb" #'projectile-switch-to-buffer
  "pc" #'projectile-compile-project
  "pC" #'projectile-configure-project
  "pd" #'projectile-remove-known-project
  "pe" #'projectile-edit-dir-locals
- "pf" #'find-file-in-project-at-point
+ ;; "pf" #'find-file-in-project-at-point
+ "pf" #'projectile-find-file
  "pi" #'projectile-invalidate-cache
  "pk" #'persp-kill
- "pn" #'persp-switch
+ "pn" #'sam-create-project
  "po" #'projectile-find-other-file
  "pp" #'persp-switch
  "pr" #'persp-remove-buffer
@@ -314,18 +343,15 @@
  "C-f"  #'sfs-research
  "C-g" #'consult-bookmark
  "C-k" #'kill-buffer-and-window
- "C-m" #'bookmark-set
- "C-t" (lambda () (interactive)
-         (setq light-theme (not light-theme))
-         (if light-theme
-             (load-theme 'spacemacs-light t)
-           (load-theme 'dracula t))))
+ "<C-m>" #'bookmark-set
+ "C-t" #'sam-toggle-theme)
 
 (defvar metallic-keymap (make-sparse-keymap))
 (general-define-key
  :keymaps 'metallic-keymap
  "M-;"  #'execute-extended-command
  "M-b" #'persp-ibuffer
+ "M-g" #'consult-find
  "M-f" #'counsel-recentf)
 
 (defvar shifty-keymap (make-sparse-keymap))
@@ -336,19 +362,28 @@
  "f" #'sam-sudo-find-root
  "S-r" #'sam-sudo-find-root)
 
+;;; Language-specific bindings
 (general-define-key
  :states 'normal
  :keymaps '(lisp-mode-map lisp-interaction-mode-map emacs-lisp-mode-map)
  :prefix "C-e"
  ""   nil
- "C-e" #'+eval-this-sexp
+ "C-e" #'sam-eval-this-sexp
  "C-b" #'eval-buffer)
 (general-define-key
  :states 'visual
  :keymaps '(lisp-mode-map lisp-interaction-mode-map emacs-lisp-mode-map)
  "C-e" #'eval-region)
 
-;;; Language-specific bindings
+(general-define-key
+ :states '(normal insert)
+ :keymaps 'sh-mode-map
+ "C-e" #'shelldon-send-line-at-point)
+(general-define-key
+ :states 'visual
+ :keymaps 'sh-mode-map
+ "C-e" #'shelldon-send-region)
+
 (general-define-key
  :states 'normal
  :keymaps 'clojure-mode-map
@@ -380,6 +415,7 @@
  "A-]" #'evilem-motion-forward-section-begin
  "A-[" #'evilem-motion-backward-section-begin)
 
+(require 'evil-easymotion)
 (evilem-make-motion
  evilem-motion-next-sexp #'sp-next-sexp)
 (evilem-make-motion
@@ -458,9 +494,9 @@
  "C-i" #'gumshoe-buf-backtrack-forward
  "M-i" #'gumshoe-persp-backtrack-forward
  "C-M-i" #'gumshoe-backtrack-forward
- "C-S-i" #'consult-gumshoe-buf
- "M-S-i" #'consult-gumshoe-persp
- "C-M-S-i" #'consult-gumshoe
+ "C-S-i" #'gumshoe-peruse-in-buffer
+ "M-S-i" #'gumshoe-peruse-in-persp
+ "C-M-S-i" #'gumshoe-peruse-globally
 
  "j"   #'evil-next-visual-line
  "J"  #'evil-join
@@ -482,12 +518,13 @@
 
  "o"   #'evil-open-below
  "O"   #'evil-open-above
- "C-o" #'gumshoe-backtrack-back
- "M-o" #'gumshoe-persp-backtrack-back
- "C-M-o" #'consult-gumshoe
+ "A-o" #'sam-open-between
  "C-o" #'gumshoe-buf-backtrack-back
  "M-o" #'gumshoe-persp-backtrack-back
  "C-M-o" #'gumshoe-backtrack-back
+ "C-S-o" #'gumshoe-peruse-in-buffer
+ "M-S-o" #'gumshoe-peruse-in-persp
+ "C-M-S-o" #'gumshoe-peruse-globally
 
  "p"   #'evil-paste-after
  "P"   #'evil-paste-before
@@ -503,6 +540,8 @@
 
  "s"   #'evil-substitute
  "S"   #'evil-change-whole-line
+ "C-s" #'isearch-forward
+ "M-s" #'isearch-repeat-forward
 
  "t"   #'sam-avy
 
@@ -519,6 +558,7 @@
  "Y"  #'evil-yank-line
  )
 
+;;; insert bindings
 (general-define-key
  :states 'insert
  "C-a" #'beginning-of-line
@@ -527,6 +567,8 @@
  "C-b" #'backward-char
  "C-n" #'next-line
  "C-p" #'previous-line
+ "C-s" #'isearch-forward
+ "M-s" #'isearch-repeat-forward
  "C-h" #'xah-delete-backward-char-or-bracket-text
  "M-w" #'forward-word
  "M-b" #'backward-word
@@ -556,6 +598,7 @@
  "F"  #'evil-snipe-F
  ";"   #'execute-extended-command)
 
+(require 'hydra)
 (defhydra hydra-undo-tree (:color yellow
                                   :hint nil)
   "
@@ -645,6 +688,11 @@
  "<home>" help-map)
 
 ;;; Module keybinds
+(with-eval-after-load 'debug
+  (general-define-key
+   :states 'normal
+   :keymaps 'debugger-mode-map
+   "SPC" command-mode-map))
 (general-define-key
  :states 'normal
  :keymaps 'markdown-mode-map
@@ -708,13 +756,14 @@
  :states 'insert
  "C-j" #'corfu-next
  "C-k" #'corfu-previous
- "C-l" #'corfu-complete)
+ "C-l" #'corfu-complete
+ "C-[" #'(lambda () (corfu-quit) (evil-force-normal-state)))
 
-(define-key dired-mode-map (kbd "<normal-state> ;") nil)
 (general-define-key
  :keymaps 'dired-mode-map
  :states 'normal
  ""      nil
+ ";"   #'execute-extended-command
  "C-<return>" #'shelldon
  "C-/" #'dired-narrow
  "C-l" #'dired-do-symlink
@@ -745,28 +794,63 @@
 ;;; :ui
 (general-define-key
  :keymaps '(evil-window-map)
+
  ;; Navigation
- "C-h" #'evil-window-left
- "C-j" #'evil-window-down
- "C-k" #'evil-window-up
- "C-l" #'evil-window-right
+ "C-h" #'windmove-left
+ "C-j" #'windmove-down
+ "C-k" #'windmove-up
+ "C-l" #'windmove-right
  "C-d" #'delete-window
  "C-q" #'quit-window
+ "C-s" #'ace-swap-window
  "C-t" #'window-toggle-side-windows
  "C-w" #'other-window
- "C-n" #'evil-window-vnew
+ "C-n" #'evil-window-split
+
+ "S-c" #'winblows-here
+ "S-o" #'winblows-there
+ "S-f" #'winblows-follow
+ "S-u" #'winblows-unfollow
+ "S-h" #'winblows-west
+ "S-j" #'winblows-south
+ "S-k" #'winblows-north
+ "S-l" #'winblows-east
+
+ "M-h" #'windmove-display-left
+ "M-j" #'windmove-display-down
+ "M-k" #'windmove-display-up
+ "M-l" #'windmove-display-right
+ "M-c" #'windmove-display-same-window
+
  ;; Swapping windows
+ "<C-m>" #'sam-ace-move-window
  "C-M-h" #'evil-window-move-far-left
  "C-M-j" #'evil-window-move-very-bottom
  "C-M-k" #'evil-window-move-very-top
  "C-M-l" #'evil-window-move-far-right
- "C-a"   #'ace-swap-window
+
  "u"     #'winner-undo
  "C-u"   #'winner-undo
  "C-r"   #'winner-redo
  "o"     #'delete-other-windows
  ;; Delete window
  "C-C"     #'ace-delete-window)
+
+(defhydra evil-window-hydra (:color yellow :hint nil)
+  "
+ _h_: window-left  _j_: window-down _k_: window-up _l_: window-right "
+  ("h"   evil-window-left)
+  ("j"   evil-window-down)
+  ("k"   evil-window-up)
+  ("l"   evil-window-right)
+  ("q"   nil "quit" :color blue))
+
+(general-define-key
+ :keymaps 'evil-window-map
+ "h" #'evil-window-hydra/evil-window-left
+ "k" #'evil-window-hydra/evil-window-up
+ "j" #'evil-window-hydra/evil-window-down
+ "l" #'evil-window-hydra/evil-window-right)
 
 ;;; :tools
 
@@ -853,11 +937,19 @@
  "<tab>"     #'indent-relative
  "M-<tab>"   #'indent-relative-below)
 (general-define-key
- :states '(normal visual)
+ :states '(insert)
  :keymaps 'prog-mode-map
-
- "<return>" #'embark-act
- "<C-return>" #'evil-commentary-line)
+ "<return>" #'newline-and-indent)
+(general-define-key
+ :states '(visual)
+ :keymaps 'prog-mode-map
+ "<C-return>" #'evil-commentary
+ "<return>" #'embark-act)
+(general-define-key
+ :states '(normal)
+ :keymaps 'prog-mode-map
+ "<C-return>" #'evil-commentary-line
+ "<return>" #'embark-act)
 
 (general-define-key
  :states 'normal
@@ -972,22 +1064,6 @@
  "P"    #'find-library
  "v"    #'helpful-variable
  "V"    #'set-variable)
-
-(defhydra evil-window-hydra (:color yellow :hint nil)
-  "
- _h_: window-left  _j_: window-down _k_: window-up _l_: window-right "
-  ("h"   evil-window-left)
-  ("j"   evil-window-down)
-  ("k"   evil-window-up)
-  ("l"   evil-window-right)
-  ("q"   nil "quit" :color blue))
-
-(general-define-key
- :keymaps 'evil-window-map
- "h" #'evil-window-hydra/evil-window-left
- "k" #'evil-window-hydra/evil-window-up
- "j" #'evil-window-hydra/evil-window-down
- "l" #'evil-window-hydra/evil-window-right)
 
 (general-define-key
  :states '(insert visual)

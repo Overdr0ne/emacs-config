@@ -1,24 +1,28 @@
-;;; functions.el -*- lexical-binding: t; -*-
+;;; +functions.el --- Define personal functions    -*- lexical-binding: t; -*-
 
-(defmacro define-move-and-insert
-    (name &rest body)
-  `(defun ,name (count &optional vcount skip-empty-lines)
-     ;; Following interactive form taken from the source for `evil-insert'
-     (interactive
-      (list (prefix-numeric-value current-prefix-arg)
-            (and (evil-visual-state-p)
-                 (memq (evil-visual-type) '(line block))
-                 (save-excursion
-                   (let ((m (mark)))
-                     ;; go to upper-left corner temporarily so
-                     ;; `count-lines' yields accurate results
-                     (evil-visual-rotate 'upper-left)
-                     (prog1 (count-lines evil-visual-beginning evil-visual-end)
-                       (set-mark m)))))
-            (evil-visual-state-p)))
-     (atomic-change-group
-       ,@body
-       (evil-insert count vcount skip-empty-lines))))
+;; Copyright (C) 2021  Sam
+
+;; Author: Sam
+;; Keywords: local
+
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;; A collection of personal functions.
+
+;;; Code:
 
 (defun empire/haskell/module->test ()
   "Jump from a module to a test."
@@ -45,45 +49,26 @@
       (empire/haskell/module->test)
     (empire/haskell/test->module)))
 
-(defun +eval-this-sexp () (interactive)
+(defun sam-eval-this-sexp () (interactive)
        (if (eq (char-after) 41)
            (call-interactively 'eval-last-sexp)
          (progn (evil-jump-item)
                 (call-interactively 'eval-last-sexp)
                 (evil-jump-item))))
 
-(defun insert-line-above ()
+(defun sam-insert-line-above ()
   "Insert an empty line above the current line."
   (interactive)
   (save-excursion
     (end-of-line 0)
     (open-line 1)))
 
-(defun insert-line-below ()
+(defun sam-insert-line-below ()
   "Insert an empty line below the current line."
   (interactive)
   (save-excursion
     (end-of-line)
     (open-line 1)))
-
-(define-move-and-insert grfn/insert-at-sexp-end
-  (when (not (equal (get-char) "("))
-    (backward-up-list))
-  (forward-sexp)
-  (backward-char))
-
-(define-move-and-insert grfn/insert-at-sexp-start
-  (backward-up-list)
-  (forward-char))
-
-(define-move-and-insert grfn/insert-at-form-start
-  (backward-sexp)
-  (backward-char)
-  (insert " "))
-
-(define-move-and-insert grfn/insert-at-form-end
-  (forward-sexp)
-  (insert " "))
 
 (defun keychain-refresh-environment ()
   "Set ssh-agent and gpg-agent environment variables.
@@ -119,27 +104,6 @@ current buffer directory."
         (if file-name
             (neotree-find file-name))))))
 
-(defun rs/projectile-switch-project-workspace ()
-  "Use projectile prompt to find or switch projects in a workspace tab."
-  (interactive)
-  (require 'projectile)
-  (ivy-read
-   (projectile-prepend-project-name "Switch to project: ") projectile-known-projects
-   :preselect (and (projectile-project-p)
-                   (abbreviate-file-name (projectile-project-root)))
-   :action
-   (lambda (project-path)
-     (let ((project-name
-            (file-name-nondirectory
-             (directory-file-name (file-name-directory project-path)))
-            ))
-       (progn
-         (if (+workspace-exists-p project-name)
-             (+workspace-switch project-name)
-           (progn (+workspace-switch project-name t)
-                  (counsel-projectile-switch-project-action project-path)))
-         (+tmux/run (concat "tt " project-name)))))))
-
 (defun +sclang-eval-this-expression () (interactive)
        (if (eq (char-after) 41)
            (call-interactively 'sclang-eval-last-expression)
@@ -160,41 +124,9 @@ current buffer directory."
 (defun toggle-var (var)
   (setq var (not var)))
 
-(defun urbint/format-haskell-source ()
-  (interactive)
-  (let ((output-buffer (generate-new-buffer "brittany-out"))
-        (config-file-path
-         (concat (string-trim
-                  (shell-command-to-string "stack path --project-root"))
-                 "/brittany.yaml")))
-    (when (= 0 (call-process-region
-                (point-min) (point-max)
-                "stack"
-                nil output-buffer nil
-                "exec" "--" "brittany" "--config-file" config-file-path))
-      (let ((pt (point))
-            (wst (window-start))
-            (formatted-source (with-current-buffer output-buffer
-                                (buffer-string))))
-        (erase-buffer)
-        (insert formatted-source)
-        (goto-char pt)
-        (set-window-start nil wst)))))
-
 (defun wc/buffer-major-mode (buffer-handle)
   "Returns a buffer's active major-mode."
   (with-current-buffer buffer-handle major-mode))
-
-(defun wc/do-switch-to-mru-buffer (buffer-candidates)
-  (setq buffer-candidate (car buffer-candidates))
-  (setq rest (cdr buffer-candidates))
-  (if (string-match-p current-buffer-name (buffer-name buffer-candidate))
-      (wc/do-switch-to--buffer rest)
-    (if (eq 0 (list-length buffer-candidates))
-        (message "No more buffer candidates.")
-      (if (wc/file-buffer-p buffer-candidate)
-          (switch-to-buffer buffer-candidate)
-        (wc/do-switch-to-mru-buffer rest)))))
 
 (defun wc/file-buffer-p (buffer-candidate)
   "Returns t if the buffer argument is backed by a file and is therefore presumably a code buffer."
@@ -214,36 +146,6 @@ current buffer directory."
           (switch-to-buffer buffer-name)
         (funcall repl-function)))))
 
-(defun wc/switch-to-mru-buffer ()
-  "Switches to the most recently used buffer, including visible buffers."
-  (interactive)
-  (setq current-buffer-name (buffer-name (current-buffer)))
-  (setq buffer-candidates (remove-if #'(lambda (buffer) (string-match-p current-buffer-name (buffer-name buffer))) (buffer-list)))
-  (wc/do-switch-to-mru-buffer buffer-candidates))
-
-(defun wpc/buffer-name-for-clojure-mode (mode)
-  (require 'projectile)
-  (let* ((project-name (projectile-project-name))
-         (cljs-name (concat "*cider-repl CLJS " project-name "*"))
-         (clj-name  (concat "*cider-repl " project-name "*")))
-    (cond ((eq mode 'clojurescript-mode) cljs-name)
-          ((eq mode 'clojure-mode) clj-name)
-          ((eq mode 'clojurec-mode) cljs-name))))
-
-(defun wpc/repl-function-for-clojure-mode (mode)
-  (require 'projectile)
-  (let ((project-name (projectile-project-name))
-        (cljs-fn #'cider-jack-in-clojurescript)
-        (clj-fn  #'cider-jack-in))
-    (cond ((eq mode 'clojurescript-mode) cljs-fn)
-          ((eq mode 'clojure-mode) clj-fn)
-          ((eq mode 'clojurec-mode) cljs-fn))))
-
-(defun wpc/reindent-defun-and-align-clojure-map ()
-  (interactive)
-  (call-interactively #'paredit-reindent-defun)
-  (call-interactively #'clojure-align))
-
 (defun sam-counsel-imenu (initial-input)
   "Jump to a buffer position indexed by imenu."
   (interactive)
@@ -256,7 +158,7 @@ current buffer directory."
             :history 'counsel-imenu-history
             :caller 'counsel-imenu))
 
-(defun move-line-down ()
+(defun sam-move-line-down ()
   (interactive)
   (let ((col (current-column)))
     (save-excursion
@@ -265,7 +167,7 @@ current buffer directory."
     (forward-line)
     (move-to-column col)))
 
-(defun move-line-up ()
+(defun sam-move-line-up ()
   (interactive)
   (let ((col (current-column)))
     ;; (save-excursion
@@ -276,7 +178,7 @@ current buffer directory."
   )
 
 ;; Indent relative, but works for the line below rather than above
-(defun indent-relative-below ()
+(defun sam-indent-relative-below ()
   (interactive)
   (move-line-down)
   (indent-relative)
@@ -523,8 +425,10 @@ Version 2017-07-02"
 
 (defun sam-evil-append ()
   (interactive)
-  (call-interactively #'evil-append)
-  (indent-according-to-mode))
+  (if (not (equal (point) (line-beginning-position)))
+      (call-interactively #'evil-append)
+    (call-interactively #'evil-append)
+    (indent-according-to-mode)))
 
 (defun sam-helpful-click ()
   (interactive)
@@ -572,6 +476,59 @@ Version 2017-07-02"
 (defun sam-dired-yank-here ()
   (interactive)
   (copy-file (ring-ref sam-file-ring 0) (read-file-name "Target: ")))
+
+(defun sam-create-project (dir)
+  "Create projectile project in DIR and spawn perspective."
+  (interactive "Ddir: ")
+  (require 'perspective)
+  (require 'projectile)
+  (projectile-add-known-project dir)
+  (let ((name (first (last (split-string dir "/") 2))))
+    (unless (some #'f-exists-p projectile-project-root-files-bottom-up)
+      (f-touch ".projectile"))
+    (projectile-switch-project-by-name (projectile-project-name dir))
+    (persp-switch (projectile-project-name dir))
+    (find-file dir)))
+
+(defun sam-aw-move-window (window)
+  "Swap buffers of current window and WINDOW."
+  (cl-labels ((swap-windows (window1 window2)
+                            "Swap the buffers of WINDOW1 and WINDOW2."
+                            (let ((buffer1 (window-buffer window1))
+                                  (buffer2 (window-buffer window2)))
+                              (set-window-buffer window1 buffer2)
+                              (set-window-buffer window2 buffer1)
+                              (select-window window2)
+                              (delete-window window1))))
+    (let ((frame (window-frame window))
+          (this-window (selected-window)))
+      (when (and (frame-live-p frame)
+                 (not (eq frame (selected-frame))))
+        (select-frame-set-input-focus (window-frame window)))
+      (when (and (window-live-p window)
+                 (not (eq window this-window)))
+        (aw--push-window this-window)
+        (if aw-swap-invert
+            (swap-windows window this-window)
+          (swap-windows this-window window))))))
+
+(defun sam-ace-move-window ()
+  "Ace replace window."
+  (interactive)
+  (aw-select " Ace - Move Window"
+             #'sam-aw-move-window))
+
+(defun sam-open-between ()
+  (interactive)
+  (evil-open-above 1)
+  (newline-and-indent))
+
+(deftoggle sam-toggle-theme
+  "Toggle theme between light and dark."
+  (progn (disable-theme 'dracula)
+         (load-theme 'spacemacs-light t))
+  (progn (disable-theme 'spacemacs-light)
+         (load-theme 'dracula t)))
 
 (provide '+functions)
 ;;; +functions.el ends here
