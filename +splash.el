@@ -26,8 +26,7 @@
 
 (require 'projectile)
 
-;; (projectile-persp-switch-project (first (projectile-relevant-known-projects)))
-;; (windmove-display-same-window)
+(windmove-display-same-window)
 (sfs-recollect)
 (call-interactively #'projectile-persp-switch-project)
 

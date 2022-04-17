@@ -91,10 +91,10 @@
          (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-below-selected)
          (window-min-height . 20)
          (reusable-frames . visible))
-        ("magit"
+        ("\\(magit:\\|pydoc\\)"
          (display-buffer-reuse-window display-buffer-same-window))
-        ("\\*"
-         (display-buffer-reuse-window display-buffer-pop-up-window))
+        ;; ("\\*"
+        ;;  (display-buffer-reuse-window display-buffer-pop-up-window))
         ))
 
 (set-language-environment "UTF-8")
@@ -110,14 +110,13 @@
 ;; (general-add-hook 'kill-emacs-hook
 ;;                   '(customize-save-customized))
 
-;; (setq backup-directory-alist `(("." . "~/.bak")))
-;; (add-to-list 'backup-directory-alist
-;;              (cons "." "~/.emacs.d/backups/"))
-;; (setq backup-by-copying t)
-;; (setq delete-old-versions t
-;;   kept-new-versions 6
-;;   kept-old-versions 2
-;;   version-control t)
+(add-to-list 'backup-directory-alist
+             (cons "." "~/.emacs.d/backups/"))
+(setq backup-by-copying t
+      delete-old-versions t
+      kept-new-versions 6
+      kept-old-versions 2
+      version-control t)
 
 (savehist-mode +1)
 
@@ -147,6 +146,12 @@
 (setq load-prefer-newer t)
 
 (setq inhibit-startup-screen 't)
+
+(setq debug-on-error t)
+
+(setf scroll-step 1)
+
+;; (desktop-save-mode 1)
 
 (provide '+core)
 ;;; +core.el ends here

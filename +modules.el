@@ -62,18 +62,19 @@
   (defalias #'consult-imenu-packages #'consult-imenu)
   (defalias #'consult-imenu-types #'consult-imenu)
   ;; Configure initial narrowing per command
-  (setq consult-initial-narrow-config
-        '((consult-imenu-functions . ?f)
-          (consult-imenu-variables . ?v)
-          (consult-imenu-packages . ?p)
-          (consult-imenu-types . ?t)
-          (consult-imenu-macros . ?m)))
+  (defvar consult-initial-narrow-config
+    '((consult-imenu-functions . ?f)
+      (consult-imenu-variables . ?v)
+      (consult-imenu-packages . ?p)
+      (consult-imenu-types . ?t)
+      (consult-imenu-macros . ?m)))
 
   ;; Add initial narrowing hook
   (defun consult-initial-narrow ()
     (when-let (key (alist-get this-command consult-initial-narrow-config))
       (setq unread-command-events (append unread-command-events (list key 32)))))
   (add-hook 'minibuffer-setup-hook #'consult-initial-narrow))
+(use-package consult-lsp)
 (use-package marginalia
   :init
   (marginalia-mode))
@@ -81,6 +82,7 @@
   :config
   (selectrum-prescient-mode +1)
   (prescient-persist-mode +1))
+(use-package ctrlf)
 
 (use-package amx)
 
@@ -102,7 +104,11 @@
   :init
   (setq evil-want-integration t)
   (setq evil-want-keybinding nil)
+  (setq evil-want-Y-yank-to-eol t)
   (setq evil-disable-insert-state-bindings t)
+  ;; Don't let evil-collection interfere with certain keys
+  (setq evil-collection-key-blacklist
+	(list "<escape>"))
   (defun +default|disable-delete-selection-mode ()
     (delete-selection-mode -1))
   (add-hook 'evil-insert-state-entry-hook #'delete-selection-mode)
@@ -129,7 +135,15 @@
   (evil-snipe-mode +1))
 (use-package evil-surround
   :config
-  (global-evil-surround-mode 1))
+  (global-evil-surround-mode 1)
+  (evil-add-to-alist
+   'evil-surround-pairs-alist
+   ?\( '("(" . ")")
+   ?\[ '("[" . "]")
+   ?\{ '("{" . "}")
+   ?\) '("( " . " )")
+   ?\] '("[ " . " ]")
+   ?\} '("{ " . " }")))
 ;;(use-package evil-embrace)
 (use-package evil-traces
   :config
@@ -142,8 +156,8 @@
   :config
   (setq flycheck-emacs-lisp-load-path 'inherit)
   (setq flycheck-indication-mode 'right-fringe)
-  (add-hook 'flycheck-error-list-mode-hook visual-line-mode)
-  )
+  (setq flycheck-check-syntax-automatically '(idle-change new-line mode-enabled))
+  (add-hook 'flycheck-error-list-mode-hook visual-line-mode))
 (use-package flycheck-aspell)
 (use-package flycheck-ledger)
 (use-package flycheck-popup-tip)
@@ -155,7 +169,9 @@
 (use-package diff-hl
   :config
   (global-diff-hl-mode))
-(use-package magit)
+(use-package magit
+  :config
+  (setf magit-buffer-log-args '("-n256" "-c" "--decorate")))
 (use-package magit-gitflow)
 ;; (use-package magithub)
 (use-package git-timemachine)
@@ -176,6 +192,10 @@
 (use-package format-all)
 
 (use-package dts-mode)
+(use-package kconfig-mode)
+(use-package yaml-mode
+  :config
+  (add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode)))
 
 (use-package yasnippet
   :config
@@ -192,9 +212,25 @@
 (use-package lsp-ui
   :commands lsp-ui-mode
   :config
-  (setf (alist-get 'width lsp-ui-doc-frame-parameters) 80))
+  (setf lsp-ui-doc-mode -1)
+  ;; (setf (alist-get 'width lsp-ui-doc-frame-parameters) 80)
+  )
+(use-package ccls
+  :config
+  (add-to-list 'lsp-enabled-clients 'ccls))
 
 (use-package pyvenv)
+(use-package pydoc
+  :straight (pydoc :type git
+                   :host github
+                   :branch "master"
+                   :repo "Overdr0ne/pydoc"))
+(use-package lsp-jedi
+  :config
+  (with-eval-after-load "lsp-mode"
+    (add-to-list 'lsp-disabled-clients 'pyls)
+    (add-to-list 'lsp-enabled-clients 'jedi))
+  (setf lsp-ui-doc-mode -1))
 
 (use-package adaptive-wrap)
 (use-package evil-tex)
@@ -243,7 +279,9 @@
 
 (use-package bash-completion
   :config
-  (bash-completion-setup))
+  (bash-completion-setup)
+  (add-hook 'shell-dynamic-complete-functions
+            'bash-completion-dynamic-complete))
 
 (use-package request)
 
@@ -251,7 +289,9 @@
 (use-package treemacs-perspective)
 (use-package treemacs-projectile)
 
-(use-package vi-tilde-fringe)
+(use-package vi-tilde-fringe
+  :config
+  (global-vi-tilde-fringe-mode +1))
 
 (use-package multi-compile
   :config
@@ -386,7 +426,7 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
   :config
   (require 'smartparens-config))
 
-(use-package smart-tabs-mode)
+;; (use-package smart-tabs-mode)
 (use-package smartparens)
 (use-package lispy)
 (use-package evil-cleverparens
@@ -411,7 +451,9 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
   (setq diredp-hide-details-initially-flag nil)
   (add-hook 'dired-mode-hook 'hl-line-mode))
 (use-package dired-du)
-(use-package dired-subtree)
+(use-package dired-subtree
+  :config
+  (setf dired-subtree-use-backgrounds nil))
 (use-package dired-filter)
 (use-package dired-narrow)
 
@@ -631,10 +673,14 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
                          "service.py"
                          "evil-collection-sfs.el"))
   :config
+  (add-to-list 'evil-insert-state-modes 'sfs-research-mode)
   (global-sfs-mode 1))
 
 ;;; themes
 (use-package dracula-theme
+  :straight (dracula-theme :type git
+			   :host github
+			   :repo "Overdr0ne/emacs")
   :config
   (load-theme 'dracula t))
 (use-package solarized-theme
@@ -642,6 +688,9 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
   ;; (load-theme 'solarized-light t)
   )
 (use-package spacemacs-theme
+  :straight (spacemacs-theme :type git
+			     :host github
+			     :repo "Overdr0ne/spacemacs-theme")
   :defer t
   ;; :init
   ;; (load-theme 'spacemacs-light t)
@@ -678,16 +727,22 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
   :straight (shelldon :type git
                       :host github
                       :repo "Overdr0ne/shelldon"
-                      :branch "master"
+                      :branch "dev"
                       :files ("shelldon.el"))
   :config
-  (setq shell-command-switch "-ic")
+  (setf shell-command-switch "-ic")
+  (setf enable-recursive-minibuffers t)
   (add-to-list 'evil-normal-state-modes 'shelldon-mode)
   ;; (setenv "TERM" "eterm-color")
   (add-hook 'shelldon-mode-hook 'ansi-color-for-comint-mode-on)
   (add-hook 'shelldon-mode-hook '(lambda () (view-mode -1)))
   (add-to-list 'comint-output-filter-functions 'ansi-color-process-output)
-  (autoload 'ansi-color-for-comint-mode-on "ansi-color" nil t))
+  (autoload 'ansi-color-for-comint-mode-on "ansi-color" nil t)
+  (advice-add #'shelldon-output-history :around
+	      (lambda (old-fn)
+		(let ((selectrum-should-sort nil))
+		  (funcall old-fn))))
+  )
 
 ;; (use-package emacs-application-framework
 ;;   :straight (emacs-application-framework :type git
@@ -709,9 +764,23 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
     (defvar corfu-mode-map-alist)
     (setq corfu-mode-map-alist `((completion-in-region-mode . ,corfu-map)))
     (add-to-list 'emulation-mode-map-alists 'corfu-mode-map-alist))
+  (setf corfu-quit-at-boundary t)
   ;; (advice-add 'corfu--setup :before #'corfu-setup-advice)
   :config
   (add-hook 'prog-mode-hook 'corfu-mode))
+;; (use-package cape
+;;   :init
+;;   (add-to-list 'completion-at-point-functions #'cape-file)
+;;   (add-to-list 'completion-at-point-functions #'cape-tex)
+;;   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+;;   (add-to-list 'completion-at-point-functions #'cape-keyword)
+;;   ;;(add-to-list 'completion-at-point-functions #'cape-sgml)
+;;   ;;(add-to-list 'completion-at-point-functions #'cape-rfc1345)
+;;   ;;(add-to-list 'completion-at-point-functions #'cape-abbrev)
+;;   ;;(add-to-list 'completion-at-point-functions #'cape-ispell)
+;;   (add-to-list 'completion-at-point-functions #'cape-dict)
+;;   ;;(add-to-list 'completion-at-point-functions #'cape-symbol)
+;;   (add-to-list 'completion-at-point-functions #'cape-line))
 
 (use-package highlight-indentation
   :straight (highlight-indentation :type git
@@ -724,6 +793,10 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
                           :host github
                           :repo "zk-phi/indent-guide"
                           :branch "master"))
+
+(use-package transpose-frame)
+
+(use-package buffer-move)
 
 ;; (use-package sclang)
 ;; (use-package sclang
@@ -747,7 +820,19 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
   ;;                    :branch "perspective")
   :init
   (global-gumshoe-persp-mode 1)
-  (setf gumshoe-slot-schema '(perspective time buffer position line)))
+  (setf gumshoe-slot-schema '(time perspective buffer position line))
+  (advice-add #'gumshoe-peruse-globally :around
+	      (lambda (old-fn)
+		(let ((selectrum-should-sort nil))
+		  (funcall old-fn))))
+  (advice-add #'gumshoe-peruse-in-persp :around
+	      (lambda (old-fn)
+		(let ((selectrum-should-sort nil))
+		  (funcall old-fn))))
+  (advice-add #'gumshoe-peruse-in-buffer :around
+	      (lambda (old-fn)
+		(let ((selectrum-should-sort nil))
+		  (funcall old-fn)))))
 
 (use-package embark
   :config
@@ -755,7 +840,8 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
         (lambda (map _target)
           (which-key--show-keymap "Embark" map nil nil 'no-paging)
           #'which-key--hide-popup-ignore-command)
-        embark-become-indicator embark-action-indicator))
+        embark-become-indicator embark-action-indicator)
+  )
 (use-package embark-consult
   :hook
   (embark-collect-mode . consult-preview-at-point-mode))
@@ -771,26 +857,37 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
 (use-package burly)
 
 (use-package prism
-  :straight (prism :type git
-                   :host github
-                   :branch "rainbows"
-                   :repo "Overdr0ne/prism.el")
-  :config
-  (setf prism-num-faces 30
-        prism-color-attribute :background
-        prism-colors (list "maroon" "violet" "blue violet" "blue" "light sea green" "green" "yellow green" "yellow" "orange" "red")
-        prism-desaturations (list 0 0 0)
-        prism-lightens (list 0 0 0)
-        prism-opacities (list 10 30 90)
-        prism-comments-fn (lambda (color) color)
-        prism-strings-fn (lambda (color) color)
-        prism-parens-fn (lambda (color) color))
-  (prism-save-colors)
-  )
+ :straight (prism :type git
+                  :host github
+                  :branch "master"
+                  :repo "Overdr0ne/prism.el")
+ :config
+ (setf prism-num-faces 30
+       prism-color-attribute :background
+       prism-colors (list "maroon" "violet" "blue violet" "blue" "light sea green" "green" "yellow green" "yellow" "orange" "red")
+       prism-desaturations (list 0 0 0)
+       prism-lightens (list 0 0 0)
+       prism-opacities (list 10 30 90)
+       prism-comments-fn (lambda (color) color)
+       prism-strings-fn (lambda (color) color)
+       prism-parens-fn (lambda (color) color))
+ ;; (prism-save-colors)
+ )
 
 ;; (load "~/src/winblows/winblows.el")
 
 (use-package loccur)
+
+(use-package bitbake
+  :straight (bitbake :type git
+                     :host github
+                     :repo "Overdr0ne/bitbake-el"
+                     :branch "master")
+  :config
+  (setf bitbake-poky-directory "/home/sam/build/poky/")
+  (setf bitbake-build-directory "/home/sam/build/poky/build/"))
+
+;; (use-package exec-path-from-shell)
 
 (provide '+modules)
 ;;; +modules.el ends here

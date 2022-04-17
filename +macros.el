@@ -29,16 +29,7 @@
           "See " name
           " command for a description of this toggle."))
 (defun deftoggle-fun-doc (name doc)
-  (concat "Toggle " name " on or off.\n\n" doc
-          "\n\nIf called interactively, enable Global Gumshoe-Buf mode if ARG is
-positive, and disable it if ARG is zero or negative.  If called
-from Lisp, also enable the mode if ARG is omitted or nil, and
-toggle it if ARG is toggle; disable the mode otherwise.
-
-Interactively with no argument, this command toggles the mode.
-A positive prefix argument enables the mode, any other prefix
-argument disables it.  From Lisp, argument omitted or nil enables
-the mode, toggle toggles the state."))
+  (concat "Toggle " name " on or off.\n\n" doc))
 (defmacro deftoggle (name doc enabler disabler)
   `(progn
      (defvar ,name nil ,(deftoggle-var-doc (symbol-name name)))
@@ -76,6 +67,25 @@ the mode, toggle toggles the state."))
      (atomic-change-group
        ,@body
        (evil-insert count vcount skip-empty-lines))))
+
+(eval-when-compile
+  (defmacro my/embark-ace-action (fn)
+    `(defun ,(intern (concat "my/embark-ace-" (symbol-name fn))) ()
+       (interactive)
+       (with-demoted-errors "%s"
+         (require 'ace-window)
+         (aw-switch-to-window (aw-select nil))
+         (call-interactively (symbol-function ',fn)))))
+
+  (defmacro my/embark-split-action (fn split-type)
+    `(defun ,(intern (concat "my/embark-"
+                             (symbol-name fn)
+                             "-"
+                             (car (last  (split-string
+                                          (symbol-name split-type) "-"))))) ()
+       (interactive)
+       (funcall #',split-type)
+       (call-interactively #',fn))))
 
 (provide '+macros)
 ;;; +macros.el ends here

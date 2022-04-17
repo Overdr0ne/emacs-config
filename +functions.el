@@ -62,6 +62,11 @@
   (save-excursion
     (end-of-line 0)
     (open-line 1)))
+(defun sam-follow-newline-above ()
+  "Insert an empty line above the current line."
+  (interactive)
+  (sam-insert-line-above)
+  (evil-previous-visual-line))
 
 (defun sam-insert-line-below ()
   "Insert an empty line below the current line."
@@ -69,6 +74,11 @@
   (save-excursion
     (end-of-line)
     (open-line 1)))
+(defun sam-follow-newline-below ()
+  "Insert an empty line above the current line."
+  (interactive)
+  (sam-insert-line-above)
+  (evil-next-visual-line))
 
 (defun keychain-refresh-environment ()
   "Set ssh-agent and gpg-agent environment variables.
@@ -482,13 +492,13 @@ Version 2017-07-02"
   (interactive "Ddir: ")
   (require 'perspective)
   (require 'projectile)
+  (message dir)
   (projectile-add-known-project dir)
-  (let ((name (first (last (split-string dir "/") 2))))
-    (unless (some #'f-exists-p projectile-project-root-files-bottom-up)
-      (f-touch ".projectile"))
-    (projectile-switch-project-by-name (projectile-project-name dir))
-    (persp-switch (projectile-project-name dir))
-    (find-file dir)))
+  (message (projectile-project-name dir))
+  (persp-switch (projectile-project-name dir))
+  (projectile-switch-project-by-name dir)
+  (find-file dir)
+  (f-touch ".projectile"))
 
 (defun sam-aw-move-window (window)
   "Swap buffers of current window and WINDOW."
@@ -523,12 +533,112 @@ Version 2017-07-02"
   (evil-open-above 1)
   (newline-and-indent))
 
+(deftoggle sam-hs-toggle-all
+  "Toggle showing all top-level blocks"
+  (hs-hide-all)
+  (hs-show-all))
+
 (deftoggle sam-toggle-theme
   "Toggle theme between light and dark."
   (progn (disable-theme 'dracula)
          (load-theme 'spacemacs-light t))
   (progn (disable-theme 'spacemacs-light)
          (load-theme 'dracula t)))
+
+(defun sam-make-filename-unique (filename)
+  (let ((base (file-name-sans-extension filename))
+	(ext (file-name-extension filename))
+	(name filename)
+	(cnt 1))
+    (while (file-exists-p name)
+      (setf name (concat base "-" (int-to-string cnt) "." ext))
+      (1+ cnt))
+    name))
+
+(defun sam-take-screenshot ()
+  "Take a screenshot and output to screenshot.png"
+  (interactive)
+  (shell-command "grim"))
+
+(defun sam-yank-to-eol ()
+  (interactive)
+  (evil-yank-line (point) (line-end-position)))
+
+(defun sam-move-scroll-next-line ()
+  (interactive)
+  (evil-scroll-line-down 1)
+  (evil-next-visual-line))
+(defun sam-move-scroll-prev-line ()
+  (interactive)
+  (evil-scroll-line-up 1)
+  (evil-previous-visual-line))
+
+(defun sam-avy ()
+  (interactive)
+  (avy-goto-word-or-subword-1))
+
+(defun source (filename)
+  "Update environment variables from a shell source FILENAME."
+  (interactive "fSource file: ")
+
+  (message "Sourcing environment from `%s'..." filename)
+  (with-temp-buffer
+
+    (shell-command (format "diff -u <(true; export) <(source %s; export)" filename) '(4))
+
+    (let ((envvar-re "declare -x \\([^=]+\\)=\\(.*\\)$"))
+      ;; Remove environment variables
+      (while (search-forward-regexp (concat "^-" envvar-re) nil t)
+        (let ((var (match-string 1)))
+          (message "%s" (prin1-to-string `(setenv ,var nil)))
+          (setenv var nil)))
+
+      ;; Update environment variables
+      (goto-char (point-min))
+      (while (search-forward-regexp (concat "^+" envvar-re) nil t)
+        (let ((var (match-string 1))
+              (value (read (match-string 2))))
+          (message "%s" (prin1-to-string `(setenv ,var ,value)))
+          (setenv var value)))))
+  (message "Sourcing environment from `%s'... done." filename))
+
+(defun sam-delete-side-windows (side)
+  "Delete windows at SIDE."
+  (mapc #'(lambda (window) (delete-window window)) (window-at-side-list nil side)))
+
+(defun sam-dired-group-marked (directory)
+  "Create a directory called DIRECTORY.
+Parent directories of DIRECTORY are created as needed.
+If DIRECTORY already exists, signal an error."
+  (interactive
+   (list (read-file-name "Create directory: " (dired-current-directory))))
+  (let* ((expanded (directory-file-name (expand-file-name directory)))
+	 (marked (dired-get-marked-files))
+	 new)
+    (unless (file-exists-p expanded)
+      (setq new (dired--find-topmost-parent-dir expanded))
+      (make-directory expanded t)
+      (when new
+	(dired-add-file new)
+	(dired-move-to-filename)))
+    (mapc #'(lambda (file) (rename-file file (concat expanded "/"))) marked)
+    (revert-buffer)))
+
+(defun sam-move-buffer-file (directory)
+  "Create a directory called DIRECTORY.
+Parent directories of DIRECTORY are created as needed.
+If DIRECTORY already exists, signal an error."
+  (interactive
+   (list (read-file-name "Create directory: " default-directory)))
+  (let* ((expanded (directory-file-name (expand-file-name directory)))
+	 (filename (buffer-file-name))
+	 (new (concat expanded "/" (f-filename (buffer-file-name)))))
+    (unless (file-exists-p expanded)
+      (make-directory expanded t))
+    (rename-file filename new)
+    (set-visited-file-name new)
+    (get-buffer-create new)
+    (set-buffer-modified-p nil)))
 
 (provide '+functions)
 ;;; +functions.el ends here
