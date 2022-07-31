@@ -69,10 +69,10 @@
  "a" #'ace-link
  "d" #'consult-grep-wd
  "M-d" #'rgrep-wd
- "f" #'consult-find
+ "f" #'sam-find-file-here
  "i" #'imenu
  "l" #'rgrep
- "p" #'projectile-ripgrep
+ "p" #'consult-ripgrep
  "w" #'wordnut-lookup-current-word
  "x" #'sx-search)
 (defvar version-control-keymap (make-sparse-keymap))
@@ -139,12 +139,12 @@
  "'"    #'ivy-resume
  "/"    #'web-search
  "RET" #'bookmark-jump
- "SPC" #'projectile-persp-switch-project
+ "SPC" #'persp-switch
  "<tab>" #'mode-line-other-buffer
 
  "a" admin-keymap
 
- "b"   #'persp-switch-to-buffer*
+ "b"   #'sam-bitbake
  "B"   #'revert-buffer
  ;; "b"   #'sam-switch-to-persp-buffer
  "["   #'previous-buffer
@@ -155,7 +155,7 @@
  "d" '(:ignore t :which-key "debug")
  "dd"   #'gdb
  "dm"   #'gdb-many-windows
- "ds"   #'serial-term
+ "ds"   #'sam-serial-term
 
  "e" '(:ignore t :which-key "edit")
  "eb"   (lambda () (interactive) (find-file "~/.emacs.d/overdr0ne/+bindings.el"))
@@ -212,10 +212,10 @@
  "o" '(:ignore t :which-key "open")
  "oc" #'calc
  "ob" #'browse-url-of-file
- "od" #'cfw:open-calendar-buffer
+ "od" #'docker
+ "oD" #'cfw:open-calendar-buffer
  "oe" #'eww
  "og" #'gnus
- "oD" #'docker
 
  "p" '(:ignore t :which-key "project")
  "p TAB" #'persp-switch-last
@@ -232,11 +232,12 @@
  "pe" #'projectile-edit-dir-locals
  ;; "pf" #'find-file-in-project-at-point
  "pf" #'projectile-find-file
+ "pg" #'sam-projectile-find-root
  "pi" #'projectile-invalidate-cache
  "pk" #'persp-kill
  "pn" #'sam-create-project
  "po" #'projectile-find-other-file
- "pp" #'persp-switch
+ "pp" #'projectile-persp-switch-project
  "pr" #'persp-remove-buffer
  "p/" (lambda () (interactive) (find-file (projectile-project-root)))
  "pR" #'projectile-run-project
@@ -244,7 +245,7 @@
  "pT" #'projectile-test-project
 
  "P" '(:ignore t :which-key "packages")
- "Pe" #'counsel-package
+ ;; "Pe" #'counsel-package
  "Pl" #'list-packages
  "Ps" #'helm-system-packages
 
@@ -287,9 +288,9 @@
 
  "w"    evil-window-map
 
- "x"    #'org-capture
+ "x"    #'persp-switch-to-scratch-buffer
 
- "y"    #'hyperbole
+ "y"    #'org-capture
 
  "z" '(:ignore t :which-key "scratch")
  "zc" #'((lambda () (interactive) (find-file "~/scratch/c/scratch.c")) :which-key "C")
@@ -340,14 +341,19 @@
  "C-w" evil-window-map)
 
 (defvar root-modes
-  '(prog-mode-map
+  '(term-mode-map
+    Man-mode-map
+    woman-mode-map
+    prog-mode-map
     compilation-mode-map
     lisp-mode-map
     outline-mode-map
     help-mode-map
     helpful-mode-map
+    Custom-mode-map
     text-mode-map
     shelldon-mode-map
+    shell-mode-map
     conf-mode-map))
 
 ;;; global keybindings
@@ -363,8 +369,7 @@
  "<M-mouse-3>" #'sam-toggle-cursor
  "<mouse-2>" #'sam-helpful-click
 
- "<return>" #'embark-default-action
- "<C-return>" #'embark-act
+ "<return>" #'sam-pushb-or-embark
 
  "<tab>" #'hs-toggle-level
 
@@ -398,10 +403,6 @@
  "&"   #'evil-ex-repeat-substitute
  "*"   #'consult-line-symbol-at-point
  "@"    #'evil-execute-macro
- ;; "==" #'evil-indent-line
- ;; "=s" #'indent-sexp
- ;; "=a" #'sam-indent-all
- ;; "=g" #'indent-rigidly
  "<"   #'evil-shift-left
  ">"   #'evil-shift-right
  "C-." #'evil-repeat-pop
@@ -417,16 +418,17 @@
  "b" #'backward-word
  "B" #'evil-backward-WORD-begin
  "C-b" nil
+ "C-b C-a" #'sam-switch-to-persp-buffer
  "C-b C-b" #'persp-switch-to-buffer*
  "C-b C-h" #'buf-move-left
  "C-b C-j" #'buf-move-down
  "C-b C-k" #'buf-move-up
  "C-b C-l" #'buf-move-right
+ "C-b C-r" #'sam-buffer-reload
  "A-b" #'evilem-motion-backward-WORD-begin
 
  "c" #'evil-change
  "C" #'evil-change-line
- ;; "C"   #'+multiple-cursors/evil-mc-toggle-cursors
 
  "d" #'evil-delete
  "C-d" #'dired-jump
@@ -490,7 +492,7 @@
  "P"   #'evil-paste-before
  "C-p" #'consult-yank-from-kill-ring
 
- "q"   #'evil-record-macro
+ ;; "q"   #'evil-record-macro
  "C-q" #'evil-quit
 
  "r"   #'evil-replace
@@ -525,6 +527,11 @@
  "y"  #'evil-yank
  "Y"  #'evil-yank-line)
 
+(general-define-key
+ :states 'normal
+ :keymaps '(custom-mode-map Custom-mode-map)
+ "<return>" #'sam-pushw-or-embark)
+
 ;;; media keys
 (general-define-key
  :states '(normal insert visual)
@@ -544,6 +551,7 @@
  "C-s" #'isearch-forward
  "M-s" #'isearch-repeat-forward
  "C-h" #'xah-delete-backward-char-or-bracket-text
+ "M-h" #'xah-delete-backward-bracket-text
  "M-w" #'forward-word
  "M-b" #'backward-word
  ;; Smarter newlines
@@ -593,7 +601,7 @@
 
 (general-define-key
  :states 'visual
- :keymaps 'prog-mode-map
+ :keymaps '(prog-mode-map conf-mode-map)
  ;; "d"   #'evil-delete
  "v"   #'er/expand-region
  ;; "C-j" #'evil-join
@@ -621,7 +629,8 @@
 ;; evil surround
 (general-define-key
  :states 'visual
- "S" #'evil-surround-region)
+ :keymaps root-modes
+ "o" #'evil-surround-region)
 
 (general-define-key
  :states 'operator
@@ -631,9 +640,27 @@
 ;;; evil override keybindings
 (evil-define-key 'normal magit-mode-map (kbd "C-d") 'dired-jump)
 
+(setq-default ediff-mode-map (make-sparse-keymap))
+(defvar space-modes
+  (append root-modes '(ediff-mode-map dired-mode-map magit-mode-map Info-mode-map grep-mode-map)))
+
+(defvar bmark-modes
+  (append root-modes '(ediff-mode-map dired-mode-map magit-mode-map Info-mode-map grep-mode-map)))
+
+(general-define-key
+ :keymaps bmark-modes
+ :states '(normal visual)
+ "<C-return>" nil
+ "<C-return> <C-return>" #'slink-load
+ "<C-return> C-d" #'slink-delete
+ "<C-return> C-f" #'slink-save-file
+ "<C-return> C-g" #'slink-get-url-at-point
+ "<C-return> C-s" #'slink-save
+ "<C-return> C-e" #'slink-edit-label)
+
 ;;; space keybindings
 (general-define-key
- :keymaps '(global dired-mode-map magit-mode-map Info-mode-map doc-view-mode-map help-mode-map Man-mode-map grep-mode-map)
+ :keymaps space-modes
  :states '(normal visual)
  "C-SPC" controller-keymap
  "M-SPC" metallic-keymap
@@ -755,7 +782,7 @@
  "C-l" #'completion-at-point
  )
 (general-define-key
- :keymaps '(prog-mode-map org-mode-map)
+ :keymaps '(prog-mode-map org-mode-map markdown-mode-map)
  :states 'insert
  "`" (lambda () (interactive) (insert "`")))
 (general-define-key
@@ -777,7 +804,14 @@
  ""      nil
  "<tab>" #'dired-subtree-toggle
  ";"   #'execute-extended-command
+
  "C-/" #'dired-narrow
+ "C-b C-a" #'sam-switch-to-persp-buffer
+ "C-b C-b" #'persp-switch-to-buffer*
+ "C-b C-h" #'buf-move-left
+ "C-b C-j" #'buf-move-down
+ "C-b C-k" #'buf-move-up
+ "C-b C-l" #'buf-move-right
  "C-f" #'consult-line
  "C-l" #'dired-do-symlink
  "C-;" #'eval-expression
@@ -788,6 +822,17 @@
  "l"   #'dired-find-file
  "p"   #'sam-dired-yank-here
  "y"   #'sam-dired-kill-path-at-point)
+
+(general-define-key
+ :keymaps '(term-mode-map term-raw-map)
+ :states 'insert
+ "<tab>" #'evil-collection-term-send-tab
+ "C-l" #'evil-collection-term-send-tab
+ "C-a" #'term-send-home
+ "C-e" #'term-send-end
+ "C-p" #'term-send-up
+ "C-n" #'term-send-down
+ "C-h" #'term-send-backspace)
 
 (general-define-key
  :keymaps '(smerge-mode-map)
@@ -876,14 +921,19 @@
  "SPC" command-mode-map)
 
 (general-define-key
- :keymaps 'evil-magit
  ;; fix conflicts with private bindings
- :map '(magit-mode-map magit-status-mode-map magit-revision-mode-map)
+ :keymaps '(magit-mode-map magit-status-mode-map magit-revision-mode-map)
+ :states '(normal visual)
  ;; "<return>" #'magit-visit-thing
- "k"   'magit-checkout
- "C-d" 'dired-jump
- "C-j" nil
- "C-k" nil)
+ "C-b" nil
+ "C-b C-a" #'sam-switch-to-persp-buffer
+ "C-b C-b" #'persp-switch-to-buffer*
+ "C-b C-h" #'buf-move-left
+ "C-b C-j" #'buf-move-down
+ "C-b C-k" #'buf-move-up
+ "C-b C-l" #'buf-move-right
+ "C-d" 'dired-jump)
+
 (general-define-key
  :keymaps '(magit-diff-mode-map)
  "J" #'evil-scroll-page-down
@@ -992,11 +1042,6 @@
  "<backtab>" #'org-do-promote)
 
 (general-define-key
- :states 'insert
- :keymaps 'org-mode-map
- "<tab>"     #'org-hide-block-toggle)
-
-(general-define-key
  :keymaps 'global
  :states 'insert
  "M-SPC" metallic-keymap)
@@ -1044,12 +1089,13 @@
  "M-p" #'previous-line-or-history-element)
 
 (defvar +minibuffer-completion-maps
-  '(ivy-minibuffer-map selectrum-minibuffer-map minibuffer-local-completion-map minibuffer-local-must-match-map)
+  '(ivy-minibuffer-map vertico-map selectrum-minibuffer-map minibuffer-local-completion-map minibuffer-local-must-match-map)
   "A list of all the keymaps used for minibuffer completion.")
 (general-define-key
  :keymaps +minibuffer-completion-maps
  "<tab>" #'minibuffer-complete
  "<home>" help-map
+ "<C-space>" command-mode-map
  "<C-return>" #'embark-act
  "C-v" #'yank
  "C-a" #'beginning-of-line
@@ -1058,9 +1104,10 @@
  "C-b" #'backward-char
  "C-g" #'abort-recursive-edit
  "C-h" #'backward-delete-char-untabify
+ "M-h" #'sp-backward-delete-symbol
+ "C-M-h" #'kill-whole-line
  "M-w" #'forward-word
  "M-b" #'backward-word
- "M-h" #'backward-kill-word
  "C-r" #'previous-matching-history-element
  "C-j" #'next-line
  "C-k" #'previous-line)
@@ -1075,6 +1122,11 @@
  "<home>" help-map
  "<tab>" #'selectrum-insert-current-candidate
  "C-l"   #'selectrum-insert-current-candidate)
+(general-define-key
+ :keymaps 'vertico-map
+ "<home>" help-map
+ "<tab>" #'vertico-insert
+ "C-l"   #'vertico-insert)
 
 (general-define-key
  :keymaps '(help-map)
@@ -1084,12 +1136,13 @@
  ;; <leader> h prefix. It's already on ? and F1 anyway.
  "C-h"  nil
  "a"    #'consult-apropos
- "b"    #'counsel-descbinds
- "C-b"  #'counsel-descbinds
+ ;; "b"    #'counsel-descbinds
+ ;; "C-b"  #'counsel-descbinds
  "c"    #'helpful-command
  "C-c"  #'describe-coding-system
  "f"    #'helpful-callable
- "F"    #'counsel-describe-face
+ "F"    #'describe-face
+ ;; "F"    #'counsel-describe-face
  "h"    #'helpful-at-point
  "H"    #'sam-lookup-symbol-at-point
  "k"    #'helpful-key
@@ -1107,7 +1160,6 @@
 (general-define-key
  :states 'normal
  :keymaps '(help-mode-map helpful-mode-map)
- "<return>" #'push-button
  "q" #'quit-window
  "M-b" #'backward-button
  "M-w" #'forward-button)

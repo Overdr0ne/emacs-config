@@ -1,4 +1,4 @@
-;;; +modules.el --- personal module configuration    -*- lexical-binding: t; -*-
+;; +modules.el --- personal module configuration    -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2021  Sam
 
@@ -30,14 +30,15 @@
 
 (use-package general)
 
-(use-package tree-sitter-langs)
-(use-package tree-sitter
-  :config
-  (require 'tree-sitter-langs)
-  (global-tree-sitter-mode)
-  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
+;;(use-package tree-sitter-langs)
+;;(use-package tree-sitter
+;;  (require 'tree-sitter-langs)
+;;  (global-tree-sitter-mode)
+;;  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
 
-(use-package erc)
+;;(use-package erc)
+
+(use-package sql)
 
 (use-package helpful)
 
@@ -45,9 +46,44 @@
   :init
   (winner-mode t))
 
-(use-package selectrum
+(use-package vertico
+  :straight (vertico
+	     :files ("*.el" "extensions/*.el"))
+  :init
+  (vertico-mode)
   :config
-  (selectrum-mode +1))
+  ;; Enable vertico-multiform
+  (vertico-multiform-mode +1)
+
+  ;; Configure the display per command.
+  ;; Use a buffer with indices for imenu
+  ;; and a flat (Ido-like) menu for M-x.
+  (setq vertico-multiform-commands
+	'((consult-imenu buffer indexed)
+	  (persp-switch-to-buffer* (vertico-sort-function . vertico-sort-history-alpha))))
+
+  (setq vertico-multiform-categories
+	'(
+	  ;; (file grid)
+	  ;; (symbol (vertico-sort-function . vertico-sort-alpha))
+	  ;; (file (vertico-sort-function . sort-directories-first))
+          (consult-grep buffer)))
+
+  ;; Sort directories before files
+  ;; (defun sort-directories-first (files)
+  ;;   (setq files (vertico-sort-history-length-alpha files))
+  ;;   (nconc (seq-filter (lambda (x) (string-suffix-p "/" x)) files)
+  ;;          (seq-remove (lambda (x) (string-suffix-p "/" x)) files)))
+  )
+(use-package orderless
+  :init
+  (setq completion-styles '(orderless basic)
+        completion-category-defaults nil
+        completion-category-overrides '((file (styles partial-completion)))))
+(use-package savehist
+  :init
+  (savehist-mode +1))
+
 (use-package consult
   :init
   (advice-add #'register-preview :override #'consult-register-window)
@@ -78,10 +114,6 @@
 (use-package marginalia
   :init
   (marginalia-mode))
-(use-package selectrum-prescient
-  :config
-  (selectrum-prescient-mode +1)
-  (prescient-persist-mode +1))
 (use-package ctrlf)
 
 (use-package amx)
@@ -133,17 +165,17 @@
 (use-package evil-snipe
   :config
   (evil-snipe-mode +1))
-(use-package evil-surround
-  :config
-  (global-evil-surround-mode 1)
-  (evil-add-to-alist
-   'evil-surround-pairs-alist
-   ?\( '("(" . ")")
-   ?\[ '("[" . "]")
-   ?\{ '("{" . "}")
-   ?\) '("( " . " )")
-   ?\] '("[ " . " ]")
-   ?\} '("{ " . " }")))
+;; (use-package evil-surround
+;;   :config
+;;   (global-evil-surround-mode 1)
+;;   (evil-add-to-alist
+;;    'evil-surround-pairs-alist
+;;    ?\( '("(" . ")")
+;;    ?\[ '("[" . "]")
+;;    ?\{ '("{" . "}")
+;;    ?\) '("( " . " )")
+;;    ?\] '("[ " . " ]")
+;;    ?\} '("{ " . " }")))
 ;;(use-package evil-embrace)
 (use-package evil-traces
   :config
@@ -165,10 +197,11 @@
 
 ;; (use-package transient)
 
-(use-package forge)
+;;(use-package forge)
 (use-package diff-hl
   :config
   (global-diff-hl-mode))
+(use-package git-modes)
 (use-package magit
   :config
   (setf magit-buffer-log-args '("-n256" "-c" "--decorate")))
@@ -191,7 +224,12 @@
 
 (use-package format-all)
 
-(use-package dts-mode)
+(use-package dts-mode
+  :config
+  (add-to-list 'auto-mode-alist '("defconfig\\'" . dts-mode))
+  (add-to-list 'auto-mode-alist '("defconfig\\'" . dts-mode))
+  (setq auto-mode-alist (append auto-mode-alist '(("defconfig\\'" . dts-mode)
+						  ("\\.its" . dts-mode)))))
 (use-package kconfig-mode)
 (use-package yaml-mode
   :config
@@ -212,7 +250,7 @@
 (use-package lsp-ui
   :commands lsp-ui-mode
   :config
-  (setf lsp-ui-doc-mode -1)
+  ;; (setf lsp-ui-doc-mode -1)
   ;; (setf (alist-get 'width lsp-ui-doc-frame-parameters) 80)
   )
 (use-package ccls
@@ -230,7 +268,8 @@
   (with-eval-after-load "lsp-mode"
     (add-to-list 'lsp-disabled-clients 'pyls)
     (add-to-list 'lsp-enabled-clients 'jedi))
-  (setf lsp-ui-doc-mode -1))
+  ;; (setf lsp-ui-doc-mode -1)
+  )
 
 (use-package adaptive-wrap)
 (use-package evil-tex)
@@ -240,7 +279,8 @@
 (use-package org
   :config
   (setq org-directory "~/notes")
-  (setq org-agenda-files '("~/notes")))
+  (setq org-agenda-files '("~/notes"))
+  (setq org-default-notes-file (concat org-directory "/default.org")))
 ;; (use-package evil-org
 ;;   :config
 ;;   (add-hook 'org-mode-hook 'evil-org-mode)
@@ -300,14 +340,14 @@
 
 (use-package browse-kill-ring)
 (use-package clipmon
-  :init
+  :config
   (clipmon-mode-start))
 
 (use-package multiple-cursors)
 
 (use-package cider)
 
-(use-package w3m)
+;;(use-package w3m)
 
 (use-package interaction-log)
 
@@ -326,7 +366,7 @@
   (push 'ibuffer-mode evil-snipe-disabled-modes))
 
 (use-package projectile
-  :init
+  :config
   (projectile-mode +1)
   (defun sam-projectile-vc-or-dired ()
     (interactive)
@@ -336,7 +376,7 @@
       (dired default-directory)))
   (setq projectile-switch-project-action #'sam-projectile-vc-or-dired)
 
-  :config
+  ;; :config
   (delete "~/.emacs.d/.local/" projectile-globally-ignored-directories)
   (add-to-list 'projectile-globally-ignored-directories "build")
   (defun sam-projectile-ibuffer-by-project (project-root)
@@ -438,6 +478,10 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
 
 (use-package systemd)
 
+(use-package dired
+  :straight (:type built-in)
+  :config
+  (setf dired-listing-switches "-alhF"))
 (use-package diredfl
   :config
   (diredfl-global-mode))
@@ -650,31 +694,33 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
   :config
   (minions-mode))
 
-(use-package undo-tree
-  :init
-  (global-undo-tree-mode))
+;; (use-package undo-tree
+;;   :init
+;;   (global-undo-tree-mode))
 
-;; (use-package hyperbole)
+;; (use-package hyperbole
+;;   :init
+;;   (setf hkey-init nil))
 
 (use-package which-key
   :config
   (which-key-mode))
 
-(use-package sfs
-  :straight (sfs :type git
-                 :host github
-                 :repo "Overdr0ne/sfs"
-                 :branch "master"
-                 :files ("sfs.el"
-                         "sfs-recoll.el"
-                         "sfs-tui.el"
-                         "sfs-tag.el"
-                         "sfs-reindex.el"
-                         "service.py"
-                         "evil-collection-sfs.el"))
-  :config
-  (add-to-list 'evil-insert-state-modes 'sfs-research-mode)
-  (global-sfs-mode 1))
+;; (use-package sfs
+;;   :straight (sfs :type git
+;;                  :host github
+;;                  :repo "Overdr0ne/sfs"
+;;                  :branch "master"
+;;                  :files ("sfs.el"
+;;                          "sfs-recoll.el"
+;;                          "sfs-tui.el"
+;;                          "sfs-tag.el"
+;;                          "sfs-reindex.el"
+;;                          "service.py"
+;;                          "evil-collection-sfs.el"))
+;;   :config
+;;   (add-to-list 'evil-insert-state-modes 'sfs-research-mode)
+;;   (global-sfs-mode 1))
 
 ;;; themes
 (use-package dracula-theme
@@ -768,19 +814,20 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
   ;; (advice-add 'corfu--setup :before #'corfu-setup-advice)
   :config
   (add-hook 'prog-mode-hook 'corfu-mode))
-;; (use-package cape
-;;   :init
-;;   (add-to-list 'completion-at-point-functions #'cape-file)
-;;   (add-to-list 'completion-at-point-functions #'cape-tex)
-;;   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
-;;   (add-to-list 'completion-at-point-functions #'cape-keyword)
-;;   ;;(add-to-list 'completion-at-point-functions #'cape-sgml)
-;;   ;;(add-to-list 'completion-at-point-functions #'cape-rfc1345)
-;;   ;;(add-to-list 'completion-at-point-functions #'cape-abbrev)
-;;   ;;(add-to-list 'completion-at-point-functions #'cape-ispell)
-;;   (add-to-list 'completion-at-point-functions #'cape-dict)
-;;   ;;(add-to-list 'completion-at-point-functions #'cape-symbol)
-;;   (add-to-list 'completion-at-point-functions #'cape-line))
+(use-package cape
+  :init
+  (add-to-list 'completion-at-point-functions #'cape-file)
+  (add-to-list 'completion-at-point-functions #'cape-line)
+  (add-to-list 'completion-at-point-functions #'cape-keyword)
+  (add-to-list 'completion-at-point-functions #'cape-dict)
+  (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+  ;; (add-to-list 'completion-at-point-functions #'cape-tex)
+  ;;(add-to-list 'completion-at-point-functions #'cape-sgml)
+  ;;(add-to-list 'completion-at-point-functions #'cape-rfc1345)
+  ;;(add-to-list 'completion-at-point-functions #'cape-abbrev)
+  ;;(add-to-list 'completion-at-point-functions #'cape-ispell)
+  ;;(add-to-list 'completion-at-point-functions #'cape-symbol)
+  )
 
 (use-package highlight-indentation
   :straight (highlight-indentation :type git
@@ -857,22 +904,22 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
 (use-package burly)
 
 (use-package prism
- :straight (prism :type git
-                  :host github
-                  :branch "master"
-                  :repo "Overdr0ne/prism.el")
- :config
- (setf prism-num-faces 30
-       prism-color-attribute :background
-       prism-colors (list "maroon" "violet" "blue violet" "blue" "light sea green" "green" "yellow green" "yellow" "orange" "red")
-       prism-desaturations (list 0 0 0)
-       prism-lightens (list 0 0 0)
-       prism-opacities (list 10 30 90)
-       prism-comments-fn (lambda (color) color)
-       prism-strings-fn (lambda (color) color)
-       prism-parens-fn (lambda (color) color))
- ;; (prism-save-colors)
- )
+  :straight (prism :type git
+                   :host github
+                   :branch "master"
+                   :repo "Overdr0ne/prism.el")
+  :config
+  (setf prism-num-faces 30
+	prism-color-attribute :background
+	prism-colors (list "maroon" "violet" "blue violet" "blue" "light sea green" "green" "yellow green" "yellow" "orange" "red")
+	prism-desaturations (list 0 0 0)
+	prism-lightens (list 0 0 0)
+	prism-opacities (list 10 30 90)
+	prism-comments-fn (lambda (color) color)
+	prism-strings-fn (lambda (color) color)
+	prism-parens-fn (lambda (color) color))
+  ;; (prism-save-colors)
+  )
 
 ;; (load "~/src/winblows/winblows.el")
 
@@ -884,10 +931,85 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
                      :repo "Overdr0ne/bitbake-el"
                      :branch "master")
   :config
-  (setf bitbake-poky-directory "/home/sam/build/poky/")
-  (setf bitbake-build-directory "/home/sam/build/poky/build/"))
+  (setf bitbake-flash-device "/dev/mmcblk0")
+  ;; (setf bitbake-poky-directory "/home/sam/workspaces/dtech/layers")
+  ;; (setf bitbake-build-directory "/home/sam/workspaces/dtech/build")
+  (setf bitbake-poky-directory "/home/sam/workspaces/impinj")
+  (setf bitbake-build-directory "/home/sam/workspaces/impinj/build")
+  )
 
 ;; (use-package exec-path-from-shell)
+
+(use-package tmm
+  :config
+  (setf tmm-completion-prompt "")
+  (setf tmm-mid-prompt ":"))
+
+(use-package docker
+  :config
+  (setf docker-image-run-default-args '("-i" "-t" "--rm")))
+
+(use-package dockerfile-mode
+  :config
+  (add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-mode)))
+
+;; (use-package keychain-environment
+;;   :straight (keychain-environment :type git
+;; 				  :host github
+;; 				  :repo "tarsius/keychain-environment"
+;; 				  :branch "master"))
+
+(use-package evil-surround
+  :config
+  (setq-default evil-surround-pairs-alist '((?\( . ("(" . ")"))
+					    (?\[ . ("[" . "]"))
+					    (?\{ . ("{" . "}"))
+
+					    (?\) . ("( " . " )"))
+					    (?\] . ("[ " . " ]"))
+					    (?\} . ("{ " . " }"))
+
+					    (?# . ("#{" . "}"))
+					    (?b . ("(" . ")"))
+					    (?B . ("{" . "}"))
+					    (?> . ("<" . ">"))
+					    (?t . evil-surround-read-tag)
+					    (?< . evil-surround-read-tag)
+					    (?\C-f . evil-surround-prefix-function)
+					    (?f . evil-surround-function))))
+
+;; (use-package wrap-region-mode
+;;   :straight (wrap-region-mode :type git
+;; 			      :host github
+;; 			      :repo "rejeep/wrap-region.el"
+;; 			      :branch "master")
+;;   )
+
+(use-package ediff
+  :straight (:type built-in)
+  :init
+  (setq ediff-window-setup-function #'ediff-setup-windows-plain)
+  (general-add-hook 'ediff-mode-hook #'ediff-reload-keymap)
+  (defvar my-ediff-last-windows nil)
+
+  (defun my-store-pre-ediff-winconfig ()
+    (setq my-ediff-last-windows (current-window-configuration)))
+
+  (defun my-restore-pre-ediff-winconfig ()
+    (set-window-configuration my-ediff-last-windows))
+
+  (add-hook 'ediff-before-setup-hook #'my-store-pre-ediff-winconfig)
+  (add-hook 'ediff-quit-hook #'my-restore-pre-ediff-winconfig))
+
+(use-package elgrep)
+
+(use-package rg)
+
+(use-package slink
+  :straight (slink :type git
+                   :host github
+                   :repo "Overdr0ne/slink"
+                   :branch "main"))
 
 (provide '+modules)
 ;;; +modules.el ends here

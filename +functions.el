@@ -274,6 +274,14 @@ current buffer directory."
   (let ((read-buffer-function 'persp-read-buffer))
     (consult-buffer)))
 
+(defun sam-add-and-switch-to-buffer (buffer)
+  (interactive
+   (list
+    (let ((read-buffer-function nil))
+      (read-buffer "Add buffer to this perspective: "))))
+  (persp-add-buffer buffer)
+  (switch-to-buffer buffer))
+
 (defun sam-sexp-spawn-below ()
   (interactive)
   (sp-end-of-sexp)
@@ -500,6 +508,13 @@ Version 2017-07-02"
   (find-file dir)
   (f-touch ".projectile"))
 
+(defun sam-create-persp-dir (dir)
+  "Create perspective in DIR."
+  (interactive "Ddir: ")
+  (require 'perspective)
+  (persp-switch (last (split-string dir "/")))
+  (find-file dir))
+
 (defun sam-aw-move-window (window)
   "Swap buffers of current window and WINDOW."
   (cl-labels ((swap-windows (window1 window2)
@@ -639,6 +654,250 @@ If DIRECTORY already exists, signal an error."
     (set-visited-file-name new)
     (get-buffer-create new)
     (set-buffer-modified-p nil)))
+
+(defun sam-flash ()
+  "Flash IMAGE to DEVICE."
+  (interactive)
+  (with-temp-buffer
+    (let* ((image (read-file-name "Image: " "/home/sam/workspaces/poky/build/tmp/deploy/images/"))
+	   (device (read-file-name "Device: " "/dev/" nil nil "sd")))
+      (setq image (expand-file-name image))
+      (cd "/sudo::/")
+      (shell-command (concat "umount " device "*"))
+      (async-shell-command (concat "bmaptool copy " image " " device)))))
+
+(defun sam-find-file-here ()
+  "Find file within current directory."
+  (interactive)
+  (consult-find default-directory))
+
+(defun sam-serial-read-name ()
+  "Read serial device name."
+  (read-file-name "Device: " "/dev/." nil t))
+(defun sam-serial-read-speed ()
+  "Read serial speed from the user."
+  (let ((speeds (mapcar #'number-to-string '(110 300 600 1200 2400 4800 9600 14400 19200 38400 57600 115200 128000 256000))))
+    (string-to-number (completing-read "Baud: " speeds nil t nil))))
+(defun sam-serial-active-buffer (port)
+  "Return true if serial PORT is active."
+  (cl-dolist (buffer (buffer-list))
+    (when (string= (buffer-name buffer)
+		   "/dev/ttyUSB0")
+      (cl-return buffer))))
+(defun sam-serial-term (port speed &optional line-mode)
+  "Start a terminal-emulator for a serial port in a new buffer.
+PORT is the path or name of the serial port.  For example, this
+could be \"/dev/ttyS0\" on Unix.  On Windows, this could be
+\"COM1\" or \"\\\\.\\COM10\".
+
+SPEED is the speed of the serial port in bits per second.  9600
+is a common value.  SPEED can be nil, see
+`serial-process-configure' for details.
+
+Usually `term-char-mode' is used, but if LINE-MODE (the prefix
+when used interactively) is non-nil, `term-line-mode' is used
+instead.
+
+The buffer is in Term mode; see `term-mode' for the commands to
+use in that buffer.
+
+\\<term-raw-map>Type \\[switch-to-buffer] to switch to another buffer."
+  (interactive (list (sam-serial-read-name) (sam-serial-read-speed)
+                     current-prefix-arg))
+  (serial-supported-or-barf)
+  (if (sam-serial-active-buffer port)
+      (switch-to-buffer (sam-serial-active-buffer port))
+    (let* ((process (make-serial-process
+                     :port port
+                     :speed speed
+                     :coding 'no-conversion
+                     :noquery t))
+           (buffer (process-buffer process)))
+      (with-current-buffer buffer
+	(term-mode)
+	(unless line-mode
+          (term-char-mode))
+	(goto-char (point-max))
+	(set-marker (process-mark process) (point))
+	(set-process-filter process #'term-emulate-terminal)
+	(set-process-sentinel process #'term-sentinel))
+      (switch-to-buffer buffer)
+      buffer)))
+
+(defun sam-read-extended-command (initial-input)
+  "Read command name to invoke in `execute-extended-command' with INITIAL-INPUT."
+  (minibuffer-with-setup-hook
+      (lambda ()
+        (add-hook 'post-self-insert-hook
+                  (lambda ()
+                    (setq execute-extended-command--last-typed
+                          (minibuffer-contents)))
+                  nil 'local)
+	(set (make-local-variable 'minibuffer-default-add-function)
+	     (lambda ()
+	       ;; Get a command name at point in the original buffer
+	       ;; to propose it after M-n.
+	       (with-current-buffer (window-buffer (minibuffer-selected-window))
+		 (and (commandp (function-called-at-point))
+		      (format "%S" (function-called-at-point)))))))
+    ;; Read a string, completing from and restricting to the set of
+    ;; all defined commands.  Don't provide any initial input.
+    ;; Save the command read on the extended-command history list.
+    (completing-read
+     (concat (cond
+	      ((eq current-prefix-arg '-) "- ")
+	      ((and (consp current-prefix-arg)
+		    (eq (car current-prefix-arg) 4)) "C-u ")
+	      ((and (consp current-prefix-arg)
+		    (integerp (car current-prefix-arg)))
+	       (format "%d " (car current-prefix-arg)))
+	      ((integerp current-prefix-arg)
+	       (format "%d " current-prefix-arg)))
+	     ;; This isn't strictly correct if `execute-extended-command'
+	     ;; is bound to anything else (e.g. [menu]).
+	     ;; It could use (key-description (this-single-command-keys)),
+	     ;; but actually a prompt other than "M-x" would be confusing,
+	     ;; because "M-x" is a well-known prompt to read a command
+	     ;; and it serves as a shorthand for "Extended command: ".
+	     "M-x ")
+     (lambda (string pred action)
+       (let ((pred
+              (if (memq action '(nil t))
+                  ;; Exclude obsolete commands from completions.
+                  (lambda (sym)
+                    (and (funcall pred sym)
+                         (or (equal string (symbol-name sym))
+                             (not (get sym 'byte-obsolete-info)))))
+                pred)))
+         (complete-with-action action obarray string pred)))
+     #'commandp t initial-input 'extended-command-history)))
+
+(defun sam-bitbake ()
+  "Read command with bitbake as prefix."
+  (interactive)
+  (let ((cmd (intern-soft (sam-read-extended-command "bitbake- "))))
+    (command-execute cmd 'record)))
+
+(defun sam-read-tsv ()
+  "Read a IMAGE in the minibuffer, with completion."
+  (read-file-name "TSV: "
+		  "."
+		  nil
+		  nil
+		  nil
+		  (lambda (filename) (or (string-match-p "tsv" filename)
+					 (string-match-p "/" filename)))))
+(defun sam-stm32-program (tsv)
+  "Run stm32 programmer with TSV."
+  (interactive (list (sam-read-tsv)))
+  (let ((cmd "/home/sam/apps/stm32programmer/bin/STM32_Programmer_CLI")
+	(port "usb1"))
+
+    (setq tsv (expand-file-name tsv))
+    ;; (cd "/sudo::/")
+    (message tsv)
+    (async-shell-command (concat "sudo "
+				 cmd
+				 " -c "
+				 " port=" port
+				 " -w "
+				 tsv))
+    (cd default-directory)))
+
+(defun sam-pushb-or-embark (pos &optional event)
+  "Invoke button at POS, or call embark-act."
+  (interactive "@d")
+  (let ((button (get-char-property pos 'button)))
+    ;; If there is no button at point, then use the one at the start
+    ;; of the line, if it is a custom-group-link (bug#2298).
+    (if button
+	(push-button pos)
+      ;; (widget-apply-action button event)
+      (call-interactively #'embark-act))))
+
+(defun sam-pushw-or-embark (pos &optional event)
+  "Invoke button at POS, or call embark-act."
+  (interactive "@d")
+  (let ((button (get-char-property pos 'button)))
+    ;; If there is no button at point, then use the one at the start
+    ;; of the line, if it is a custom-group-link (bug#2298).
+    (if button
+	(widget-button-press pos)
+      ;; (widget-apply-action button event)
+      (call-interactively #'embark-act))))
+
+(defun sam-bookmark (&optional arg)
+  "Run the default action on the current target.
+The target of the action is chosen by `embark-target-finders'.
+
+If the target comes from minibuffer completion, then the default
+action is the command that opened the minibuffer in the first
+place, unless overidden by `embark-default-action-overrides'.
+
+For targets that do not come from minibuffer completion
+\(typically some thing at point in a regular buffer) and whose
+type is not listed in `embark-default-action-overrides', the
+default action is given by whatever binding RET has in the action
+keymap for the target's type.
+
+See `embark-act' for the meaning of the prefix ARG."
+  (interactive "P")
+  (if-let ((targets (embark--targets)))
+      (let* ((target
+              (or (nth
+                   (if (or (null arg) (minibufferp))
+                       0
+                     (mod (prefix-numeric-value arg) (length targets)))
+                   targets)))
+             (default-action (embark--default-action (plist-get target :type)))
+             (action (or (command-remapping default-action) default-action)))
+        (when (and arg (minibufferp)) (setq embark--toggle-quit t))
+        (embark--act action
+                     (if (and (eq default-action embark--command)
+                              (not (memq default-action
+                                         embark-multitarget-actions)))
+                         (embark--orig-target target)
+                       target)
+                     (embark--quit-p action)))
+    (user-error "No target found")))
+
+(defun sam-impinj-flash ()
+  (interactive)
+  (let ()
+    (shell-command "ssh impinj-rpi \"i2cset -f -y 1 0x18 2\"")
+    (shell-command "swpwrctl.sh 10.102.3.2 4 0")
+    (shell-command "swpwrctl.sh 10.102.3.2 4 1")
+    (shell-command "ssh impinj-rpi \"sudo /home/ubuntu/utils/imx_usb_loader/imx_usb /home/ubuntu/files/u-boot-dtb.imx\""))
+  )
+
+(defun sam-impinj-flash-itb ()
+  (interactive)
+  (let ((itb-path (read-file-name "itb: " (expand-file-name "~/workspaces/impinj/build/tmp-glibc/deploy/images/r700/") "" t nil
+				  (lambda (filename) (string-match-p "\.itb" filename))))
+	(rpi-tftpboot (expand-file-name "/ssh:impinj-rpi:/tftpboot/")))
+    (copy-file itb-path rpi-tftpboot t)))
+
+(defun sam-impinj-flash-imx ()
+  (interactive)
+  (let ((src (read-file-name "imx: " (expand-file-name "~/workspaces/impinj/build/tmp-glibc/deploy/images/r700/") "" t nil
+			     (lambda (filename) (or (string-match-p "\.imx" filename)
+						    (string-match-p "/" filename)))))
+	(tar (expand-file-name "/ssh:impinj-rpi:/home/ubuntu/files/sam/")))
+    (copy-file src tar t)))
+
+(defun sam-toggle-var (var-name)
+  "Toggle VAR."
+  (interactive (list (completing-read "Variable: " obarray)))
+  (set (intern var-name) (not (eval (intern var-name))))
+  (message "Variable %s set to %S." var-name (eval (intern var-name))))
+
+(defun sam-projectile-find-root ()
+  (interactive)
+  (find-file (projectile-project-root)))
+
+(defun sam-buffer-reload ()
+  (interactive)
+  (find-file (buffer-file-name)))
 
 (provide '+functions)
 ;;; +functions.el ends here

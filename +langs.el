@@ -42,14 +42,27 @@
                   '(hl-line-mode))
 
 ;;; prog modes
+(defun sam-set-cape-funcs ()
+  (setq completion-at-point-functions
+	(setq completion-at-point-functions
+	      '(cape-file cape-line cape-keyword cape-dict cape-dabbrev t)))
+  ;; (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+  ;; (add-to-list 'completion-at-point-functions #'cape-dict)
+  ;; (add-to-list 'completion-at-point-functions #'cape-keyword)
+  ;; (add-to-list 'completion-at-point-functions #'cape-line)
+  ;; (add-to-list 'completion-at-point-functions #'cape-file)
+  )
 (general-add-hook 'prog-mode-hook
-                  '(hl-line-mode flycheck-mode rainbow-delimiters-mode indent-guide-mode (lambda () (setq show-trailing-whitespace t))))
-(general-add-hook '(c-mode-hook c++-mode-hook python-mode-hook)
-                  '((lambda () (lsp) (lsp-ui-doc-mode -1))))
+                  '(sam-set-cape-funcs hl-line-mode flycheck-mode rainbow-delimiters-mode indent-guide-mode (lambda () (setq show-trailing-whitespace t))))
+;; (general-add-hook '(c-mode-hook c++-mode-hook python-mode-hook)
+;;                   '((lambda () (lsp) (lsp-ui-doc-mode -1)))
+;; 		  )
 
 ;;; sexps
 (general-add-hook '(closure-mode-hook elisp-mode-hook emacs-lisp-mode-hook lisp-mode-hook racket-mode-hook sexpy-mode-hook)
-                  '(show-paren-mode visual-line-mode  electric-pair-mode electric-quote-mode electric-layout-mode))
+                  '(show-paren-mode visual-line-mode  electric-pair-mode electric-quote-mode electric-layout-mode
+				    (lambda () (add-to-list 'completion-at-point-functions
+							    #'elisp-completion-at-point))))
 ;;; lisps
 (general-add-hook '(closure-mode-hook elisp-mode-hook emacs-lisp-mode-hook lisp-mode-hook racket-mode-hook)
                   '(highlight-defined-mode prism-mode))

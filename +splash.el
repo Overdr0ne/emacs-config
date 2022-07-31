@@ -27,7 +27,7 @@
 (require 'projectile)
 
 (windmove-display-same-window)
-(sfs-recollect)
+;; (sfs-recollect)
 (call-interactively #'projectile-persp-switch-project)
 
 (provide '+splash)

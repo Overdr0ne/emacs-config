@@ -73,24 +73,21 @@
                                             'left
                                           'right)))))))
 (setq display-buffer-alist
-      `(("\\(*\\(info\\|shelldon\\|grep*\\|.*systemctl.*\\|Help\\|help\\|helpful\\|trace-\\|Backtrace\\|RefTeX.*\\)\\)"
-         (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-in-side-window)
+      `(("\\(*\\(info\\|shelldon\\|docker\\|grep*\\|.*systemctl.*\\|Help\\|help\\|helpful\\|trace-\\|Backtrace\\|Org\\|RefTeX.*\\)\\)"
+         (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-in-side-window display-buffer-pop-up-window)
          (side . right)
          (slot . 0)
-         (window-width . 80)
-         (reusable-frames . visible))
+         (window-width . 80))
         ;; Display *BBDB* buffer on the bottom frame
         ("\\*BBDB"
-         (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-in-side-window)
+         (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-in-side-window display-buffer-pop-up-windo)
          (side . bottom)
          (slot . 0)
-         (window-height . 10)
-         (reusable-frames . visible))
+         (window-height . 10))
         ;; Split shells at the bottom
         ("^\\*e?shell"
          (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-below-selected)
-         (window-min-height . 20)
-         (reusable-frames . visible))
+         (window-min-height . 20))
         ("\\(magit:\\|pydoc\\)"
          (display-buffer-reuse-window display-buffer-same-window))
         ;; ("\\*"
@@ -106,6 +103,8 @@
 ;; (setq default-buffer-file-coding-system 'utf-8)
 (setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
 
+(setf shell-file-name "/bin/zsh")
+
 (setq custom-file "~/.emacs.d/overdr0ne/customize.el")
 ;; (general-add-hook 'kill-emacs-hook
 ;;                   '(customize-save-customized))
@@ -118,7 +117,7 @@
       kept-old-versions 2
       version-control t)
 
-(savehist-mode +1)
+(save-place-mode +1)
 
 (blink-cursor-mode -1)
 
@@ -145,11 +144,17 @@
 
 (setq load-prefer-newer t)
 
-(setq inhibit-startup-screen 't)
+(setq inhibit-startup-screen t)
 
 (setq debug-on-error t)
 
 (setf scroll-step 1)
+
+(setf ring-bell-function 'ignore)
+
+(setq-default major-mode 'text-mode)
+
+(setf global-so-long-mode t)
 
 ;; (desktop-save-mode 1)
 
