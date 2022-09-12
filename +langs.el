@@ -23,7 +23,7 @@
 ;; Set up hooks for major-modes.
 
 ;;; Code:
-(require 'general)
+(require '+modules)
 
 (setq auto-insert-mode 't)
 
@@ -34,8 +34,9 @@
 (setq indent-tabs-mode nil)
 
 ;;; special modes
-(general-add-hook 'special-mode-hook
-                  '(hl-line-mode))
+(add-hook 'special-mode-hook 'hl-line-mode)
+;; (general-add-hook 'special-mode-hook
+;;                   '(hl-line-mode))
 
 ;;; conf modes
 (general-add-hook 'conf-mode-hook
@@ -52,20 +53,26 @@
   ;; (add-to-list 'completion-at-point-functions #'cape-line)
   ;; (add-to-list 'completion-at-point-functions #'cape-file)
   )
-(general-add-hook 'prog-mode-hook
-                  '(sam-set-cape-funcs hl-line-mode flycheck-mode rainbow-delimiters-mode indent-guide-mode (lambda () (setq show-trailing-whitespace t))))
+(dolist (fun
+         '(highlight-defined-mode evim-normal-mode hs-minor-mode sam-set-cape-funcs hl-line-mode rainbow-delimiters-mode indent-guide-mode (lambda () (setq-local show-trailing-whitespace t))))
+  (add-hook 'prog-mode-hook fun))
 ;; (general-add-hook '(c-mode-hook c++-mode-hook python-mode-hook)
 ;;                   '((lambda () (lsp) (lsp-ui-doc-mode -1)))
 ;; 		  )
 
 ;;; sexps
-(general-add-hook '(closure-mode-hook elisp-mode-hook emacs-lisp-mode-hook lisp-mode-hook racket-mode-hook sexpy-mode-hook)
-                  '(show-paren-mode visual-line-mode  electric-pair-mode electric-quote-mode electric-layout-mode
+(dolist (hook '(closure-mode-hook elisp-mode-hook emacs-lisp-mode-hook lisp-mode-hook racket-mode-hook sexpy-mode-hook))
+  (dolist (fun '(show-paren-mode visual-line-mode  electric-pair-mode electric-quote-mode electric-layout-mode
 				    (lambda () (add-to-list 'completion-at-point-functions
 							    #'elisp-completion-at-point))))
+    (add-hook hook fun)))
+;; (general-add-hook '(closure-mode-hook elisp-mode-hook emacs-lisp-mode-hook lisp-mode-hook racket-mode-hook sexpy-mode-hook)
+;;                  '(show-paren-mode visual-line-mode  electric-pair-mode electric-quote-mode electric-layout-mode
+;;				    (lambda () (add-to-list 'completion-at-point-functions
+;;							    #'elisp-completion-at-point))))
 ;;; lisps
-(general-add-hook '(closure-mode-hook elisp-mode-hook emacs-lisp-mode-hook lisp-mode-hook racket-mode-hook)
-                  '(highlight-defined-mode prism-mode))
+;; (dolist ('(closure-mode-hook elisp-mode-hook emacs-lisp-mode-hook lisp-mode-hook racket-mode-hook))
+;;                   '(highlight-defined-mode))
 
 ;;; shells
 (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
@@ -73,8 +80,8 @@
 
 ;;; text
 (remove-hook 'text-mode-hook 'auto-fill-mode)
-(general-add-hook 'text-mode-hook
-		  '(visual-line-mode flyspell-mode))
+(dolist (fun '(visual-line-mode flyspell-mode))
+  (add-hook 'text-mode-hook fun))
 
 ;;; markdown
 (remove-hook 'markdown-mode-hook 'auto-fill-mode)

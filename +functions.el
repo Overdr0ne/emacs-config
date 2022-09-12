@@ -49,12 +49,17 @@
       (empire/haskell/module->test)
     (empire/haskell/test->module)))
 
-(defun sam-eval-this-sexp () (interactive)
+(defun sam-eval-this-sexp ()
+  (interactive)
        (if (eq (char-after) 41)
            (call-interactively 'eval-last-sexp)
          (progn (evil-jump-item)
                 (call-interactively 'eval-last-sexp)
                 (evil-jump-item))))
+
+(defun sam-eval-this-sexp ()
+  (interactive)
+  (eval (read (thing-at-point 'sexp t))))
 
 (defun sam-insert-line-above ()
   "Insert an empty line above the current line."
@@ -206,7 +211,7 @@ current buffer directory."
 
 (defun consult-line-repeat ()
   (interactive)
-  (consult-line (first consult--line-history)))
+  (consult-line (cl-first consult--line-history)))
 
 (defun consult-grep-wd ()
   (interactive)
@@ -240,11 +245,11 @@ current buffer directory."
 ;;     (progn
 ;;       (hs-hide-level 1)
 ;;       (setq-local hs-hidden-p t))))
-(defun hs-toggle-level ()
+(defun hs-toggle-block ()
   (interactive)
   (if (hs-already-hidden-p)
-      (hs-show-all)
-    (hs-hide-level 1)))
+      (hs-show-block)
+    (hs-hide-block)))
 
 (defun sam-drag-sexp-backward ()
   "Drag sexp at POINT backwards."
@@ -872,14 +877,14 @@ See `embark-act' for the meaning of the prefix ARG."
 
 (defun sam-impinj-flash-itb ()
   (interactive)
-  (let ((itb-path (read-file-name "itb: " (expand-file-name "~/workspaces/impinj/build/tmp-glibc/deploy/images/r700/") "" t nil
+  (let ((itb-path (read-file-name "itb: " (expand-file-name "~/workspaces/impinj/build/tmp/deploy/images/r700/") "" t nil
 				  (lambda (filename) (string-match-p "\.itb" filename))))
 	(rpi-tftpboot (expand-file-name "/ssh:impinj-rpi:/tftpboot/")))
     (copy-file itb-path rpi-tftpboot t)))
 
 (defun sam-impinj-flash-imx ()
   (interactive)
-  (let ((src (read-file-name "imx: " (expand-file-name "~/workspaces/impinj/build/tmp-glibc/deploy/images/r700/") "" t nil
+  (let ((src (read-file-name "imx: " (expand-file-name "~/workspaces/impinj/build/tmp/deploy/images/r700/") "" t nil
 			     (lambda (filename) (or (string-match-p "\.imx" filename)
 						    (string-match-p "/" filename)))))
 	(tar (expand-file-name "/ssh:impinj-rpi:/home/ubuntu/files/sam/")))
@@ -898,6 +903,16 @@ See `embark-act' for the meaning of the prefix ARG."
 (defun sam-buffer-reload ()
   (interactive)
   (find-file (buffer-file-name)))
+
+(defun sam-minibuffer-history ()
+  (interactive)
+  (when-let (selection (completing-read "History: " (minibuffer-history-value)))
+    (backward-kill-sentence)
+    (insert selection)))
+
+(defun sam-copy-this-sexp ()
+  (interactive)
+  (add-to-list 'kill-ring (thing-at-point 'sexp t)))
 
 (provide '+functions)
 ;;; +functions.el ends here

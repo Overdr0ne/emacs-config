@@ -156,6 +156,12 @@
 
 (setf global-so-long-mode t)
 
+(setq-default tab-width 4)
+
+(setq-default indent-tabs-mode nil)
+
+;; (set-frame-font "Fira Code 14")
+
 ;; (desktop-save-mode 1)
 
 (provide '+core)

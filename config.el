@@ -23,14 +23,17 @@
 ;; Top-level of my personal config.
 
 ;;; Code:
-
+(setq straight-disable-byte-compilation t)
+(setq straight-disable-native-compilation t)
 (require '+macros)
 (require '+functions)
 (require '+core)
 (require '+modules)
+;; (require '+bindings)
 (require '+bindings)
 (require '+langs)
-(load custom-file)
+;; (require 'new-langs)
+;;(load custom-file)
 (require '+splash)
 
 (provide 'config)
