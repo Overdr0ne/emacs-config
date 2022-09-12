@@ -427,7 +427,7 @@
 
    ;;  "C-'" #'consult-mark
    ;;  ","   #'macrostep-expand
-   ;;  "'"   #'jump-to-register
+   ("'"   jump-to-register)
    ("-"   evim-join)
 
    ("/"   comment-line)
@@ -517,7 +517,7 @@
    ;;  "A-k" #'evilem-motion-previous-visual-line
    ;;  "s k" #'evilem-motion-previous-visual-line
 
-   ;;  "m" #'point-to-register
+   ("m" point-to-register)
    ;;  "<C-m>" #'evilmi-jump-items
 
    ;;  "M-l" #'evil-end-of-line
