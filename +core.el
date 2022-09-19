@@ -73,7 +73,7 @@
                                             'left
                                           'right)))))))
 (setq display-buffer-alist
-      `(("\\(*\\(info\\|shelldon\\|docker\\|grep*\\|.*systemctl.*\\|Help\\|help\\|helpful\\|trace-\\|Backtrace\\|Org\\|RefTeX.*\\)\\)"
+      `(("\\(*\\(info\\|shelldon\\|docker\\|grep*\\|.*systemctl.*\\|Help\\|messages\\|help\\|helpful\\|trace-\\|Backtrace\\|Org\\|RefTeX.*\\)\\)"
          (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-in-side-window display-buffer-pop-up-window)
          (side . right)
          (slot . 0)

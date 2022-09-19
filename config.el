@@ -23,6 +23,27 @@
 ;; Top-level of my personal config.
 
 ;;; Code:
+;; bullshit fixes for keyword symbols being interpreted as variables
+(setq :narrow ':narrow)
+(setq :state ':state)
+(setq :v-adjust ':v-adjust)
+(setq :page-nums ':page-nums)
+(setq :curr-line ':curr-line)
+(setq :annotate ':annotate)
+(setq :add-history ':add-history)
+(setq :lookup ':lookup)
+(setq :debounce ':debounce)
+(setq :actions ':actions)
+(setq :cl ':cl)
+(setq :skip-match ':skip-match)
+(setq :global-skip ':global-skip)
+(setq :translator ':translator)
+(setq :point-marker ':point-marker)
+(setq :bound ':bound)
+(setq :unset ':unset)
+(setq :beg-in ':beg-in)
+
+(require 'straight)
 (setq straight-disable-byte-compilation t)
 (setq straight-disable-native-compilation t)
 (require '+macros)
@@ -33,7 +54,7 @@
 (require '+bindings)
 (require '+langs)
 ;; (require 'new-langs)
-;;(load custom-file)
+(load custom-file)
 (require '+splash)
 
 (provide 'config)

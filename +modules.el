@@ -32,23 +32,49 @@
 
 (use-package seq)
 (use-package let-alist)
-(use-package pkg-info)
+;; (use-package pkg-info)
 (use-package dash)
 
 (use-package cus-edit
-  :after (wid-edit)
-  :straight (cus-edit :type built-in
-                      :build (:not compile)))
+   :after (wid-edit)
+   :straight (cus-edit :type built-in
+                       ;; :build (:not compile)
+                       ))
+
+(use-package easymenu
+   :straight (easymenu :type built-in
+;;                       :build (:not compile)
+                       ))
+
+(use-package text-property-search
+  :straight (text-property-search :type built-in))
+
+(use-package rx
+  :straight (rx :type built-in))
 
 (use-package wid-edit
   :straight (wid-edit :type built-in
-                      :build (:not compile)))
+                      ;;:build (:not compile)
+                      )
+  )
+
+(use-package cl-lib
+  :straight (cl-lib :type built-in))
+
+(use-package compilation-mode
+  :straight (compilation-mode :type built-in))
+
+;; (use-package compat)
+
+(use-package transient
+;;  :after (compat)
+  )
 
 ;; (use-package hydra)
 
 ;; (use-package no-littering)
 
-(use-package general)
+;; (use-package general)
 ;;
 ;;;;(use-package tree-sitter-langs)
 ;;;;(use-package tree-sitter
@@ -60,15 +86,19 @@
 ;;
 ;;(use-package sql)
 
+(use-package posframe)
+
 (use-package helpful)
 
 (use-package winner
+  :straight (winner :type built-in)
   :init
-  (winner-mode t))
+  (winner-mode +1)
+  )
 
-(use-package tramp
-  :straight (tramp :build (:not compile
-                                :not native-compile)))
+;; (use-package tramp
+;;   :straight (tramp :build (:not compile
+;;                                 :not native-compile)))
 
 (use-package vertico
   :straight (vertico
@@ -109,27 +139,65 @@
         completion-category-defaults nil
         completion-category-overrides '((file (styles partial-completion)))))
 (use-package savehist
-  :after (projectile)
+;;  :after (projectile)
   :init
   ;;  (require 'projectile)
   (setq history-length 500)
   (setq savehist-file "~/.emacs.d/history")
   (savehist-mode +1)
-  (add-to-list 'savehist-additional-variables
-               'projectile-relevant-known-projects)
+  ;; (add-to-list 'savehist-additional-variables
+  ;;              'projectile-relevant-known-projects)
   (setq savehist-additional-variables
         (append savehist-additional-variables
                 '(kill-ring search-ring regexp-search-ring compile-history log-edit-comment-ring obarray))))
 
+;; (use-package projectile
+;;   :straight (projectile
+;;              ;; :build (:not compile)
+;;              )
+;;   :config
+;;   (projectile-mode +1)
+;;   (defun sam-projectile-vc-or-dired ()
+;;     (interactive)
+;;     (if (not (string-equal (projectile-project-vcs) "none"))
+;;         (progn (projectile-vc)
+;;                (call-interactively #'find-file))
+;;       (dired default-directory)))
+;;   (setq projectile-switch-project-action #'sam-projectile-vc-or-dired)
+
+;;   (delete "~/.emacs.d/.local/" projectile-globally-ignored-directories)
+;;   (add-to-list 'projectile-globally-ignored-directories "build")
+;;   (defun sam-projectile-ibuffer-by-project (project-root)
+;;     "Open an IBuffer window showing all buffers in PROJECT-ROOT."
+;;     (let ((project-name (funcall projectile-project-name-function project-root)))
+;;       (ibuffer t (format "*%s Buffers*" project-name)
+;;                (list (cons 'projectile-files project-root)) nil t)))
+
+;;   (defun sam-projectile-ibuffer (prompt-for-project)
+;;     "Open an IBuffer window showing all buffers in the current project.
+
+;; Let user choose another project when PROMPT-FOR-PROJECT is supplied."
+;;     (interactive "P")
+;;     (let ((project-root (if prompt-for-project
+;;                             (projectile-completing-read
+;;                              "Project name: "
+;;                              (projectile-relevant-known-projects))
+;;                           (projectile-project-root))))
+
+;;       (sam-projectile-ibuffer-by-project project-root)))
+;;   (add-hook 'projectile-after-switch-project-hook 'delete-other-windows))
+
 (use-package consult
-  :straight (consult :build (:not compile))
-  :after (imenu)
+  :straight (consult
+             ;; :build (:not compile)
+             )
+;;  :after (imenu)
   ;; :init
   ;; (advice-add #'register-preview :override #'consult-register-window)
   ;; (setq xref-show-xrefs-function #'consult-xref
   ;;       xref-show-definitions-function #'consult-xref)
   :config
-  (autoload 'projectile-project-root "projectile")
+;;  (autoload 'projectile-project-root "projectile")
   ;; (setq consult-project-root-function #'projectile-project-root)
   (defalias #'consult-imenu-variables #'consult-imenu)
   (defalias #'consult-imenu-functions #'consult-imenu)
@@ -149,8 +217,21 @@
     (when-let (key (alist-get this-command consult-initial-narrow-config))
       (setq unread-command-events (append unread-command-events (list key 32)))))
   (add-hook 'minibuffer-setup-hook #'consult-initial-narrow))
-(use-package consult-lsp
-  :after (consult lsp))
+
+(use-package lsp-mode
+  :commands lsp
+  :config
+  (setq gc-cons-threshold 1600000)
+  (setq read-process-output-max (* 1024 1024)))
+(use-package lsp-ui
+  :commands lsp-ui-mode
+  :config
+  ;; (setf lsp-ui-doc-mode -1)
+  ;; (setf (alist-get 'width lsp-ui-doc-frame-parameters) 80)
+  )
+;; (use-package consult-lsp
+;; ;;  :after (consult lsp)
+;;   )
 (use-package marginalia
   :init
   (marginalia-mode +1))
@@ -164,7 +245,7 @@
 			      :repo "Overdr0ne/anzu")
   :config
   (global-anzu-mode +1))
-(use-package iedit)
+;; (use-package iedit)
 (use-package doom-modeline
   :init
   (setq doom-modeline-height 1)
@@ -176,14 +257,13 @@
 
 ;; (use-package kbd-mode)
 
-
-(use-package flycheck
-  :after (dash pkg-info let-alist seq)
-  :config
-  (setq flycheck-emacs-lisp-load-path 'inherit)
-  (setq flycheck-indication-mode 'right-fringe)
-  (setq flycheck-check-syntax-automatically '(idle-change new-line mode-enabled))
-  (add-hook 'flycheck-error-list-mode-hook visual-line-mode))
+;; (use-package flycheck
+;; ;;  :after (dash pkg-info let-alist seq)
+;;   :config
+;;   (setq flycheck-emacs-lisp-load-path 'inherit)
+;;   (setq flycheck-indication-mode 'right-fringe)
+;;   (setq flycheck-check-syntax-automatically '(idle-change new-line mode-enabled))
+;;   (add-hook 'flycheck-error-list-mode-hook visual-line-mode))
 
 ;;(use-package evil
 ;;  :init
@@ -209,11 +289,6 @@
 ;;;;(use-package flycheck-ledger)
 ;;;;(use-package flycheck-popup-tip)
 ;;;;(use-package langtool)
-
-(use-package compat)
-
-(use-package transient
-  :after (compat))
 
 ;;;;;;(use-package forge)
 ;;;;(use-package diff-hl
@@ -262,17 +337,6 @@
 ;;;;(use-package yasnippet-snippets)
 ;;;;
 ;;;;;;; langs
-(use-package lsp-mode
-  :commands lsp
-  :config
-  (setq gc-cons-threshold 1600000)
-  (setq read-process-output-max (* 1024 1024)))
-(use-package lsp-ui
-  :commands lsp-ui-mode
-  :config
-  ;; (setf lsp-ui-doc-mode -1)
-  ;; (setf (alist-get 'width lsp-ui-doc-frame-parameters) 80)
-  )
 ;;;;(use-package ccls
 ;;;;  :config
 ;;;;  (add-to-list 'lsp-enabled-clients 'ccls))
@@ -373,52 +437,18 @@
 ;;
 ;;(use-package interaction-log)
 
-(use-package projectile
-  :straight (projectile :build (:not compile))
-  :init
-  (projectile-mode +1)
-  (defun sam-projectile-vc-or-dired ()
-    (interactive)
-    (if (not (string-equal (projectile-project-vcs) "none"))
-        (progn (projectile-vc)
-               (call-interactively #'find-file))
-      (dired default-directory)))
-  (setq projectile-switch-project-action #'sam-projectile-vc-or-dired)
-
-  (delete "~/.emacs.d/.local/" projectile-globally-ignored-directories)
-  (add-to-list 'projectile-globally-ignored-directories "build")
-  (defun sam-projectile-ibuffer-by-project (project-root)
-    "Open an IBuffer window showing all buffers in PROJECT-ROOT."
-    (let ((project-name (funcall projectile-project-name-function project-root)))
-      (ibuffer t (format "*%s Buffers*" project-name)
-               (list (cons 'projectile-files project-root)) nil t)))
-
-  (defun sam-projectile-ibuffer (prompt-for-project)
-    "Open an IBuffer window showing all buffers in the current project.
-
-Let user choose another project when PROMPT-FOR-PROJECT is supplied."
-    (interactive "P")
-    (let ((project-root (if prompt-for-project
-                            (projectile-completing-read
-                             "Project name: "
-                             (projectile-relevant-known-projects))
-                          (projectile-project-root))))
-
-      (sam-projectile-ibuffer-by-project project-root)))
-  (add-hook 'projectile-after-switch-project-hook 'delete-other-windows))
-
 ;;;; (use-package workgroups
 ;;;;   :after (radix-tree))
-
 (use-package perspective
   :init
   (setq persp-suppress-no-prefix-key-warning t)
-  :config
-  (persp-mode +1))
-
-(use-package persp-projectile
-;;  :after (persp projectile)
+  ;; :config
+  ;; (persp-mode +1)
   )
+
+;; (use-package persp-projectile
+;;  ;;  :after (persp projectile)
+;;  )
 
 ;;(use-package visual-fill-column)
 ;;
@@ -454,7 +484,8 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
 ;;(use-package web-search)
 ;;
 (use-package paredit)
-(use-package macrostep)
+;; (use-package macrostep)
+(use-package smartparens)
 ;; (use-package smartparens
 ;;   :config
 ;;   (require 'smartparens-config))
@@ -471,7 +502,7 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
   :config
   (setf dired-listing-switches "-alhF"))
 (use-package diredfl
-  :after (dired)
+;;  :after (dired)
   :config
   (diredfl-global-mode))
 (use-package all-the-icons-dired
@@ -818,7 +849,7 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
   :config
   (add-hook 'prog-mode-hook 'corfu-mode))
 (use-package cape
-  :after (corfu)
+;;  :after (corfu)
   :init
   (add-to-list 'completion-at-point-functions #'cape-file)
   (add-to-list 'completion-at-point-functions #'cape-line)
@@ -862,53 +893,27 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
 ;;(use-package sclang-snippets)
 ;;
 ;;(use-package haskell-mode)
-;;
-;; (add-to-list 'load-path "~/src/gumshoe")
-;; (load "~/src/gumshoe/gumshoe.el")
-;; (progn (global-gumshoe-persp-mode 1)
-;;        (setf gumshoe-prefer-same-window t)
-;;        (setf gumshoe-slot-schema '(time perspective buffer position line))
-;;        (advice-add #'gumshoe-peruse-globally :around
-;; 	               (lambda (old-fn)
-;; 		             (let ((selectrum-should-sort nil))
-;; 		               (funcall old-fn))))
-;;        (advice-add #'gumshoe-peruse-in-persp :around
-;; 	               (lambda (old-fn)
-;; 		             (let ((selectrum-should-sort nil))
-;; 		               (funcall old-fn))))
-;;        (advice-add #'gumshoe-peruse-in-buffer :around
-;; 	               (lambda (old-fn)
-;; 		             (let ((selectrum-should-sort nil))
-;; 		               (funcall old-fn)))))
-(use-package gumshoe
-  :straight (gumshoe :type git
-                     :host github
-                     :repo "Overdr0ne/gumshoe"
-                     :branch "master")
-  ;; :straight (gumshoe :type git
-  ;;                    :url "file:///home/sam/src/gumshoe"
-  ;;                    :branch "feat-prefer-same-window")
-  ;; :straight (gumshoe :type git
-  ;;                    :host nil
-  ;;                    :url "file:///home/sam/src/gumshoe"
-  ;;                    ;; :local-repo-name "/home/sam/src/gumshoe/.git"
-  ;;                    :branch "pr10-landakram/feat-prefer-same-window")
 
-  :init
-  (global-gumshoe-persp-mode 1)
-  (setf gumshoe-slot-schema '(time perspective buffer position line))
-  (advice-add #'gumshoe-peruse-globally :around
-	          (lambda (old-fn)
-		        (let ((selectrum-should-sort nil))
-		          (funcall old-fn))))
-  (advice-add #'gumshoe-peruse-in-persp :around
-	          (lambda (old-fn)
-		        (let ((selectrum-should-sort nil))
-		          (funcall old-fn))))
-  (advice-add #'gumshoe-peruse-in-buffer :around
-	          (lambda (old-fn)
-		        (let ((selectrum-should-sort nil))
-		          (funcall old-fn)))))
+;; (use-package gumshoe
+;;   :straight (gumshoe :type git
+;;                      :host github
+;;                      :repo "Overdr0ne/gumshoe"
+;;                      :branch "master")
+;;   :init
+;;   (global-gumshoe-persp-mode 1)
+;;   (setf gumshoe-slot-schema '(time perspective buffer position line))
+;;   (advice-add #'gumshoe-peruse-globally :around
+;; 	          (lambda (old-fn)
+;; 		        (let ((selectrum-should-sort nil))
+;; 		          (funcall old-fn))))
+;;   (advice-add #'gumshoe-peruse-in-persp :around
+;; 	          (lambda (old-fn)
+;; 		        (let ((selectrum-should-sort nil))
+;; 		          (funcall old-fn))))
+;;   (advice-add #'gumshoe-peruse-in-buffer :around
+;; 	          (lambda (old-fn)
+;; 		        (let ((selectrum-should-sort nil))
+;; 		          (funcall old-fn)))))
 
 (use-package embark
   :config
@@ -997,7 +1002,7 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
   :straight (:type built-in)
   :init
   (setq ediff-window-setup-function #'ediff-setup-windows-plain)
-  (general-add-hook 'ediff-mode-hook #'ediff-reload-keymap)
+  (add-hook 'ediff-mode-hook #'ediff-reload-keymap)
   (defvar my-ediff-last-windows nil)
 
   (defun my-store-pre-ediff-winconfig ()
@@ -1109,6 +1114,15 @@ Let user choose another project when PROMPT-FOR-PROJECT is supplied."
   )
 
 (use-package cmake-mode)
+
+(use-package yaml-mode)
+
+(use-package meson-mode)
+
+;; (use-package mode-minder
+;;   :straight (mode-minder :type git
+;;                          :host github
+;;                          :repo "jdtsmith/mode-minder"))
 
 (provide '+modules)
 ;;; +modules.el ends here

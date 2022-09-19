@@ -24,11 +24,12 @@
 
 ;;; Code:
 
-(require 'projectile)
+(require '+modules)
 
 ;;(windmove-display-same-window)
 ;; (sfs-recollect)
-(call-interactively #'projectile-persp-switch-project)
+(persp-mode +1)
+;;(call-interactively #'projectile-persp-switch-project)
 
 (provide '+splash)
 ;;; +splash.el ends here

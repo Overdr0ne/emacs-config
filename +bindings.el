@@ -28,12 +28,10 @@
 
 ;; Fix Ascii character conflation
 (setq function-key-map (delq '(kp-tab . [9]) function-key-map))
-;; this is C-i
-(global-set-key (kbd "C-i") (lambda () (interactive) (message "C-i")))
-;; this is <tab> key
-(global-set-key (kbd "<tab>") (lambda () (interactive) (message "<tab>")))
 
-(define-key input-decode-map [?\C-\[] (kbd "<C-[>"))
+(global-set-key (kbd "C-i") (lambda () (interactive) (message "C-i")))
+(global-set-key (kbd "<tab>") (lambda () (interactive) (message "<tab>")))
+(global-set-key (kbd "<escape>") (lambda () (interactive) (message "<escape>")))
 
 (add-hook 'term-mode-hook
           (lambda ()
@@ -53,9 +51,9 @@
 ;;  "r"   #'+eval/open-repl-other-window
 ;;  "w"   #'delete-trailing-whitespace
 ;;  "x"   #'flycheck-list-errors)
-(defvar go-keymap (make-sparse-keymap))
+(defvar +go-keymap (make-sparse-keymap))
 (evim-define-keys
- '(go-keymap)
+ '(+go-keymap)
  `(("."   (lambda () (interactive) (find-file ".")))
    ("h"   (lambda () (interactive) (find-file "~")))
    ("l"   (lambda () (interactive) (find-file "~/src")))
@@ -98,6 +96,36 @@
    ("p" consult-ripgrep)
    ("w" wordnut-lookup-current-word)
    ("x" sx-search)))
+
+;; ;;; windows
+(defvar +window-map (make-sparse-keymap))
+(evim-define-keys
+ '(+window-map)
+
+ `(("C-h" windmove-left)
+   ("C-j" windmove-down)
+   ("C-k" windmove-up)
+   ("C-l" windmove-right)
+   ("C-o" delete-other-windows)
+   ("C-p" window-swap-states)
+   ("C-d" delete-window)
+   ("C-q" quit-window)
+   ("C-s" window-swap-states)
+   ("C-t" window-toggle-side-windows)
+   ("C-v" split-window-right)
+   ("C-w" other-window)
+
+   ("M-h" windmove-display-left)
+   ("M-j" windmove-display-down)
+   ("M-k" windmove-display-up)
+   ("M-l" windmove-display-right)
+   ("M-c" windmove-display-same-window)
+
+   ("<C-m>" sam-ace-move-window)
+   ("C-u"   winner-undo)
+   ("C-r"   winner-redo)
+   ))
+
 ;; (defvar version-control-keymap (make-sparse-keymap))
 ;; (general-define-key
 ;;  :keymaps 'version-control-keymap
@@ -150,22 +178,21 @@
 ;;  "R"   #'vc-revert
 ;;  "S"   #'magit-stage-file)
 
+(evim-define-keys
+ '(project-prefix-map)
+ '(("p" sam-project-persp-switch-project)))
+
 (defvar command-mode-map (make-sparse-keymap))
 (evim-define-keys
  '(command-mode-map)
- `(("-"    ranger)
+ `(
    (";"    execute-extended-command)
    (":"    eval-expression)
    (","    switch-to-buffer)
    ("."    find-file)
-   ("`"    evil-switch-to-windows-last-buffer)
-   ("'"    ivy-resume)
-   ("/"    web-search)
    ("RET" bookmark-jump)
    ("SPC" persp-switch)
    ("<tab>" mode-line-other-buffer)
-
-                                        ;("a" ,admin-keymap)
 
    ("b"   sam-bitbake)
    ("B"   revert-buffer)
@@ -192,7 +219,7 @@
    ("fw"   write-file)
    ("F"    sam-find-root)
 
-   ("g" ,go-keymap)
+   ("g" ,+go-keymap)
 
    ("h" ,+help-map)
 
@@ -234,30 +261,30 @@
    ("oe" eww)
    ("og" gnus)
 
-   ("p TAB" persp-switch-last)
-   ("p;" projectile-repeat-last-command)
-   ("p]" persp-next)
-   ("p[" persp-prev)
-   ("pf" projectile-find-file)
-   ("p!" projectile-run-shell-command-in-root)
-   ("pa" projectile-add-known-project)
-   ("pb" projectile-switch-to-buffer)
-   ("pc" projectile-compile-project)
-   ("pC" projectile-configure-project)
-   ("pd" projectile-remove-known-project)
-   ("pe" projectile-edit-dir-locals)
-   ("pf" projectile-find-file)
-   ("pg" sam-projectile-find-root)
-   ("pi" projectile-invalidate-cache)
-   ("pk" persp-kill)
-   ("pn" sam-create-project)
-   ("po" projectile-find-other-file)
-   ("pp" projectile-persp-switch-project)
-   ("pr" persp-remove-buffer)
-   ("p/" (lambda () (interactive) (find-file (projectile-project-root))))
-   ("pR" projectile-run-project)
-   ("ps" persp-switch)
-   ("pT" projectile-test-project)
+   ("p" ,project-prefix-map)
+   ;; ("p TAB" persp-switch-last)
+   ;; ("p;" projectile-repeat-last-command)
+   ;; ("p]" persp-next)
+   ;; ("p[" persp-prev)
+   ;; ("pf" project-find-file)
+   ;; ("p!" project-shell-command)
+   ;; ("pa" projectile-add-known-project)
+   ;; ("pb" project-buffers)
+   ;; ("pc" project-compile)
+   ;; ("pd" project-dired)
+   ;; ("pe" projectile-edit-dir-locals)
+   ;; ("pf" project-files)
+   ;; ("pg" sam-projectile-find-root)
+   ;; ("pi" projectile-invalidate-cache)
+   ;; ("pk" persp-kill)
+   ;; ("pn" sam-create-project)
+   ;; ("po" projectile-find-other-file)
+   ;; ("pp" project-switch-project)
+   ;; ("pr" persp-remove-buffer)
+   ;; ("p/" project-search)
+   ;; ("pR" projectile-run-project)
+   ;; ("ps" persp-switch)
+   ;; ("pT" projectile-test-project)
 
    ("Pl" list-packages)
    ("Ps" helm-system-packages)
@@ -310,25 +337,42 @@
    ("-" evim-join))
  )
 
-;; (defvar alter-keymap (make-sparse-keymap))
-;; (general-define-key
-;;  :keymaps 'alter-keymap
-;;  "A-b" #'ibuffer)
+(defvar alter-keymap (make-sparse-keymap))
+(evim-define-keys
+ '(alter-keymap)
+ `(("A-b" ibuffer)))
 
-;; (defvar controller-keymap (make-sparse-keymap))
-;; (general-define-key
-;;  :keymaps 'controller-keymap
-;;  "<C-[>"  #'persp-prev
-;;  "C-]"  #'persp-next
-;;  "C-;"  #'consult-complex-command
-;;  "C-SPC" #'tmm-menubar
-;;  "C-b" #'persp-switch-to-buffer
-;;  "C-c" #'sfs-recollect
-;;  "C-f"  #'sfs-research
-;;  "C-g" #'consult-bookmark
-;;  "C-k" #'kill-buffer-and-window
-;;  "<C-m>" #'bookmark-set
-;;  "C-t" #'sam-toggle-theme)
+(defvar controller-keymap (make-sparse-keymap))
+(evim-define-keys
+ '(controller-keymap)
+ `(
+   ("<C-[>"  persp-prev)
+   ("C-]"  persp-next)
+   ("C-;"  consult-complex-command)
+   ("C-SPC" tmm-menubar)
+   ("C-b" persp-switch-to-buffer)
+   ;; ("C-c" sfs-recollect)
+   ;; ("C-f"  sfs-research)
+   ("C-g" consult-bookmark)
+   ("C-k" kill-buffer-and-window)
+   ("<C-m>" bookmark-set)
+   ("C-t" sam-toggle-theme)))
+
+;; (defvar slink-keymap
+;;   (append root-modes '(ediff-mode-map dired-mode-map magit-mode-map Info-mode-map grep-mode-map)))
+
+(defvar slink-keymap (make-sparse-keymap))
+
+(evim-define-keys
+ '(slink-keymap)
+ `(
+   ("<C-return>" slink-load)
+   ("C-d" slink-delete)
+   ("C-f" slink-save-file)
+   ("C-g" slink-get-url-at-point)
+   ("C-s" slink-save)
+   ("C-e" slink-edit-label))
+ )
 
 ;; (defvar metallic-keymap (make-sparse-keymap))
 ;; (general-define-key
@@ -346,13 +390,12 @@
 ;;  "f" #'sam-sudo-find-root
 ;;  "R" #'sam-sudo-find-root)
 
-;; ;;(general-define-key
-;; ;; :states '(normal insert)
-;; ;; :keymaps 'racket-repl-mode-map
-;; ;; "C-w" evil-window-map
-;; ;; )
+(require 'man)
+(require 'woman)
+(require 'conf-mode)
+(require 'grep)
 
-(defvar root-modes
+(defvar root-maps
   '(term-mode-map
     Man-mode-map
     woman-mode-map
@@ -366,7 +409,31 @@
     text-mode-map
     shelldon-mode-map
     shell-mode-map
-    conf-mode-map))
+    conf-mode-map
+    ))
+
+(defvar space-maps
+  (append root-maps '(ediff-mode-map dired-mode-map magit-mode-map Info-mode-map grep-mode-map)))
+
+;;; space keybindings
+(evim-define-keys
+ space-maps
+ `(
+   ;; ("C-SPC" ,controller-keymap)
+   ;; ("M-SPC" metallic-keymap)
+   ;; ("S-SPC" shifty-keymap)
+   ;; ("A-SPC" ,alter-keymap)
+   ("SPC" ,command-mode-map)
+   )
+ )
+
+;; (evim-define-keys
+;;  '(dired-mode-map ))
+
+(evim-define-keys
+ '(evim-insert-keymap)
+ `(
+   ("SPC" (lambda () (interactive) (insert " ")))))
 
 ;; ;;; global keybindings
 
@@ -402,6 +469,7 @@
    ;;  "<mouse-2>" #'sam-helpful-click
 
    ;;  "<return>" #'sam-pushb-or-embark
+   ("<C-return>" ,slink-keymap)
 
    ;;  "<tab>" #'hs-toggle-block
 
@@ -435,7 +503,7 @@
    ;;  "\\"   #'avy-goto-word-or-subword-1
    ;;  "\""  #'evil-use-register
    ;;  "&"   #'evil-ex-repeat-substitute
-   ;;  "*"   #'consult-line-symbol-at-point
+   ("*"   consult-line-symbol-at-point)
    ;;  "@"    #'evil-execute-macro
    ;;  "<"   #'evil-shift-left
    ;;  ">"   #'evil-shift-right
@@ -449,6 +517,7 @@
 
    ;;  "a" #'sam-evil-append
    ;;  "A" #'evil-append-line
+   ("M-A" sam-insert-at-end-of-form)
 
    ;;  "b" #'backward-word
    ;;  "B" #'evil-backward-WORD-begin
@@ -472,7 +541,7 @@
    ;;  "d" nil
    ;;  "d" evim-delete-keymap
    ;;  ;; "dd" #'evim-dd
-   ;;  "C-d" #'dired-jump
+   ("C-d" dired-jump)
    ;;  "D" #'evil-delete-line
 
    ;;  "e" #'forward-word
@@ -518,6 +587,7 @@
    ;;  "s k" #'evilem-motion-previous-visual-line
 
    ("m" point-to-register)
+   ("<C-m>" forward-sexp)
    ;;  "<C-m>" #'evilmi-jump-items
 
    ;;  "M-l" #'evil-end-of-line
@@ -547,15 +617,15 @@
    ;;  "r"   #'evil-replace
    ;;  "R"   #'evil-replace-state
    ;;  "C-r" #'iedit-mode
-   ;;  "M-r" #'anzu-query-replace-regexp
+   ("M-r" anzu-query-replace-regexp)
    ;;  "C-M-r" #'anzu-query-replace
 
    ;;  ;; "s"   #'evil-snipe-s
    ;;  ;; "S"   #'evil-snipe-S
    ;;  "C-s" nil
-   ;;  "C-s C-s" #'ctrlf-forward-symbol-at-point
-   ;;  "C-s C-f" #'ctrlf-forward-fuzzy
-   ;;  "C-s C-b" #'ctrlf-backward-fuzzy
+   ("C-s C-s" ctrlf-forward-symbol-at-point)
+   ("C-s C-f" ctrlf-forward-fuzzy)
+   ("C-s C-b" ctrlf-backward-fuzzy)
    ;;  "C-M-s" #'ctrlf-backward-fuzzy
    ;;  "M-s" nil
    ;;  "M-s M-s" #'ctrlf-occur
@@ -568,12 +638,11 @@
    ;;  "C-u" #'universal-argument
 
    ;;  "w"   #'forward-to-word
-   ;;  "C-w" #'evil-window-map
+   ("C-w" ,+window-map)
    ;;  "A-w" #'evilem-motion-forward-WORD-begin
    ;;  "s w" #'evilem-motion-forward-WORD-begin
 
-   ;;  "x"  #'delete-char
-   ;;  "X"  #'delete-pair
+   ("X"  delete-pair)
 
    ;;  "y"  nil
    ("M-y" sam-copy-this-sexp)
@@ -707,33 +776,7 @@
 ;; ;;; evil override keybindings
 ;; ;; (evil-define-key 'normal magit-mode-map (kbd "C-d") 'dired-jump)
 
-;; (setq-default ediff-mode-map (make-sparse-keymap))
-;; (defvar space-modes
-;;   (append root-modes '(ediff-mode-map dired-mode-map magit-mode-map Info-mode-map grep-mode-map)))
-
-;; (defvar bmark-modes
-;;   (append root-modes '(ediff-mode-map dired-mode-map magit-mode-map Info-mode-map grep-mode-map)))
-
-;; (general-define-key
-;;  :keymaps bmark-modes
-;;  :states '(normal visual)
-;;  "<C-return>" nil
-;;  "<C-return> <C-return>" #'slink-load
-;;  "<C-return> C-d" #'slink-delete
-;;  "<C-return> C-f" #'slink-save-file
-;;  "<C-return> C-g" #'slink-get-url-at-point
-;;  "<C-return> C-s" #'slink-save
-;;  "<C-return> C-e" #'slink-edit-label)
-
-;; ;;; space keybindings
-;; (general-define-key
-;;  :keymaps space-modes
-;;  :states '(normal visual)
-;;  "C-SPC" controller-keymap
-;;  "M-SPC" metallic-keymap
-;;  "S-SPC" shifty-keymap
-;;  "A-SPC" alter-keymap
-;;  "SPC" command-mode-map)
+(setq-default ediff-mode-map (make-sparse-keymap))
 
 ;; (general-define-key
 ;;  :states '(normal insert visual)
@@ -876,30 +919,25 @@
 ;;  "<tab>" #'tempel-next
 ;;  "<backtab>" #'tempel-previous)
 
-;; (general-define-key
-;;  :keymaps 'dired-mode-map
-;;  :states 'normal
-;;  ""      nil
-;;  "<tab>" #'dired-subtree-toggle
-;;  ";"   #'execute-extended-command
-
-;;  "C-/" #'dired-narrow
-;;  "C-b C-a" #'sam-switch-to-persp-buffer
-;;  "C-b C-b" #'persp-switch-to-buffer*
-;;  "C-b C-h" #'buf-move-left
-;;  "C-b C-j" #'buf-move-down
-;;  "C-b C-k" #'buf-move-up
-;;  "C-b C-l" #'buf-move-right
-;;  "C-f" #'consult-line
-;;  "C-l" #'dired-do-symlink
-;;  "C-;" #'eval-expression
-;;  "M-;" #'shelldon
-;;  "h"   #'dired-up-directory
-;;  "J"   #'evil-scroll-page-down
-;;  "K"   #'evil-scroll-page-up
-;;  "l"   #'dired-find-file
-;;  "p"   #'sam-dired-yank-here
-;;  "y"   #'sam-dired-kill-path-at-point)
+(evim-define-keys
+ '(dired-mode-map)
+ `(
+   ;; ("<tab>" dired-subtree-toggle)
+   (";"   execute-extended-command)
+   ;; ("C-/" dired-narrow)
+   ("C-b" ,+buffer-keymap)
+   ("C-f" consult-line)
+   ("C-l" dired-do-symlink)
+   ("C-;" eval-expression)
+   ("M-;" shelldon)
+   ("M-f" find-file)
+   ("h"   dired-up-directory)
+   ("j"   dired-next-line)
+   ("k"   dired-previous-line)
+   ("l"   dired-find-file)
+   ("p"   sam-dired-yank-here)
+   ("y"   sam-dired-kill-path-at-point)
+   ))
 
 ;; (general-define-key
 ;;  :keymaps '(term-mode-map term-raw-map)
@@ -921,49 +959,6 @@
 ;; ;;  sclang-mode-map
 ;; ;;  "\C-e" #'+sclang-eval-this-expression)
 
-;; ;;; windows
-;; (general-define-key
-;;  :keymaps '(evil-window-map)
-
-;;  ;; Navigation
-;;  "C-h" #'windmove-left
-;;  "C-j" #'windmove-down
-;;  "C-k" #'windmove-up
-;;  "C-l" #'windmove-right
-;;  "C-d" #'delete-window
-;;  "C-q" #'quit-window
-;;  "C-s" #'ace-swap-window
-;;  "C-t" #'window-toggle-side-windows
-;;  "C-w" #'other-window
-;;  "C-n" #'evil-window-split
-
-;;  "C" #'winblows-here
-;;  "O" #'winblows-there
-;;  "F" #'winblows-follow
-;;  "H" #'winblows-west
-;;  "J" #'winblows-south
-;;  "K" #'winblows-north
-;;  "L" #'winblows-east
-
-;;  "M-h" #'windmove-display-left
-;;  "M-j" #'windmove-display-down
-;;  "M-k" #'windmove-display-up
-;;  "M-l" #'windmove-display-right
-;;  "M-c" #'windmove-display-same-window
-
-;;  ;; Swapping windows
-;;  "<C-m>" #'sam-ace-move-window
-;;  "C-M-h" #'evil-window-move-far-left
-;;  "C-M-j" #'evil-window-move-very-bottom
-;;  "C-M-k" #'evil-window-move-very-top
-;;  "C-M-l" #'evil-window-move-far-right
-
-;;  "u"     #'winner-undo
-;;  "C-u"   #'winner-undo
-;;  "C-r"   #'winner-redo
-;;  "o"     #'delete-other-windows
-;;  ;; Delete window
-;;  "C-C"     #'ace-delete-window)
 
 ;; ;;(defhydra evil-window-hydra (:color yellow :hint nil)
 ;; ;;  "
@@ -1001,8 +996,9 @@
 (evim-define-keys
  '(magit-mode-map magit-status-mode-map magit-revision-mode-map)
  ;; "<return>" #'magit-visit-thing
- `(("<tab>" magit-section-toggle)
-   ("<space>" ,command-mode-map)
+ `(
+   ("<tab>" magit-section-toggle)
+   ("SPC" ,command-mode-map)
    ("C-b"   ,+buffer-keymap)
    ("C-d" dired-jump)))
 
@@ -1019,20 +1015,23 @@
 ;;  :states '(normal)
 ;;  "M-;" #'shelldon)
 
-;; (general-define-key
-;;  :states '(normal visual)
-;;  :keymaps '(lisp-mode-map emacs-lisp-mode-map)
-;;  "("   #'sp-backward-up-sexp
-;;  ")"   #'sp-up-sexp
-;;  "C-h" #'sp-backward-slurp-sexp
-;;  "C-l" #'sp-forward-slurp-sexp
-;;  "M-h" #'back-to-indentation
-;;  "M-j" #'sam-next-line-start
-;;  "M-k" #'sam-previous-line-start
-;;  "M-l" #'evil-end-of-line
-;;  "M-w" #'sp-next-sexp
-;;  "M-e" #'sp-forward-sexp
-;;  "M-b" #'sp-backward-sexp)
+;; '(lisp-mode-map emacs-lisp-mode-map)
+(evim-define-keys
+ '(evim-normal-keymap)
+ `(
+   ("("   sp-backward-up-sexp)
+   (")"   sp-up-sexp)
+   ("C-h" sp-backward-slurp-sexp)
+   ("C-l" sp-forward-slurp-sexp)
+   ("M-d" kill-sexp)
+   ("M-h" back-to-indentation)
+   ("M-j" sam-next-line-start)
+   ("M-k" sam-previous-line-start)
+   ("M-l" end-of-line)
+   ("M-w" sp-next-sexp)
+   ("M-e" sp-forward-sexp)
+   ("M-b" sp-backward-sexp)
+   ))
 
 ;; (general-define-key
 ;;  :states '(normal insert)
@@ -1122,20 +1121,8 @@
 ;;  :states 'insert
 ;;  "M-SPC" metallic-keymap)
 
-;; (define-key input-decode-map [?\C-m] [C-m])
 
-;; (general-define-key
-;;  :keymaps 'evil-ex-completion-map
-;;  ;; "C-a" #'move-beginning-of-line
-;;  ;; "C-b" #'backward-word
-;;  "C-a" #'beginning-of-line
-;;  "C-e" #'end-of-line
-;;  "C-f" #'forward-char
-;;  "C-b" #'backward-char
-;;  "M-w" #'forward-word
-;;  "M-b" #'backward-word
-;;  "C-s" #'counsel-minibuffer-history)
-(defvar +default-minibuffer-maps
+(defvar +minibuffer-maps
   `(minibuffer-local-map
     minibuffer-local-ns-map
     minibuffer-local-isearch-map
@@ -1144,9 +1131,9 @@
     )
   "A list of all the keymaps used for the minibuffer.")
 (evim-define-keys
- +default-minibuffer-maps
+ +minibuffer-maps
  `(("C-g"    abort-recursive-edit)
-   ("C-M-h"  help-map)
+   ("C-M-h"  ,help-map)
    ("C-v"    yank)
    ("C-a"    beginning-of-line)
    ("C-e"    end-of-line)
@@ -1155,6 +1142,7 @@
    ("C-g"    abort-recursive-edit)
    ("C-h"    backward-delete-char-untabify)
    ("C-l"    completion-at-point)
+   ("M-h"    sp-backward-delete-symbol)
    ("M-w"    forward-word)
    ("M-b"    backward-word)
    ("C-r" sam-minibuffer-history)
@@ -1198,14 +1186,16 @@
 ;;  "<home>" help-map
 ;;  "<tab>" #'selectrum-insert-current-candidate
 ;;  "C-l"   #'selectrum-insert-current-candidate)
-;; (general-define-key
-;;  :keymaps 'vertico-map
-;;  "<home>" help-map
-;;  "C-r" #'sam-minibuffer-history
-;;  "C-p" #'previous-history-element
-;;  "C-n" #'next-history-element
-;;  "<tab>" #'vertico-insert
-;;  "C-l"   #'vertico-insert)
+(evim-define-keys
+ '(vertico-map)
+ `(
+   ("<home>" ,help-map)
+   ("C-r" sam-minibuffer-history)
+   ("C-p" previous-history-element)
+   ("C-n" next-history-element)
+   ("<tab>" vertico-insert)
+   ("C-l"   vertico-insert)
+   ))
 
 
 ;; (general-define-key

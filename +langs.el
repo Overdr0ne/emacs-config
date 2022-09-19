@@ -39,7 +39,7 @@
 ;;                   '(hl-line-mode))
 
 ;;; conf modes
-(general-add-hook 'conf-mode-hook
+(add-hook 'conf-mode-hook
                   '(hl-line-mode))
 
 ;;; prog modes
@@ -54,11 +54,16 @@
   ;; (add-to-list 'completion-at-point-functions #'cape-file)
   )
 (dolist (fun
-         '(highlight-defined-mode evim-normal-mode hs-minor-mode sam-set-cape-funcs hl-line-mode rainbow-delimiters-mode indent-guide-mode (lambda () (setq-local show-trailing-whitespace t))))
-  (add-hook 'prog-mode-hook fun))
+         '(highlight-defined-mode  hs-minor-mode sam-set-cape-funcs hl-line-mode rainbow-delimiters-mode indent-guide-mode (lambda () (setq-local show-trailing-whitespace t))))
+  (dolist (hook '(prog-mode-hook conf-mode-hook))
+    (add-hook hook fun)))
 ;; (general-add-hook '(c-mode-hook c++-mode-hook python-mode-hook)
 ;;                   '((lambda () (lsp) (lsp-ui-doc-mode -1)))
 ;; 		  )
+
+;;; evim
+(dolist (hook '(prog-mode-hook conf-mode-hook helpful-mode-hook))
+    (add-hook hook #'evim-normal-mode))
 
 ;;; sexps
 (dolist (hook '(closure-mode-hook elisp-mode-hook emacs-lisp-mode-hook lisp-mode-hook racket-mode-hook sexpy-mode-hook))
@@ -80,8 +85,11 @@
 
 ;;; text
 (remove-hook 'text-mode-hook 'auto-fill-mode)
-(dolist (fun '(visual-line-mode flyspell-mode))
+(dolist (fun '(visual-line-mode flyspell-mode evim-normal-mode))
   (add-hook 'text-mode-hook fun))
+
+(dolist (fun '(visual-line-mode evim-normal-mode))
+  (add-hook 'dired-mode-hook fun))
 
 ;;; markdown
 (remove-hook 'markdown-mode-hook 'auto-fill-mode)

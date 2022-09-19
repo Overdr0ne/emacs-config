@@ -51,14 +51,6 @@
 
 (defun sam-eval-this-sexp ()
   (interactive)
-       (if (eq (char-after) 41)
-           (call-interactively 'eval-last-sexp)
-         (progn (evil-jump-item)
-                (call-interactively 'eval-last-sexp)
-                (evil-jump-item))))
-
-(defun sam-eval-this-sexp ()
-  (interactive)
   (eval (read (thing-at-point 'sexp t))))
 
 (defun sam-insert-line-above ()
@@ -329,22 +321,8 @@ current buffer directory."
 (defun sam-insert-at-end-of-form ()
   (interactive)
   (sp-end-of-sexp)
-  (evil-insert 1)
+  (evim-i)
   (insert " "))
-
-(defun sam-insert-at-end-of-form ()
-  (interactive)
-  (let ((line-end (point-at-eol)))
-    (when (or (when (sp-up-sexp 1) (backward-char) t)
-              (-when-let (enc-end (cdr (evil-cp--top-level-bounds)))
-                (goto-char (1- enc-end))))
-      (if (<= (point) line-end)
-          (progn
-            (evil-insert 1)
-            (insert " "))
-        (insert "\n")
-        (indent-according-to-mode)
-        (evil-insert 1)))))
 
 (defun xah-delete-backward-char-or-bracket-text ()
   "Delete backward 1 character, but if it's a \"quote\" or bracket ()[]{}【】「」 etc, delete bracket and the inner text, push the deleted text to `kill-ring'.
@@ -913,6 +891,22 @@ See `embark-act' for the meaning of the prefix ARG."
 (defun sam-copy-this-sexp ()
   (interactive)
   (add-to-list 'kill-ring (thing-at-point 'sexp t)))
+
+(defun sam-project-persp-switch-project (dir)
+  "\"Switch\" to another project by running an Emacs command.
+The available commands are presented as a dispatch menu
+made from `project-switch-commands'.
+
+When called in a program, it will use the project corresponding
+to directory DIR."
+  (interactive (list (project-prompt-project-dir)))
+  (persp-switch (car (last (split-string (directory-file-name dir) "/"))))
+  (let ((command (if (symbolp project-switch-commands)
+                     project-switch-commands
+                   (project--switch-project-command))))
+    (let ((default-directory dir)
+          (project-current-inhibit-prompt t))
+      (call-interactively command))))
 
 (provide '+functions)
 ;;; +functions.el ends here
