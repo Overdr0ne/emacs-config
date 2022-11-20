@@ -304,8 +304,8 @@
    ("ss" aya-create)
    ("se" aya-expand)
 
-   ("t"   ansi-term)
-   ("T"   sam-ansi-term)
+   ("t"   evim-term)
+   ("T"   evim-term-side)
 
    ("uc" sfs-recollect)
    ("ud" disk-usage)
@@ -330,8 +330,7 @@
 (skey-define-keys
  '(evim-normal-mode-map)
  `(("SPC" ,+command-mode-map)
-   ("-" evim-join))
- )
+   ("-" evim-join)))
 
 (defvar +alter-keymap (make-sparse-keymap))
 (skey-define-keys
@@ -504,7 +503,7 @@
    ("C-]" xref-find-definitions)
    ("M-]" xref-find-references)
 
-   ("] SPC" sam-insert-line-above)
+   ("[ SPC" sam-insert-line-above)
 
    ("C-'" consult-mark)
    ;;  ","   #'macrostep-expand
