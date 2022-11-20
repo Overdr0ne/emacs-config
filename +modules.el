@@ -363,6 +363,25 @@
 (use-package magit
   :config
   (setf magit-buffer-log-args '("-n256" "--color" "--decorate" "--graph"))
+  (defun dm/change-commit-author (arg)
+    "Change the commit author during an interactive rebase in Magit.
+With a prefix argument, insert a new change commit author command
+even when there is already another rebase command on the current
+line.  With empty input, remove the change commit author action
+on the current line, if any."
+    (interactive "P")
+    (let ((author
+           (magit-transient-read-person "Select a new author for this commit"
+                                        nil
+                                        nil)))
+      (git-rebase-set-noncommit-action
+       "exec"
+       (lambda (_) (if author
+                       (format "git commit --amend --author='%s'" author)
+                     ""))
+       arg)))
+
+  (define-key git-rebase-mode-map (kbd "h") #'dm/change-commit-author)
   )
 ;;;;(use-package magit-gitflow)
 ;;;;;; (use-package magithub)
