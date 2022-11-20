@@ -51,7 +51,7 @@
 
 (defun sam-eval-this-sexp ()
   (interactive)
-  (eval (read (thing-at-point 'sexp t))))
+  (message "%S" (eval (read (thing-at-point 'sexp t)) t)))
 
 (defun sam-insert-line-above ()
   "Insert an empty line above the current line."
@@ -63,7 +63,7 @@
   "Insert an empty line above the current line."
   (interactive)
   (sam-insert-line-above)
-  (evil-previous-visual-line))
+  (previous-line))
 
 (defun sam-insert-line-below ()
   "Insert an empty line below the current line."
@@ -75,7 +75,7 @@
   "Insert an empty line above the current line."
   (interactive)
   (sam-insert-line-above)
-  (evil-next-visual-line))
+  (next-line))
 
 (defun keychain-refresh-environment ()
   "Set ssh-agent and gpg-agent environment variables.
@@ -153,18 +153,6 @@ current buffer directory."
           (switch-to-buffer buffer-name)
         (funcall repl-function)))))
 
-(defun sam-counsel-imenu (initial-input)
-  "Jump to a buffer position indexed by imenu."
-  (interactive)
-  (ivy-read "imenu items: " (counsel--imenu-candidates)
-            :initial-input initial-input
-            :preselect (thing-at-point 'symbol)
-            :require-match t
-            :action #'counsel-imenu-action
-            :keymap counsel-imenu-map
-            :history 'counsel-imenu-history
-            :caller 'counsel-imenu))
-
 (defun sam-move-line-down ()
   (interactive)
   (let ((col (current-column)))
@@ -181,8 +169,7 @@ current buffer directory."
     (forward-line)
     (transpose-lines -1)
     (previous-line)
-    (move-to-column col))
-  )
+    (move-to-column col)))
 
 ;; Indent relative, but works for the line below rather than above
 (defun sam-indent-relative-below ()
@@ -258,12 +245,12 @@ current buffer directory."
 
 (defun sam-next-line-start ()
   (interactive)
-  (evil-next-line)
+  (next-line)
   (back-to-indentation))
 
 (defun sam-previous-line-start ()
   (interactive)
-  (evil-previous-line)
+  (previous-line)
   (back-to-indentation))
 
 (defun sam-switch-to-persp-buffer ()
@@ -312,11 +299,6 @@ current buffer directory."
   (paredit-wrap-sexp)
   (insert " ")
   (backward-char))
-
-;; (defun sam-insert-at-end-of-form ()
-;;   (interactive)
-;;   (evil-cp-insert-at-end-of-form)
-;;   (insert " "))
 
 (defun sam-insert-at-end-of-form ()
   (interactive)
@@ -424,13 +406,6 @@ Version 2017-07-02"
   (interactive)
   (info-lookup-symbol (symbol-at-point)))
 
-(defun sam-evil-append ()
-  (interactive)
-  (if (not (equal (point) (line-beginning-position)))
-      (call-interactively #'evil-append)
-    (call-interactively #'evil-append)
-    (indent-according-to-mode)))
-
 (defun sam-helpful-click ()
   (interactive)
   (call-interactively #'mouse-set-point)
@@ -528,7 +503,7 @@ Version 2017-07-02"
 
 (defun sam-open-between ()
   (interactive)
-  (evil-open-above 1)
+  (evim-open-line-above)
   (newline-and-indent))
 
 (deftoggle sam-hs-toggle-all
@@ -545,9 +520,9 @@ Version 2017-07-02"
 
 (defun sam-make-filename-unique (filename)
   (let ((base (file-name-sans-extension filename))
-	(ext (file-name-extension filename))
-	(name filename)
-	(cnt 1))
+	    (ext (file-name-extension filename))
+	    (name filename)
+	    (cnt 1))
     (while (file-exists-p name)
       (setf name (concat base "-" (int-to-string cnt) "." ext))
       (1+ cnt))
@@ -558,47 +533,22 @@ Version 2017-07-02"
   (interactive)
   (shell-command "grim"))
 
-(defun sam-yank-to-eol ()
+(defun sam-scroll-page-up ()
   (interactive)
-  (evil-yank-line (point) (line-end-position)))
-
-(defun sam-move-scroll-next-line ()
+  (next-line)
+  (scroll-up-line)
+  )
+(defun sam-scroll-page-down ()
   (interactive)
-  (evil-scroll-line-down 1)
-  (evil-next-visual-line))
-(defun sam-move-scroll-prev-line ()
-  (interactive)
-  (evil-scroll-line-up 1)
-  (evil-previous-visual-line))
+  (previous-line)
+  (scroll-down-line)
+  )
 
 (defun sam-avy ()
   (interactive)
   (avy-goto-word-or-subword-1))
 
-(defun source (filename)
-  "Update environment variables from a shell source FILENAME."
-  (interactive "fSource file: ")
 
-  (message "Sourcing environment from `%s'..." filename)
-  (with-temp-buffer
-
-    (shell-command (format "diff -u <(true; export) <(source %s; export)" filename) '(4))
-
-    (let ((envvar-re "declare -x \\([^=]+\\)=\\(.*\\)$"))
-      ;; Remove environment variables
-      (while (search-forward-regexp (concat "^-" envvar-re) nil t)
-        (let ((var (match-string 1)))
-          (message "%s" (prin1-to-string `(setenv ,var nil)))
-          (setenv var nil)))
-
-      ;; Update environment variables
-      (goto-char (point-min))
-      (while (search-forward-regexp (concat "^+" envvar-re) nil t)
-        (let ((var (match-string 1))
-              (value (read (match-string 2))))
-          (message "%s" (prin1-to-string `(setenv ,var ,value)))
-          (setenv var value)))))
-  (message "Sourcing environment from `%s'... done." filename))
 
 (defun sam-delete-side-windows (side)
   "Delete windows at SIDE."
@@ -611,14 +561,14 @@ If DIRECTORY already exists, signal an error."
   (interactive
    (list (read-file-name "Create directory: " (dired-current-directory))))
   (let* ((expanded (directory-file-name (expand-file-name directory)))
-	 (marked (dired-get-marked-files))
-	 new)
+	     (marked (dired-get-marked-files))
+	     new)
     (unless (file-exists-p expanded)
       (setq new (dired--find-topmost-parent-dir expanded))
       (make-directory expanded t)
       (when new
-	(dired-add-file new)
-	(dired-move-to-filename)))
+	    (dired-add-file new)
+	    (dired-move-to-filename)))
     (mapc #'(lambda (file) (rename-file file (concat expanded "/"))) marked)
     (revert-buffer)))
 
@@ -629,8 +579,8 @@ If DIRECTORY already exists, signal an error."
   (interactive
    (list (read-file-name "Create directory: " default-directory)))
   (let* ((expanded (directory-file-name (expand-file-name directory)))
-	 (filename (buffer-file-name))
-	 (new (concat expanded "/" (f-filename (buffer-file-name)))))
+	     (filename (buffer-file-name))
+	     (new (concat expanded "/" (f-filename (buffer-file-name)))))
     (unless (file-exists-p expanded)
       (make-directory expanded t))
     (rename-file filename new)
@@ -638,12 +588,23 @@ If DIRECTORY already exists, signal an error."
     (get-buffer-create new)
     (set-buffer-modified-p nil)))
 
-(defun sam-flash ()
+(defun sam-flash-bmap ()
   "Flash IMAGE to DEVICE."
   (interactive)
   (with-temp-buffer
-    (let* ((image (read-file-name "Image: " "/home/sam/workspaces/poky/build/tmp/deploy/images/"))
-	   (device (read-file-name "Device: " "/dev/" nil nil "sd")))
+    (let* ((image (read-file-name "Image: " "/home/sam/workspaces/big-bend/container/data/"))
+	       (device (read-file-name "Device: " "/dev/" nil nil "sd")))
+      (setq image (expand-file-name image))
+      (cd "/sudo::/")
+      (shell-command (concat "umount " device "*"))
+      (async-shell-command (concat "bmaptool copy " image " " device)))))
+
+(defun sam-flash-ext4 ()
+  "Flash IMAGE to DEVICE."
+  (interactive)
+  (with-temp-buffer
+    (let* ((image (read-file-name "Image: " "/home/sam/workspaces/atlas/container/data/build/tmp-glibc/deploy/images"))
+	       (device (read-file-name "Device: " "/dev/" nil nil "sd")))
       (setq image (expand-file-name image))
       (cd "/sudo::/")
       (shell-command (concat "umount " device "*"))
@@ -665,7 +626,7 @@ If DIRECTORY already exists, signal an error."
   "Return true if serial PORT is active."
   (cl-dolist (buffer (buffer-list))
     (when (string= (buffer-name buffer)
-		   "/dev/ttyUSB0")
+		           "/dev/ttyUSB0")
       (cl-return buffer))))
 (defun sam-serial-term (port speed &optional line-mode)
   "Start a terminal-emulator for a serial port in a new buffer.
@@ -697,13 +658,13 @@ use in that buffer.
                      :noquery t))
            (buffer (process-buffer process)))
       (with-current-buffer buffer
-	(term-mode)
-	(unless line-mode
+	    (term-mode)
+	    (unless line-mode
           (term-char-mode))
-	(goto-char (point-max))
-	(set-marker (process-mark process) (point))
-	(set-process-filter process #'term-emulate-terminal)
-	(set-process-sentinel process #'term-sentinel))
+	    (goto-char (point-max))
+	    (set-marker (process-mark process) (point))
+	    (set-process-filter process #'term-emulate-terminal)
+	    (set-process-sentinel process #'term-sentinel))
       (switch-to-buffer buffer)
       buffer)))
 
@@ -716,33 +677,33 @@ use in that buffer.
                     (setq execute-extended-command--last-typed
                           (minibuffer-contents)))
                   nil 'local)
-	(set (make-local-variable 'minibuffer-default-add-function)
-	     (lambda ()
-	       ;; Get a command name at point in the original buffer
-	       ;; to propose it after M-n.
-	       (with-current-buffer (window-buffer (minibuffer-selected-window))
-		 (and (commandp (function-called-at-point))
-		      (format "%S" (function-called-at-point)))))))
+	    (set (make-local-variable 'minibuffer-default-add-function)
+	         (lambda ()
+	           ;; Get a command name at point in the original buffer
+	           ;; to propose it after M-n.
+	           (with-current-buffer (window-buffer (minibuffer-selected-window))
+		         (and (commandp (function-called-at-point))
+		              (format "%S" (function-called-at-point)))))))
     ;; Read a string, completing from and restricting to the set of
     ;; all defined commands.  Don't provide any initial input.
     ;; Save the command read on the extended-command history list.
     (completing-read
      (concat (cond
-	      ((eq current-prefix-arg '-) "- ")
-	      ((and (consp current-prefix-arg)
-		    (eq (car current-prefix-arg) 4)) "C-u ")
-	      ((and (consp current-prefix-arg)
-		    (integerp (car current-prefix-arg)))
-	       (format "%d " (car current-prefix-arg)))
-	      ((integerp current-prefix-arg)
-	       (format "%d " current-prefix-arg)))
-	     ;; This isn't strictly correct if `execute-extended-command'
-	     ;; is bound to anything else (e.g. [menu]).
-	     ;; It could use (key-description (this-single-command-keys)),
-	     ;; but actually a prompt other than "M-x" would be confusing,
-	     ;; because "M-x" is a well-known prompt to read a command
-	     ;; and it serves as a shorthand for "Extended command: ".
-	     "M-x ")
+	          ((eq current-prefix-arg '-) "- ")
+	          ((and (consp current-prefix-arg)
+		            (eq (car current-prefix-arg) 4)) "C-u ")
+	          ((and (consp current-prefix-arg)
+		            (integerp (car current-prefix-arg)))
+	           (format "%d " (car current-prefix-arg)))
+	          ((integerp current-prefix-arg)
+	           (format "%d " current-prefix-arg)))
+	         ;; This isn't strictly correct if `execute-extended-command'
+	         ;; is bound to anything else (e.g. [menu]).
+	         ;; It could use (key-description (this-single-command-keys)),
+	         ;; but actually a prompt other than "M-x" would be confusing,
+	         ;; because "M-x" is a well-known prompt to read a command
+	         ;; and it serves as a shorthand for "Extended command: ".
+	         "M-x ")
      (lambda (string pred action)
        (let ((pred
               (if (memq action '(nil t))
@@ -764,27 +725,27 @@ use in that buffer.
 (defun sam-read-tsv ()
   "Read a IMAGE in the minibuffer, with completion."
   (read-file-name "TSV: "
-		  "."
-		  nil
-		  nil
-		  nil
-		  (lambda (filename) (or (string-match-p "tsv" filename)
-					 (string-match-p "/" filename)))))
+		          "."
+		          nil
+		          nil
+		          nil
+		          (lambda (filename) (or (string-match-p "tsv" filename)
+					                     (string-match-p "/" filename)))))
 (defun sam-stm32-program (tsv)
   "Run stm32 programmer with TSV."
   (interactive (list (sam-read-tsv)))
   (let ((cmd "/home/sam/apps/stm32programmer/bin/STM32_Programmer_CLI")
-	(port "usb1"))
+	    (port "usb1"))
 
     (setq tsv (expand-file-name tsv))
     ;; (cd "/sudo::/")
     (message tsv)
     (async-shell-command (concat "sudo "
-				 cmd
-				 " -c "
-				 " port=" port
-				 " -w "
-				 tsv))
+				                 cmd
+				                 " -c "
+				                 " port=" port
+				                 " -w "
+				                 tsv))
     (cd default-directory)))
 
 (defun sam-pushb-or-embark (pos &optional event)
@@ -794,7 +755,7 @@ use in that buffer.
     ;; If there is no button at point, then use the one at the start
     ;; of the line, if it is a custom-group-link (bug#2298).
     (if button
-	(push-button pos)
+	    (push-button pos)
       ;; (widget-apply-action button event)
       (call-interactively #'embark-act))))
 
@@ -805,7 +766,7 @@ use in that buffer.
     ;; If there is no button at point, then use the one at the start
     ;; of the line, if it is a custom-group-link (bug#2298).
     (if button
-	(widget-button-press pos)
+	    (widget-button-press pos)
       ;; (widget-apply-action button event)
       (call-interactively #'embark-act))))
 
@@ -853,19 +814,21 @@ See `embark-act' for the meaning of the prefix ARG."
     (shell-command "ssh impinj-rpi \"sudo /home/ubuntu/utils/imx_usb_loader/imx_usb /home/ubuntu/files/u-boot-dtb.imx\""))
   )
 
-(defun sam-impinj-flash-itb ()
+(defvar bitbake-deploy-dir "~/workspaces/")
+(defvar itb-target "/ssh:impinj-rpi:/tftpboot/")
+(defun sam-flash-itb ()
   (interactive)
-  (let ((itb-path (read-file-name "itb: " (expand-file-name "~/workspaces/impinj/build/tmp/deploy/images/r700/") "" t nil
-				  (lambda (filename) (string-match-p "\.itb" filename))))
-	(rpi-tftpboot (expand-file-name "/ssh:impinj-rpi:/tftpboot/")))
+  (let ((itb-path (read-file-name "itb: " (expand-file-name bitbake-deploy-dir) "" t nil
+				                  (lambda (filename) (string-match-p "\.itb" filename))))
+	    (rpi-tftpboot (expand-file-name itb-target)))
     (copy-file itb-path rpi-tftpboot t)))
 
 (defun sam-impinj-flash-imx ()
   (interactive)
   (let ((src (read-file-name "imx: " (expand-file-name "~/workspaces/impinj/build/tmp/deploy/images/r700/") "" t nil
-			     (lambda (filename) (or (string-match-p "\.imx" filename)
-						    (string-match-p "/" filename)))))
-	(tar (expand-file-name "/ssh:impinj-rpi:/home/ubuntu/files/sam/")))
+			                 (lambda (filename) (or (string-match-p "\.imx" filename)
+						                            (string-match-p "/" filename)))))
+	    (tar (expand-file-name "/ssh:impinj-rpi:/home/ubuntu/files/sam/")))
     (copy-file src tar t)))
 
 (defun sam-toggle-var (var-name)
@@ -888,10 +851,6 @@ See `embark-act' for the meaning of the prefix ARG."
     (backward-kill-sentence)
     (insert selection)))
 
-(defun sam-copy-this-sexp ()
-  (interactive)
-  (add-to-list 'kill-ring (thing-at-point 'sexp t)))
-
 (defun sam-project-persp-switch-project (dir)
   "\"Switch\" to another project by running an Emacs command.
 The available commands are presented as a dispatch menu
@@ -907,6 +866,74 @@ to directory DIR."
     (let ((default-directory dir)
           (project-current-inhibit-prompt t))
       (call-interactively command))))
+
+(defun sam-comment-line ()
+  (interactive)
+  (save-excursion (comment-line 1)))
+
+(defun sam-ansi-term (program &optional new-buffer-name)
+  "Start a terminal-emulator in a new buffer.
+This is almost the same as `term' apart from always creating a new buffer,
+and `C-x' being marked as a `term-escape-char'."
+  (interactive (list (read-from-minibuffer "Run program: "
+					                       (or explicit-shell-file-name
+					                           (getenv "ESHELL")
+					                           shell-file-name))))
+
+  ;; Pick the name of the new buffer.
+  (setq term-ansi-buffer-name
+	    (if new-buffer-name
+	        new-buffer-name
+	      (if term-ansi-buffer-base-name
+	          (if (eq term-ansi-buffer-base-name t)
+		          (file-name-nondirectory program)
+		        term-ansi-buffer-base-name)
+	        "ansi-term")))
+
+  (setq term-ansi-buffer-name (concat "*" term-ansi-buffer-name "*"))
+
+  ;; In order to have more than one term active at a time
+  ;; I'd like to have the term names have the *term-ansi-term<?>* form,
+  ;; for now they have the *term-ansi-term*<?> form but we'll see...
+
+  (setq term-ansi-buffer-name (generate-new-buffer-name term-ansi-buffer-name))
+  (setq term-ansi-buffer-name (term-ansi-make-term term-ansi-buffer-name program))
+
+  (set-buffer term-ansi-buffer-name)
+  (term-mode)
+  (term-char-mode)
+
+  ;; Historical baggage.  A call to term-set-escape-char used to not
+  ;; undo any previous call to t-s-e-c.  Because of this, ansi-term
+  ;; ended up with both C-x and C-c as escape chars.  Who knows what
+  ;; the original intention was, but people could have become used to
+  ;; either.   (Bug#12842)
+  (let (term-escape-char)
+    ;; I wanna have find-file on C-x C-f -mm
+    ;; your mileage may definitely vary, maybe it's better to put this in your
+    ;; .emacs ...
+    (term-set-escape-char ?\C-x))
+
+  (pop-to-buffer term-ansi-buffer-name))
+
+(defmacro defcommand (name &optional docstring &rest body)
+  `(let (())
+     (defun ,(intern name)
+         (interactive)
+       ,body)))
+
+(defun sam-match ()
+  "Go to matching parenthesis under cursor."
+  (interactive)
+  (let ((c (char-after)))
+    (cond
+     ((equal c 40)
+             (forward-list)
+             (backward-char))
+     ((equal c 41)
+      (forward-char)
+      (backward-list))
+     (t (message "No matchable character under cursor.")))))
 
 (provide '+functions)
 ;;; +functions.el ends here

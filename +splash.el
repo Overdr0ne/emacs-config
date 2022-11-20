@@ -29,7 +29,7 @@
 ;;(windmove-display-same-window)
 ;; (sfs-recollect)
 (persp-mode +1)
-;;(call-interactively #'projectile-persp-switch-project)
+(call-interactively #'sam-project-persp-switch-project)
 
 (provide '+splash)
 ;;; +splash.el ends here

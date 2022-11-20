@@ -26,9 +26,13 @@
 
 ;; (require 'init)
 
-(require 'use-package)
-(require 'straight)
-(require 'emacs)
+;;(eval-when-compile
+;;  (require 'use-package)
+;;  (require 'straight))
+
+;;(require 'use-package)
+;;(require 'straight)
+;;(require 'emacs)
 
 (use-package seq)
 (use-package let-alist)
@@ -36,15 +40,15 @@
 (use-package dash)
 
 (use-package cus-edit
-   :after (wid-edit)
-   :straight (cus-edit :type built-in
-                       ;; :build (:not compile)
-                       ))
+  :after (wid-edit)
+  :straight (cus-edit :type built-in
+                      ;; :build (:not compile)
+                      ))
 
 (use-package easymenu
-   :straight (easymenu :type built-in
-;;                       :build (:not compile)
-                       ))
+  :straight (easymenu :type built-in
+                      ;;                       :build (:not compile)
+                      ))
 
 (use-package text-property-search
   :straight (text-property-search :type built-in))
@@ -52,22 +56,50 @@
 (use-package rx
   :straight (rx :type built-in))
 
+(use-package sh-script
+  :straight (sh-script :type built-in)
+  :config
+  (add-to-list 'auto-mode-alist '("\\.env\\'" . sh-mode)))
+
+(use-package project
+  :straight (project :type built-in)
+  :config
+  (setq project-switch-commands
+        '((find-file "Find file" ?f)
+          (project-find-regexp "Find regexp")
+          (project-find-dir "Find directory")
+          (magit-status "Magit")
+          (project-eshell "Eshell"))))
+
 (use-package wid-edit
   :straight (wid-edit :type built-in
                       ;;:build (:not compile)
                       )
   )
 
+;; (use-package savehist
+;;   :straight (project :type built-in)
+;;   :init
+;;   ;;  (require 'projectile)
+;;   (setq history-length 500)
+;;   (setq savehist-file "~/.emacs.d/history")
+;;   (savehist-mode +1)
+;;   ;; (add-to-list 'savehist-additional-variables
+;;   ;;              'projectile-relevant-known-projects)
+;;   (setq savehist-additional-variables
+;;         (append savehist-additional-variables
+;;                 '(kill-ring search-ring regexp-search-ring compile-history log-edit-comment-ring obarray))))
+
 (use-package cl-lib
   :straight (cl-lib :type built-in))
 
-(use-package compilation-mode
-  :straight (compilation-mode :type built-in))
+;; (use-package compilation-mode
+;;   :straight (compilation-mode :type built-in))
 
 ;; (use-package compat)
 
 (use-package transient
-;;  :after (compat)
+  ;;  :after (compat)
   )
 
 ;; (use-package hydra)
@@ -93,8 +125,7 @@
 (use-package winner
   :straight (winner :type built-in)
   :init
-  (winner-mode +1)
-  )
+  (winner-mode +1))
 
 ;; (use-package tramp
 ;;   :straight (tramp :build (:not compile
@@ -105,20 +136,20 @@
 	         :files ("*.el" "extensions/*.el"))
   :init
   (vertico-mode +1)
-  ;; :config
-  ;; Enable vertico-multiform
-  ;; (vertico-multiform-mode +1)
+  :config
+  (vertico-multiform-mode +1)
 
   ;; Configure the display per command.
   ;; Use a buffer with indices for imenu
   ;; and a flat (Ido-like) menu for M-x.
-  ;;  (setq vertico-multiform-commands
-  ;;        '((gumshoe-peruse-globally (vertico-sort-function . nil))
-  ;;          (gumshoe-peruse-in-buffer (vertico-sort-function . nil))
-  ;;          (gumshoe-peruse-in-window (vertico-sort-function . nil))
-  ;;          ;; (consult-imenu buffer indexed)
-  ;;          ;; (persp-switch-to-buffer* (vertico-sort-function . vertico-sort-history-alpha))
-  ;;          ))
+  (setq vertico-multiform-commands
+        '((shelldon-output-history (vertico-sort-function . nil))
+          ;; (gumshoe-peruse-globally (vertico-sort-function . nil))
+          ;; (gumshoe-peruse-in-buffer (vertico-sort-function . nil))
+          ;; (gumshoe-peruse-in-window (vertico-sort-function . nil))
+          ;; (consult-imenu buffer indexed)
+          ;; (persp-switch-to-buffer* (vertico-sort-function . vertico-sort-history-alpha))
+          ))
 
   ;; (setq vertico-multiform-categories
   ;;       '(
@@ -138,19 +169,6 @@
   (setq completion-styles '(orderless basic)
         completion-category-defaults nil
         completion-category-overrides '((file (styles partial-completion)))))
-(use-package savehist
-;;  :after (projectile)
-  :init
-  ;;  (require 'projectile)
-  (setq history-length 500)
-  (setq savehist-file "~/.emacs.d/history")
-  (savehist-mode +1)
-  ;; (add-to-list 'savehist-additional-variables
-  ;;              'projectile-relevant-known-projects)
-  (setq savehist-additional-variables
-        (append savehist-additional-variables
-                '(kill-ring search-ring regexp-search-ring compile-history log-edit-comment-ring obarray))))
-
 ;; (use-package projectile
 ;;   :straight (projectile
 ;;              ;; :build (:not compile)
@@ -191,13 +209,13 @@
   :straight (consult
              ;; :build (:not compile)
              )
-;;  :after (imenu)
+  ;;  :after (imenu)
   ;; :init
   ;; (advice-add #'register-preview :override #'consult-register-window)
   ;; (setq xref-show-xrefs-function #'consult-xref
   ;;       xref-show-definitions-function #'consult-xref)
   :config
-;;  (autoload 'projectile-project-root "projectile")
+  ;;  (autoload 'projectile-project-root "projectile")
   ;; (setq consult-project-root-function #'projectile-project-root)
   (defalias #'consult-imenu-variables #'consult-imenu)
   (defalias #'consult-imenu-functions #'consult-imenu)
@@ -218,17 +236,17 @@
       (setq unread-command-events (append unread-command-events (list key 32)))))
   (add-hook 'minibuffer-setup-hook #'consult-initial-narrow))
 
-(use-package lsp-mode
-  :commands lsp
-  :config
-  (setq gc-cons-threshold 1600000)
-  (setq read-process-output-max (* 1024 1024)))
-(use-package lsp-ui
-  :commands lsp-ui-mode
-  :config
-  ;; (setf lsp-ui-doc-mode -1)
-  ;; (setf (alist-get 'width lsp-ui-doc-frame-parameters) 80)
-  )
+;; (use-package lsp-mode
+;;   :commands lsp
+;;   :config
+;;   (setq gc-cons-threshold 1600000)
+;;   (setq read-process-output-max (* 1024 1024)))
+;; (use-package lsp-ui
+;;   :commands lsp-ui-mode
+;;   :config
+;;   ;; (setf lsp-ui-doc-mode -1)
+;;   ;; (setf (alist-get 'width lsp-ui-doc-frame-parameters) 80)
+;;   )
 ;; (use-package consult-lsp
 ;; ;;  :after (consult lsp)
 ;;   )
@@ -244,7 +262,70 @@
 			      :host github
 			      :repo "Overdr0ne/anzu")
   :config
-  (global-anzu-mode +1))
+  (global-anzu-mode +1)
+  (cl-defun anzu--query-replace-common (use-regexp
+                                        &key at-cursor thing prefix-arg (query t) isearch-p)
+    (anzu--cons-mode-line 'replace-query)
+    (when (and (use-region-p) (region-noncontiguous-p))
+      (setq anzu--region-noncontiguous (funcall region-extract-function 'bounds)))
+    (let* ((use-region (use-region-p))
+           (orig-point (point))
+           (backward (anzu--replace-backward-p prefix-arg))
+           (overlay-limit (anzu--overlay-limit backward))
+           (beg (if (region-active-p)
+                    (anzu--region-begin use-region (anzu--begin-thing at-cursor thing) backward)
+                  (buffer-end -1)))
+           (end (if (region-active-p)
+                    (anzu--region-end use-region thing backward)
+                  (buffer-end 1))
+                )
+           (prompt (anzu--query-prompt use-region use-regexp at-cursor isearch-p))
+           (delimited (and current-prefix-arg (not (eq current-prefix-arg '-))))
+           (curbuf (current-buffer))
+           (clear-overlay nil))
+      (when (and anzu-deactivate-region use-region)
+        (deactivate-mark t))
+      (unwind-protect
+          (let* ((from (cond ((and at-cursor beg)
+                              (setq delimited nil)
+                              (anzu--query-from-at-cursor curbuf beg end overlay-limit))
+                             (isearch-p
+                              (anzu--query-from-isearch-string
+                               curbuf beg end use-regexp overlay-limit))
+                             (t (anzu--query-from-string
+                                 prompt beg end use-regexp overlay-limit))))
+                 (to (cond ((consp from)
+                            (prog1 (cdr from)
+                              (setq from (car from)
+                                    anzu--total-matched anzu--last-replaced-count)))
+                           ((string-match "\0" from)
+                            (let ((replaced (substring-no-properties from (match-end 0))))
+                              (setq from (substring-no-properties from 0 (match-beginning 0)))
+                              (if use-regexp
+                                  (anzu--compile-replace-text replaced)
+                                replaced)))
+                           (t
+                            (anzu--query-replace-read-to
+                             from prompt beg end use-regexp overlay-limit)))))
+            (anzu--clear-overlays curbuf (min beg end) (max beg end))
+            (anzu--set-replaced-markers from beg end use-regexp)
+            (setq anzu--state 'replace anzu--current-position 0
+                  anzu--replaced-markers (reverse anzu--replaced-markers)
+                  clear-overlay t)
+            (let ((case-fold-search (and case-fold-search (not at-cursor))))
+              (if use-regexp
+                  (apply #'perform-replace (anzu--construct-perform-replace-arguments
+                                            from to delimited beg end backward query))
+                (apply #'query-replace (anzu--construct-query-replace-arguments
+                                        from to delimited beg end backward)))))
+        (progn
+          (unless clear-overlay
+            (anzu--clear-overlays curbuf (min beg end) (max beg end)))
+          (when (zerop anzu--current-position)
+            (goto-char orig-point))
+          (anzu--cleanup-markers)
+          (anzu--reset-mode-line)
+          (force-mode-line-update))))))
 ;; (use-package iedit)
 (use-package doom-modeline
   :init
@@ -265,23 +346,6 @@
 ;;   (setq flycheck-check-syntax-automatically '(idle-change new-line mode-enabled))
 ;;   (add-hook 'flycheck-error-list-mode-hook visual-line-mode))
 
-;;(use-package evil
-;;  :init
-;;  (setq evil-want-integration t)
-;;  (setq evil-want-keybinding nil)
-;;  (setq evil-want-Y-yank-to-eol t)
-;;  (setq evil-disable-insert-state-bindings t)
-;;  ;; Don't let evil-collection interfere with certain keys
-;;  (setq evil-collection-key-blacklist
-;;	    (list "<escape>"))
-;;  (defun +default|disable-delete-selection-mode ()
-;;    (delete-selection-mode -1))
-;;  (add-hook 'evil-insert-state-entry-hook #'delete-selection-mode)
-;;
-;;  :config
-;;  (evil-mode +1)
-;;  ;; (advice-add 'evil-goto-mark :after #'(lambda () (evil-scroll-line-to-center (line-number-at-pos))))
-;;  )
 ;;;;(use-package flyspell-lazy)
 ;;;;(use-package flyspell-correct)
 ;;;;(use-package flyspell-correct-popup)
@@ -291,9 +355,9 @@
 ;;;;(use-package langtool)
 
 ;;;;;;(use-package forge)
-;;;;(use-package diff-hl
-;;;;  :config
-;;;;  (global-diff-hl-mode))
+(use-package diff-hl
+  :config
+  (global-diff-hl-mode +1))
 ;;;;(use-package git-modes)
 
 (use-package magit
@@ -325,7 +389,7 @@
   (add-to-list 'auto-mode-alist '("defconfig\\'" . dts-mode))
   (setq auto-mode-alist (append auto-mode-alist '(("defconfig\\'" . dts-mode)
 						                          ("\\.its" . dts-mode)))))
-(use-package kconfig-mode)
+;; (use-package kconfig-mode)
 ;;;;(use-package yaml-mode
 ;;;;  :config
 ;;;;  (add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode)))
@@ -502,7 +566,7 @@
   :config
   (setf dired-listing-switches "-alhF"))
 (use-package diredfl
-;;  :after (dired)
+  ;;  :after (dired)
   :config
   (diredfl-global-mode))
 (use-package all-the-icons-dired
@@ -525,6 +589,13 @@
 (use-package highlight-defined
   :config
   (highlight-defined-mode +1))
+(use-package hl-line
+  :straight (hl-line :type built-in)
+  :config
+  (setq global-hl-line-mode +1)
+  (defun enable-hl-line-mode ()
+    (interactive)
+    (hl-line-mode +1)))
 
 ;;;;(use-package deft
 ;;;;  :config
@@ -769,6 +840,11 @@
 			               :repo "Overdr0ne/emacs")
   :config
   (load-theme 'dracula t))
+;; (use-package tokyo-theme
+;;   :straight (tokyo-theme :type git
+;; 			             :host github
+;;                          :branch "main"
+;; 			             :repo "fowler/tokyo-theme"))
 ;;(use-package solarized-theme
 ;; ;; :config
 ;; ;; (load-theme 'solarized-light t)
@@ -785,7 +861,7 @@
 ;;;;(use-package mixed-pitch)
 ;;;;(use-package writeroom-mode)
 
-(use-package multi-term)
+;; (use-package multi-term)
 
 (use-package imenu
   :config
@@ -804,6 +880,7 @@
 ;;                         :repo "Overdr0ne/command-mode"
 ;;                         :branch "master"))
 ;;
+
 (use-package shelldon
   :straight (shelldon :type git
                       :host github
@@ -823,6 +900,11 @@
 	          (lambda (old-fn)
 		        (let ((selectrum-should-sort nil))
 		          (funcall old-fn)))))
+
+(use-package bash-completion
+  :config
+  (add-hook 'shell-dynamic-complete-functions
+            'bash-completion-dynamic-complete))
 
 ;; (use-package emacs-application-framework
 ;;   :straight (emacs-application-framework :type git
@@ -849,7 +931,7 @@
   :config
   (add-hook 'prog-mode-hook 'corfu-mode))
 (use-package cape
-;;  :after (corfu)
+  ;;  :after (corfu)
   :init
   (add-to-list 'completion-at-point-functions #'cape-file)
   (add-to-list 'completion-at-point-functions #'cape-line)
@@ -922,9 +1004,9 @@
           (which-key--show-keymap "Embark" map nil nil 'no-paging)
           #'which-key--hide-popup-ignore-command)
         embark-become-indicator embark-action-indicator))
-;;(use-package embark-consult
-;; :hook
-;; (embark-collect-mode . consult-preview-at-point-mode))
+(use-package embark-consult
+  :hook
+  (embark-collect-mode . consult-preview-at-point-mode))
 ;;
 ;;;;;; (use-package better-jumper)
 ;;;;
@@ -956,7 +1038,7 @@
 
 ;;;;;; (load "~/src/winblows/winblows.el")
 
-(use-package loccur)
+;; (use-package loccur)
 
 (use-package bitbake
   :straight (bitbake :type git
@@ -968,8 +1050,15 @@
   (setf bitbake-flash-device "/dev/mmcblk0")
   ;; (setf bitbake-poky-directory "/home/sam/workspaces/dtech/layers")
   ;; (setf bitbake-build-directory "/home/sam/workspaces/dtech/build")
-  (setf bitbake-poky-directory "/home/sam/workspaces/impinj")
-  (setf bitbake-build-directory "/home/sam/workspaces/impinj/build"))
+  ;; (setf bitbake-poky-directory "/home/sam/workspaces/impinj")
+  ;; (setf bitbake-build-directory "/home/sam/workspaces/impinj/build")
+  (setf bitbake-poky-directory "/home/sam/workspaces/big-bend/container/data")
+  (setf bitbake-build-directory "/home/sam/workspaces/big-bend/container/data/build")
+  ;; (setf bitbake-poky-directory "/home/sam/tmp/impinj")
+  ;; (setf bitbake-build-directory "/home/sam/tmp/impinj/build")
+  ;; (setf bitbake-poky-directory "/home/sam/workspaces/atlas/build/")
+  ;; (setf bitbake-build-directory "/home/sam/workspaces/atlas/build")
+  )
 
 ;;;;;; (use-package exec-path-from-shell)
 ;;;;
@@ -978,14 +1067,14 @@
 ;;;;  (setf tmm-completion-prompt "")
 ;;;;  (setf tmm-mid-prompt ":"))
 ;;;;
-;;;;(use-package docker
-;;;; :config
-;;;; (setf docker-image-run-default-args '("-i" "-t" "--rm")))
-;;
-;;(use-package dockerfile-mode
-;; :config
-;; (add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-mode)))
-;;
+;;(use-package docker
+;;  :config
+;;  (setf docker-image-run-default-args '("-i" "-t" "--rm")))
+
+(use-package dockerfile-mode
+  :config
+  (add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-mode)))
+
 ;;;;;; (use-package keychain-environment
 ;;;;;;   :straight (keychain-environment :type git
 ;;;;;; 				  :host github
@@ -1024,88 +1113,28 @@
                    :repo "Overdr0ne/slink"
                    :branch "main"))
 
-;; (use-package geiser)
-;; (use-package geiser-guile)
-;; (use-package bui)
-;; (use-package edit-indirect)
-;; (use-package build-farm)
-;; (use-package magit-popup)
-;; (use-package guix)
+(use-package skey
+  :straight (skey :type git
+                  :host github
+                  :repo "Overdr0ne/skey"
+                  :branch "main"))
+
+(use-package geiser)
+(use-package geiser-guile)
+(use-package bui)
+(use-package edit-indirect)
+(use-package build-farm)
+(use-package magit-popup)
+(use-package guix)
 
 ;;(use-package recentf
 ;; :straight (recentf :type built-in)
 ;; :init
 ;; (recentf-mode +1))
-;; (use-package evil)
-;; (use-package evil
-;;   :straight (evil :build (:not compile)))
-;; (use-package evil
-;;   :straight (evil :build (:not compile))
-;;   :init
-;;   (setq evil-want-integration t)
-;;   (setq evil-want-keybinding nil)
-;;   (setq evil-want-Y-yank-to-eol t)
-;;   (setq evil-disable-insert-state-bindings t)
-;;   ;; Don't let evil-collection interfere with certain keys
-;;   ;; (setq evil-collection-key-blacklist (list "<escape>"))
-;;   ;;:config
-;;   ;;(evil-mode +1)
-;;   )
-;; (use-package evil-collection
-;;   :straight (evil-collection :build (:not compile))
-;;   :init
-;;   (setq evil-collection-want-unimpaired-p nil)
-;;   :config
-;;   (evil-collection-init)
-;;   ;; (global-evil-collection-unimpaired-mode -1)
-;;   )
-;; ;;(use-package evil-anzu)
-;; (use-package evil-escape
-;;   :config
-;;   (setq evil-escape-key-sequence nil))
-;; (use-package evil-goggles
-;;   :config
-;;   (evil-goggles-mode)
-;;   (evil-goggles-use-diff-faces))
-;;(use-package evil-easymotion)
-;; (use-package evil-matchit
-;;   :config
-;;   (global-evil-matchit-mode 1))
-;; ;; (use-package evil-snipe
-;; ;;   ;; :config
-;; ;;   ;; (push 'ibuffer-mode evil-snipe-disabled-modes)
-;; ;;   ;; (evil-snipe-mode +1)
-;; ;;   )
-;; ;;(use-package evil-nerd-commenter)
-;; (use-package evil-traces
-;;   :config
-;;   (evil-traces-mode))
-;; (use-package evil-commentary
-;;   :config
-;;   (evil-commentary-mode))
-;; (use-package evil-surround
-;;   :config
-;;   (setq-default evil-surround-pairs-alist '((?\( . ("(" . ")"))
-;; 					                        (?\[ . ("[" . "]"))
-;; 					                        (?\{ . ("{" . "}"))
-
-;; 					                        (?\) . ("( " . " )"))
-;; 					                        (?\] . ("[ " . " ]"))
-;; 					                        (?\} . ("{ " . " }"))
-
-;; 					                        (?# . ("#{" . "}"))
-;; 					                        (?b . ("(" . ")"))
-;; 					                        (?B . ("{" . "}"))
-;; 					                        (?> . ("<" . ">"))
-;; 					                        (?t . evil-surround-read-tag)
-;; 					                        (?< . evil-surround-read-tag)
-;; 					                        (?\C-f . evil-surround-prefix-function)
-;; 					                        (?f . evil-surround-function))))
-;; (use-package evil-cleverparens
-;;   :init
-;;   (setq evil-cleverparens-use-regular-insert 't))
 
 (load "~/src/evim/evim.el")
+
+(load "~/src/holymotion/holymotion.el")
 
 (use-package tempel
   :config
@@ -1123,6 +1152,10 @@
 ;;   :straight (mode-minder :type git
 ;;                          :host github
 ;;                          :repo "jdtsmith/mode-minder"))
+
+(use-package avy)
+
+(load "~/.emacs.d/overdr0ne/holymotion.el")
 
 (provide '+modules)
 ;;; +modules.el ends here

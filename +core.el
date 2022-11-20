@@ -73,7 +73,7 @@
                                             'left
                                           'right)))))))
 (setq display-buffer-alist
-      `(("\\(*\\(info\\|shelldon\\|docker\\|grep*\\|.*systemctl.*\\|Help\\|messages\\|help\\|helpful\\|trace-\\|Backtrace\\|Org\\|RefTeX.*\\)\\)"
+      `(("\\(*\\(info\\|ansi-term\\|bitbake\\|shelldon\\|docker\\|grep*\\|.*systemctl.*\\|Help\\|messages\\|help\\|helpful\\|trace-\\|Backtrace\\|Org\\|RefTeX.*\\)\\)"
          (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-in-side-window display-buffer-pop-up-window)
          (side . right)
          (slot . 0)
@@ -159,6 +159,8 @@
 (setq-default tab-width 4)
 
 (setq-default indent-tabs-mode nil)
+
+(setq delete-pair-blink-delay .15)
 
 ;; (set-frame-font "Fira Code 14")
 

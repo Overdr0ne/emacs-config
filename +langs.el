@@ -34,13 +34,13 @@
 (setq indent-tabs-mode nil)
 
 ;;; special modes
-(add-hook 'special-mode-hook 'hl-line-mode)
+;; (add-hook 'special-mode-hook 'enable-hl-line-mode)
 ;; (general-add-hook 'special-mode-hook
 ;;                   '(hl-line-mode))
 
 ;;; conf modes
-(add-hook 'conf-mode-hook
-                  '(hl-line-mode))
+;; (add-hook 'conf-mode-hook
+;;                   '(hl-line-mode))
 
 ;;; prog modes
 (defun sam-set-cape-funcs ()
@@ -54,7 +54,7 @@
   ;; (add-to-list 'completion-at-point-functions #'cape-file)
   )
 (dolist (fun
-         '(highlight-defined-mode  hs-minor-mode sam-set-cape-funcs hl-line-mode rainbow-delimiters-mode indent-guide-mode (lambda () (setq-local show-trailing-whitespace t))))
+         '(highlight-defined-mode  hs-minor-mode sam-set-cape-funcs rainbow-delimiters-mode indent-guide-mode (lambda () (setq-local show-trailing-whitespace t))))
   (dolist (hook '(prog-mode-hook conf-mode-hook))
     (add-hook hook fun)))
 ;; (general-add-hook '(c-mode-hook c++-mode-hook python-mode-hook)
@@ -62,7 +62,7 @@
 ;; 		  )
 
 ;;; evim
-(dolist (hook '(prog-mode-hook conf-mode-hook helpful-mode-hook))
+(dolist (hook '(prog-mode-hook conf-mode-hook Info-mode-hook helpful-mode-hook bitbake-mode-hook))
     (add-hook hook #'evim-normal-mode))
 
 ;;; sexps
@@ -80,15 +80,20 @@
 ;;                   '(highlight-defined-mode))
 
 ;;; shells
-(add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
+(dolist (hook '(shell-mode-hook))
+  (dolist (fun '(ansi-color-for-comint-mode-on evim-insert-term-mode))
+    (add-hook hook fun)))
 (add-to-list 'comint-output-filter-functions 'ansi-color-process-output)
+
+;;; terms
+;; (add-hook 'term-mode-hook 'evim-insert-term-mode)
 
 ;;; text
 (remove-hook 'text-mode-hook 'auto-fill-mode)
 (dolist (fun '(visual-line-mode flyspell-mode evim-normal-mode))
   (add-hook 'text-mode-hook fun))
 
-(dolist (fun '(visual-line-mode evim-normal-mode))
+(dolist (fun '(visual-line-mode))
   (add-hook 'dired-mode-hook fun))
 
 ;;; markdown
