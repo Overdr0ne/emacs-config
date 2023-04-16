@@ -43,9 +43,8 @@
 ;;          '(85 . 50) '(100 . 100)))))
 ;; (global-set-key (kbd "C-c t") 'toggle-transparency)
 
-;; Maximum number of side-windows to create on (left top right bottom)
-(setq window-sides-slots '(1 1 1 1))
-;; (setq max-window-width (window-width))
+
+
 (defcustom winblows--split-window-below nil
   "If non-nil, vertical splits produce new windows below."
   :group 'windows
@@ -73,14 +72,14 @@
                                             'left
                                           'right)))))))
 (setq display-buffer-alist
-      `(("\\(*\\(info\\|ansi-term\\|bitbake\\|shelldon\\|docker\\|grep*\\|.*systemctl.*\\|Help\\|messages\\|help\\|helpful\\|trace-\\|Backtrace\\|Org\\|RefTeX.*\\)\\)"
+      `(("\\(*\\(info\\|ansi-term\\|bitbake\\|docker\\|grep*\\|.*systemctl.*\\|Help\\|messages\\|help\\|helpful\\|trace-\\|Backtrace\\|Org\\|RefTeX.*\\)\\)"
          (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-in-side-window display-buffer-pop-up-window)
          (side . right)
          (slot . 0)
          (window-width . 80))
         ;; Display *BBDB* buffer on the bottom frame
         ("\\*BBDB"
-         (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-in-side-window display-buffer-pop-up-windo)
+         (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-in-side-window display-buffer-pop-up-window)
          (side . bottom)
          (slot . 0)
          (window-height . 10))
@@ -156,7 +155,7 @@
 
 (setf global-so-long-mode t)
 
-(setq-default tab-width 4)
+(setq-default tab-width 2)
 
 (setq-default indent-tabs-mode nil)
 

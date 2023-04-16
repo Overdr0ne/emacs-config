@@ -51,6 +51,9 @@
 
 (defun sam-eval-this-sexp ()
   (interactive)
+  (pulse-momentary-highlight-region (point)
+                                    (+ (point)
+                                       (length (thing-at-point 'sexp t))))
   (message "%S" (eval (read (thing-at-point 'sexp t)) t)))
 
 (defun sam-insert-line-above ()
@@ -192,9 +195,13 @@ current buffer directory."
   (interactive)
   (consult-line (cl-first consult--line-history)))
 
-(defun consult-grep-wd ()
+(defun sam-ripgrep-wd ()
   (interactive)
-  (consult-grep default-directory))
+  (consult-ripgrep default-directory))
+
+(defun sam-ripgrep-dir (dir)
+  (interactive "DDirectory: ")
+  (consult-grep dir))
 
 (defun rgrep-wd (regexp)
   (interactive
@@ -258,6 +265,27 @@ current buffer directory."
   (let ((read-buffer-function 'persp-read-buffer))
     (consult-buffer)))
 
+(defun dired-buffer-p (buffer)
+  (if buffer
+      (with-current-buffer (car buffer)
+        (equal major-mode #'dired-mode))
+    nil))
+
+(defun sam-switch-to-dir (dir-buffer)
+  (interactive (list
+                (read-buffer "Dired buffer: " nil nil #'dired-buffer-p)
+                ))
+  (switch-to-buffer dir-buffer))
+
+(defun file-list (&optional frame)
+  (seq-filter #'stringp (mapcar #'buffer-file-name (buffer-list))))
+
+(defun sam-insert-path (path)
+  (interactive (list
+                (completing-read "Open files: " (file-list))
+                ))
+  (insert path))
+
 (defun sam-add-and-switch-to-buffer (buffer)
   (interactive
    (list
@@ -299,6 +327,13 @@ current buffer directory."
   (paredit-wrap-sexp)
   (insert " ")
   (backward-char))
+
+(defun sam-insert-at-beginning-of-form ()
+  (interactive)
+  (sp-beginning-of-sexp)
+  (insert " ")
+  (backward-char)
+  (evim-i))
 
 (defun sam-insert-at-end-of-form ()
   (interactive)
@@ -548,11 +583,13 @@ Version 2017-07-02"
   (interactive)
   (avy-goto-word-or-subword-1))
 
-
-
 (defun sam-delete-side-windows (side)
   "Delete windows at SIDE."
   (mapc #'(lambda (window) (delete-window window)) (window-at-side-list nil side)))
+
+(defun sam-delete-window-right-side ()
+  (interactive)
+  (sam-delete-side-windows 'right))
 
 (defun sam-dired-group-marked (directory)
   "Create a directory called DIRECTORY.
@@ -588,12 +625,12 @@ If DIRECTORY already exists, signal an error."
     (get-buffer-create new)
     (set-buffer-modified-p nil)))
 
-(defun sam-flash-bmap ()
+(defun sam-flash-wic ()
   "Flash IMAGE to DEVICE."
   (interactive)
   (with-temp-buffer
-    (let* ((image (read-file-name "Image: " "/home/sam/workspaces/big-bend/container/data/"))
-	       (device (read-file-name "Device: " "/dev/" nil nil "sd")))
+    (let* ((image (read-file-name "Image: "))
+	       (device (read-file-name "Device: " "/dev/" nil nil "mmcblk")))
       (setq image (expand-file-name image))
       (cd "/sudo::/")
       (shell-command (concat "umount " device "*"))
@@ -603,7 +640,7 @@ If DIRECTORY already exists, signal an error."
   "Flash IMAGE to DEVICE."
   (interactive)
   (with-temp-buffer
-    (let* ((image (read-file-name "Image: " "/home/sam/workspaces/atlas/container/data/build/tmp-glibc/deploy/images"))
+    (let* ((image (read-file-name "Image: "))
 	       (device (read-file-name "Device: " "/dev/" nil nil "sd")))
       (setq image (expand-file-name image))
       (cd "/sudo::/")
@@ -617,7 +654,7 @@ If DIRECTORY already exists, signal an error."
 
 (defun sam-serial-read-name ()
   "Read serial device name."
-  (read-file-name "Device: " "/dev/." nil t))
+  (read-file-name "Device: " "/dev/" nil t))
 (defun sam-serial-read-speed ()
   "Read serial speed from the user."
   (let ((speeds (mapcar #'number-to-string '(110 300 600 1200 2400 4800 9600 14400 19200 38400 57600 115200 128000 256000))))
@@ -757,7 +794,7 @@ use in that buffer.
     (if button
 	    (push-button pos)
       ;; (widget-apply-action button event)
-      (call-interactively #'embark-act))))
+      (call-interactively #'sam-embark-act))))
 
 (defun sam-pushw-or-embark (pos &optional event)
   "Invoke button at POS, or call embark-act."
@@ -823,13 +860,34 @@ See `embark-act' for the meaning of the prefix ARG."
 	    (rpi-tftpboot (expand-file-name itb-target)))
     (copy-file itb-path rpi-tftpboot t)))
 
+(setq itb-target "ubuntu@10.102.3.1:/tftpboot")
+(defun sam-impinj-flash-itb ()
+  (interactive)
+  (let* ((itb-path (read-file-name "itb: " (expand-file-name bitbake-deploy-dir) "" t nil
+				                   (lambda (filename) (string-match-p "\.itb" filename))))
+	     (rpi-tftpboot itb-target)
+         (cmd (format "rsync -chazvP --progress --stats %s %s" itb-path rpi-tftpboot)))
+    (message cmd)
+    (shell-command cmd)))
+
 (defun sam-impinj-flash-imx ()
   (interactive)
-  (let ((src (read-file-name "imx: " (expand-file-name "~/workspaces/impinj/build/tmp/deploy/images/r700/") "" t nil
+  (let* ((src (read-file-name "imx: " (expand-file-name "~/workspaces/impinj/container/build/build/tmp/deploy/images/r700/u-boot-impinj/") "" t nil
 			                 (lambda (filename) (or (string-match-p "\.imx" filename)
 						                            (string-match-p "/" filename)))))
-	    (tar (expand-file-name "/ssh:impinj-rpi:/home/ubuntu/files/sam/")))
-    (copy-file src tar t)))
+	    (tar "impinj-rpi:/home/ubuntu/files/sam/")
+        (cmd (format "rsync -chazvP --progress --stats %s %s" src tar)))
+    (message cmd)
+    (shell-command cmd)
+    ;; (copy-file src tar t)
+    ))
+
+(defun sam-rsync (src tar)
+  (interactive "fSource: \nfTarget: ")
+  (let* ((cmd (format "rsync -chazvP --progress --stats %s %s" src tar)))
+    (message cmd)
+    (shell-command cmd))
+  )
 
 (defun sam-toggle-var (var-name)
   "Toggle VAR."
@@ -848,7 +906,7 @@ See `embark-act' for the meaning of the prefix ARG."
 (defun sam-minibuffer-history ()
   (interactive)
   (when-let (selection (completing-read "History: " (minibuffer-history-value)))
-    (backward-kill-sentence)
+    (kill-region (minibuffer-prompt-end) (line-end-position))
     (insert selection)))
 
 (defun sam-project-persp-switch-project (dir)
@@ -859,6 +917,8 @@ made from `project-switch-commands'.
 When called in a program, it will use the project corresponding
 to directory DIR."
   (interactive (list (project-prompt-project-dir)))
+  (message "SAMSAM: %s" dir)
+  (project-remember-project (project--find-in-directory dir))
   (persp-switch (car (last (split-string (directory-file-name dir) "/"))))
   (let ((command (if (symbolp project-switch-commands)
                      project-switch-commands
@@ -928,12 +988,208 @@ and `C-x' being marked as a `term-escape-char'."
   (let ((c (char-after)))
     (cond
      ((equal c 40)
-             (forward-list)
-             (backward-char))
+      (forward-list)
+      (backward-char))
      ((equal c 41)
       (forward-char)
       (backward-list))
      (t (message "No matchable character under cursor.")))))
 
+(defun project-setup-impinj ()
+  (interactive)
+  (project-switch-project "~/workspaces/impinj/container/")
+  (split-window-right)
+  (windmove-right)
+  (evim--term "zsh"))
+
+(defun sam-column-at (point)
+  "Return column number at POINT."
+  (save-excursion
+    (goto-char point)
+    (current-column)))
+
+(defun sam-scroll-up-command (&optional arg)
+  "Scroll text of selected window upward ARG lines; or near full screen if no ARG.
+If `scroll-error-top-bottom' is non-nil and `scroll-up' cannot
+scroll window further, move cursor to the bottom line.
+When point is already on that position, then signal an error.
+A near full screen is `next-screen-context-lines' less than a full screen.
+Negative ARG means scroll downward.
+If ARG is the atom `-', scroll downward by nearly full screen."
+  (interactive "^P")
+  (let* ((top-line (save-excursion (move-to-window-line 0)
+                                   (line-number-at-pos)))
+         (rel-line (- (line-number-at-pos) top-line))
+         (col (sam-column-at (point))))
+    (cond
+     ((null scroll-error-top-bottom)
+      (scroll-up arg))
+     ((eq arg '-)
+      (scroll-down-command nil))
+     ((< (prefix-numeric-value arg) 0)
+      (scroll-down-command (- (prefix-numeric-value arg))))
+     ((eobp)
+      (scroll-up arg))                   ; signal error
+     (t
+      (condition-case nil
+	      (scroll-up arg)
+        (end-of-buffer
+         (if arg
+	         ;; When scrolling by ARG lines can't be done,
+	         ;; move by ARG lines instead.
+	         (forward-line arg)
+	       ;; When ARG is nil for full-screen scrolling,
+	       ;; move to the bottom of the buffer.
+	       (goto-char (point-max)))))))
+    (setq top-line (save-excursion (move-to-window-line 0)
+                                   (line-number-at-pos)))
+    (goto-line (+ rel-line top-line))
+    (move-to-column col))
+  )
+
+(defun sam-scroll-down-command (&optional arg)
+  "Scroll text of selected window down ARG lines; or near full screen if no ARG.
+If `scroll-error-top-bottom' is non-nil and `scroll-down' cannot
+scroll window further, move cursor to the top line.
+When point is already on that position, then signal an error.
+A near full screen is `next-screen-context-lines' less than a full screen.
+Negative ARG means scroll upward.
+If ARG is the atom `-', scroll upward by nearly full screen."
+  (interactive "^P")
+  (let* ((top-line (save-excursion (move-to-window-line 0)
+                                   (line-number-at-pos)))
+         (rel-line (- (line-number-at-pos) top-line))
+         (col (sam-column-at (point))))
+    (cond
+     ((null scroll-error-top-bottom)
+      (scroll-down arg))
+     ((eq arg '-)
+      (scroll-up-command nil))
+     ((< (prefix-numeric-value arg) 0)
+      (scroll-up-command (- (prefix-numeric-value arg))))
+     ((bobp)
+      (scroll-down arg))                 ; signal error
+     (t
+      (condition-case nil
+	      (scroll-down arg)
+        (beginning-of-buffer
+         (if arg
+	         ;; When scrolling by ARG lines can't be done,
+	         ;; move by ARG lines instead.
+	         (forward-line (- arg))
+	       ;; When ARG is nil for full-screen scrolling,
+	       ;; move to the top of the buffer.
+	       (goto-char (point-min)))))))
+    (setq top-line (save-excursion (move-to-window-line 0)
+                                   (line-number-at-pos)))
+    (goto-line (+ rel-line top-line))
+    (move-to-column col)))
+
+(defun sam-embark-act ()
+  "Prompt the user for an action and perform it.
+The targets of the action are chosen by `embark-target-finders'.
+By default, if called from a minibuffer the target is the top
+completion candidate.  When called from a non-minibuffer buffer
+there can multiple targets and you can cycle among them by using
+`embark-cycle' (which is bound by default to the same key
+binding `embark-act' is, but see `embark-cycle-key').
+
+This command uses `embark-prompter' to ask the user to specify an
+action, and calls it injecting the target at the first minibuffer
+prompt.
+
+If you call this from the minibuffer, it can optionally quit the
+minibuffer.  The variable `embark-quit-after-action' controls
+whether calling `embark-act' with nil ARG quits the minibuffer,
+and if ARG is non-nil it will do the opposite.  Interactively,
+ARG is the prefix argument.
+
+If instead you call this from outside the minibuffer, the first
+ARG targets are skipped over (if ARG is negative the skipping is
+done by cycling backwards) and cycling starts from the following
+target."
+  (interactive)
+  (let* ((targets (embark--targets))
+         (selects (mapcar (lambda (target)
+                            (plist-get target :target))
+                          targets))
+         (targets-alist (mapcar (lambda (target)
+                                  `(,(substring-no-properties (plist-get target :target)) . ,target) )
+                                targets))
+         (indicators (mapcar #'funcall embark-indicators))
+         (default-done nil))
+    (unwind-protect
+        (while
+            (let* ((select (completing-read "Embark target: "
+                                            selects))
+                   (target (alist-get select
+                                      targets-alist nil nil 'equal))
+                   (action
+                    (or (embark--prompt
+                         indicators
+                         (let ((embark-default-action-overrides
+                                (if default-done
+                                    `((t . ,default-done))
+                                  embark-default-action-overrides)))
+                           (embark--action-keymap (plist-get target :type)
+                                                  (cdr targets)))
+                         targets)
+                        (user-error "Canceled")))
+                   (default-action (or default-done
+                                       (embark--default-action
+                                        (plist-get target :type)))))
+              (cond
+               ;; When acting twice in the minibuffer, do not restart
+               ;; `embark-act'.  Otherwise the next `embark-act' will
+               ;; find a target in the original buffer.
+               ((eq action #'embark-act)
+                (message "Press an action key"))
+               ((eq action #'embark-cycle)
+                (setq targets (embark--rotate
+                               targets (prefix-numeric-value prefix-arg))))
+               (t
+                ;; if the action is non-repeatable, cleanup indicator now
+                (let ((repeat (embark--action-repeatable-p action)))
+                  (unless repeat (mapc #'funcall indicators))
+                  (condition-case err
+                      (embark--act
+                       action
+                       (if (and (eq action default-action)
+                                (eq action embark--command)
+                                (not (memq action embark-multitarget-actions)))
+                           (embark--orig-target target)
+                         target)
+                       (embark--quit-p action))
+                    (user-error
+                     (funcall (if repeat #'message #'user-error)
+                              "%s" (cadr err))))
+                  (when-let (new-targets (and repeat (embark--targets)))
+                    ;; Terminate repeated prompter on default action,
+                    ;; when repeating. Jump to the region type if the
+                    ;; region is active after the action, or else to the
+                    ;; current type again.
+                    (setq default-done #'embark-done
+                          targets
+                          (embark--rotate
+                           new-targets
+                           (or (cl-position-if
+                                (let ((desired-type
+                                       (if (eq repeat t)
+                                           (plist-get (car targets) :type)
+                                         repeat)))
+                                  (lambda (x)
+                                    (eq (plist-get x :type) desired-type)))
+                                new-targets)
+                               0)))))))))
+      (mapc #'funcall indicators))))
+
+(defun sshfs (src tar)
+  (interactive "FRemote source: \nDLocal target: ")
+  (async-shell-command (format "sudo sshfs -o allow_other,default_permissions %s %s" src tar))
+  )
+(defun rsshfs (src user addr tar)
+  (interactive "DLocal source: \nsRemote user: \nsRemote addr: \nsRemote target: ")
+  (async-shell-command (format "rsshfs %s %s %s 10000 %s" src user addr tar))
+  )
 (provide '+functions)
 ;;; +functions.el ends here

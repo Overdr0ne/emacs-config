@@ -24,12 +24,6 @@
 
 ;;; Code:
 
-;; (require 'init)
-
-;;(eval-when-compile
-;;  (require 'use-package)
-;;  (require 'straight))
-
 ;;(require 'use-package)
 ;;(require 'straight)
 ;;(require 'emacs)
@@ -50,16 +44,158 @@
                       ;;                       :build (:not compile)
                       ))
 
+(use-package frame
+  :straight (frame :type built-in)
+  :init
+  (setq window-divider-default-right-width 2)
+  (setq window-divider-default-bottom-width 2)
+  (setq window-divider-default-places t)
+  (set-face-attribute 'window-divider nil
+                      :foreground nil
+                      :inherit 'minibuffer-prompt)
+  (window-divider-mode +1)
+  )
+
+(use-package window
+  :straight (window :type built-in)
+  :config
+  (setq window-min-height 1)
+  ;; Maximum number of side-windows to create on (left top right bottom)
+  (setq window-sides-slots '(1 1 1 1))
+
+  ;; redefine min-size func to not factor in window-divider into
+  ;; min window size.
+  (defun window--min-size-1 (window horizontal ignore pixelwise)
+    "Internal function of `window-min-size'."
+    (let ((sub (window-child window)))
+      (if sub
+          (let ((value 0))
+            ;; WINDOW is an internal window.
+            (if (window-combined-p sub horizontal)
+                ;; The minimum size of an iso-combination is the sum of
+                ;; the minimum sizes of its child windows.
+                (while sub
+                  (setq value (+ value
+                                 (window--min-size-1
+                                  sub horizontal ignore pixelwise)))
+                  (setq sub (window-right sub)))
+              ;; The minimum size of an ortho-combination is the maximum
+              ;; of the minimum sizes of its child windows.
+              (while sub
+                (setq value (max value
+                                 (window--min-size-1
+                                  sub horizontal ignore pixelwise)))
+                (setq sub (window-right sub))))
+            value)
+        (with-current-buffer (window-buffer window)
+          (cond
+           ((window-size-fixed-p window horizontal ignore)
+            ;; The minimum size of a fixed size window is its size.
+            (window-size window horizontal pixelwise))
+           ((eq ignore 'safe)
+            ;; If IGNORE equals `safe' return the safe value.
+            (window-safe-min-size window horizontal pixelwise))
+           (horizontal
+            ;; For the minimum width of a window take fringes and
+            ;; scroll-bars into account.  This is questionable and should
+            ;; be removed as soon as we are able to split (and resize)
+            ;; windows such that the new (or resized) windows can get a
+            ;; size less than the user-specified `window-min-height' and
+            ;; `window-min-width'.
+            (let* ((char-size (frame-char-size window t))
+                   (fringes (window-fringes window))
+                   (margins (window-margins window))
+                   ;; Let the 'min-margins' parameter override the actual
+                   ;; widths of the margins.  We allow any number to
+                   ;; replace the values specified by `window-margins'.
+                   ;; See bug#24193 for the rationale of this parameter.
+                   (min-margins (window-parameter window 'min-margins))
+                   (left-min-margin (and min-margins
+                                         (numberp (car min-margins))
+                                         (car min-margins)))
+                   (right-min-margin (and min-margins
+                                          (numberp (cdr min-margins))
+                                          (cdr min-margins)))
+                   (pixel-width
+                    (+ (window-safe-min-size window t t)
+                       (* (or left-min-margin (car margins) 0) char-size)
+                       (* (or right-min-margin(cdr margins) 0) char-size)
+                       (car fringes) (cadr fringes)
+                       (window-scroll-bar-width window)
+                       (window-right-divider-width window))))
+              (if pixelwise
+                  (max
+                   (if window-resize-pixelwise
+                       pixel-width
+                     ;; Round up to next integral of columns.
+                     (* (ceiling pixel-width char-size) char-size))
+                   (if (window--min-size-ignore-p window ignore)
+                       0
+                     (window-min-pixel-width window)))
+                (max
+                 (ceiling pixel-width char-size)
+                 (if (window--min-size-ignore-p window ignore)
+                     0
+                   window-min-width)))))
+           ((let ((char-size (frame-char-size window))
+                  (pixel-height
+                   (+ (window-safe-min-size window nil t)
+                      (window-tab-line-height window)
+                      (window-header-line-height window)
+                      (window-scroll-bar-height window)
+                      (window-mode-line-height window)
+                      ;; (window-bottom-divider-width window)
+                      )))
+              (if pixelwise
+                  (max
+                   (if window-resize-pixelwise
+                       pixel-height
+                     ;; Round up to next integral of lines.
+                     (* (ceiling pixel-height char-size) char-size))
+                   (if (window--min-size-ignore-p window ignore)
+                       0
+                     (window-min-pixel-height window)))
+                (max (ceiling pixel-height char-size)
+                     (if (window--min-size-ignore-p window ignore)
+                         0
+                       window-min-height))))))))))
+  )
+
 (use-package text-property-search
-  :straight (text-property-search :type built-in))
+  :straight (text-property-search :type built-in)
+  )
+
+;; (use-package hyperbole
+;;   :init
+;;   (setf hkey-init nil))
 
 (use-package rx
   :straight (rx :type built-in))
+
+(use-package mb-depth
+  :straight (mb-depth :type built-in)
+  :config
+  (minibuffer-depth-indicate-mode +1))
+
+(use-package select
+  :straight (select :type built-in)
+  :config
+  (setq select-enable-primary t))
+
+;; (use-package simple
+;;   :straight (simple :type built-in))
 
 (use-package sh-script
   :straight (sh-script :type built-in)
   :config
   (add-to-list 'auto-mode-alist '("\\.env\\'" . sh-mode)))
+
+(use-package term
+  :straight (term :type built-in)
+  :config
+  ;; (setq term-suppress-hard-newline t)
+  ;; (defun term--unwrap-visible-long-lines (width) nil)
+  )
 
 (use-package project
   :straight (project :type built-in)
@@ -77,45 +213,33 @@
                       )
   )
 
-;; (use-package savehist
-;;   :straight (project :type built-in)
-;;   :init
-;;   ;;  (require 'projectile)
-;;   (setq history-length 500)
-;;   (setq savehist-file "~/.emacs.d/history")
-;;   (savehist-mode +1)
-;;   ;; (add-to-list 'savehist-additional-variables
-;;   ;;              'projectile-relevant-known-projects)
-;;   (setq savehist-additional-variables
-;;         (append savehist-additional-variables
-;;                 '(kill-ring search-ring regexp-search-ring compile-history log-edit-comment-ring obarray))))
+(use-package tab-bar
+  :straight (tab-bar :type built-in
+                     )
+  :config
+  (setq tab-bar-separator "|")
+  )
+(use-package savehist
+  :straight (savehist :type built-in)
+  :init
+  ;;  (require 'projectile)
+  (setq history-length 500)
+  (setq savehist-file "~/.emacs.d/history")
+  (savehist-mode +1)
+  ;; (add-to-list 'savehist-additional-variables
+  ;;              'projectile-relevant-known-projects)
+  (setq savehist-additional-variables
+        (append savehist-additional-variables
+                '(kill-ring search-ring regexp-search-ring compile-history log-edit-comment-ring)))
+  )
 
 (use-package cl-lib
   :straight (cl-lib :type built-in))
-
-;; (use-package compilation-mode
-;;   :straight (compilation-mode :type built-in))
-
-;; (use-package compat)
 
 (use-package transient
   ;;  :after (compat)
   )
 
-;; (use-package hydra)
-
-;; (use-package no-littering)
-
-;; (use-package general)
-;;
-;;;;(use-package tree-sitter-langs)
-;;;;(use-package tree-sitter
-;;;;  (require 'tree-sitter-langs)
-;;;;  (global-tree-sitter-mode)
-;;;;  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
-;;
-;;;;(use-package erc)
-;;
 ;;(use-package sql)
 
 (use-package posframe)
@@ -127,15 +251,12 @@
   :init
   (winner-mode +1))
 
-;; (use-package tramp
-;;   :straight (tramp :build (:not compile
-;;                                 :not native-compile)))
-
 (use-package vertico
   :straight (vertico
-	         :files ("*.el" "extensions/*.el"))
+             :files ("*.el" "extensions/*.el"))
   :init
   (vertico-mode +1)
+  (vertico-mouse-mode +1)
   :config
   (vertico-multiform-mode +1)
 
@@ -169,47 +290,12 @@
   (setq completion-styles '(orderless basic)
         completion-category-defaults nil
         completion-category-overrides '((file (styles partial-completion)))))
-;; (use-package projectile
-;;   :straight (projectile
-;;              ;; :build (:not compile)
-;;              )
-;;   :config
-;;   (projectile-mode +1)
-;;   (defun sam-projectile-vc-or-dired ()
-;;     (interactive)
-;;     (if (not (string-equal (projectile-project-vcs) "none"))
-;;         (progn (projectile-vc)
-;;                (call-interactively #'find-file))
-;;       (dired default-directory)))
-;;   (setq projectile-switch-project-action #'sam-projectile-vc-or-dired)
 
-;;   (delete "~/.emacs.d/.local/" projectile-globally-ignored-directories)
-;;   (add-to-list 'projectile-globally-ignored-directories "build")
-;;   (defun sam-projectile-ibuffer-by-project (project-root)
-;;     "Open an IBuffer window showing all buffers in PROJECT-ROOT."
-;;     (let ((project-name (funcall projectile-project-name-function project-root)))
-;;       (ibuffer t (format "*%s Buffers*" project-name)
-;;                (list (cons 'projectile-files project-root)) nil t)))
-
-;;   (defun sam-projectile-ibuffer (prompt-for-project)
-;;     "Open an IBuffer window showing all buffers in the current project.
-
-;; Let user choose another project when PROMPT-FOR-PROJECT is supplied."
-;;     (interactive "P")
-;;     (let ((project-root (if prompt-for-project
-;;                             (projectile-completing-read
-;;                              "Project name: "
-;;                              (projectile-relevant-known-projects))
-;;                           (projectile-project-root))))
-
-;;       (sam-projectile-ibuffer-by-project project-root)))
-;;   (add-hook 'projectile-after-switch-project-hook 'delete-other-windows))
+(use-package all-the-icons)
 
 (use-package consult
   :straight (consult
-             ;; :build (:not compile)
-             )
-  ;;  :after (imenu)
+             :files ("*.el"))
   ;; :init
   ;; (advice-add #'register-preview :override #'consult-register-window)
   ;; (setq xref-show-xrefs-function #'consult-xref
@@ -234,7 +320,19 @@
   (defun consult-initial-narrow ()
     (when-let (key (alist-get this-command consult-initial-narrow-config))
       (setq unread-command-events (append unread-command-events (list key 32)))))
-  (add-hook 'minibuffer-setup-hook #'consult-initial-narrow))
+  (add-hook 'minibuffer-setup-hook #'consult-initial-narrow)
+
+  (setq xref-show-xrefs-function #'consult-xref
+        xref-show-definitions-function #'consult-xref)
+
+  ;; use vertico for minibuffer completion
+  (setq completion-in-region-function
+        (lambda (&rest args)
+          (apply (if vertico-mode
+                     #'consult-completion-in-region
+                   #'completion--in-region)
+                 args)))
+  )
 
 ;; (use-package lsp-mode
 ;;   :commands lsp
@@ -255,12 +353,10 @@
   (marginalia-mode +1))
 (use-package ctrlf)
 
-;;(use-package amx)
-
 (use-package anzu
   :straight (anzu :type git
-			      :host github
-			      :repo "Overdr0ne/anzu")
+                  :host github
+                  :repo "Overdr0ne/anzu")
   :config
   (global-anzu-mode +1)
   (cl-defun anzu--query-replace-common (use-regexp
@@ -332,36 +428,30 @@
   (setq doom-modeline-height 1)
   (doom-modeline-mode 1)
   (setq doom-modeline-minor-modes t))
-;; (use-package shrink-path)
 
 (use-package expand-region)
 
 ;; (use-package kbd-mode)
 
-;; (use-package flycheck
-;; ;;  :after (dash pkg-info let-alist seq)
-;;   :config
-;;   (setq flycheck-emacs-lisp-load-path 'inherit)
-;;   (setq flycheck-indication-mode 'right-fringe)
-;;   (setq flycheck-check-syntax-automatically '(idle-change new-line mode-enabled))
-;;   (add-hook 'flycheck-error-list-mode-hook visual-line-mode))
+(use-package flycheck
+  ;;  :after (dash pkg-info let-alist seq)
+  :config
+  (setq flycheck-emacs-lisp-load-path 'inherit)
+  (setq flycheck-indication-mode 'right-fringe)
+  (setq flycheck-check-syntax-automatically '(idle-change new-line mode-enabled))
+  (add-hook 'flycheck-error-list-mode-hook visual-line-mode)
+  )
 
-;;;;(use-package flyspell-lazy)
-;;;;(use-package flyspell-correct)
-;;;;(use-package flyspell-correct-popup)
-;;;;(use-package flycheck-aspell)
-;;;;(use-package flycheck-ledger)
-;;;;(use-package flycheck-popup-tip)
-;;;;(use-package langtool)
-
-;;;;;;(use-package forge)
 (use-package diff-hl
   :config
   (global-diff-hl-mode +1))
-;;;;(use-package git-modes)
+(use-package git-modes)
 
 (use-package magit
   :config
+  (add-to-list 'exec-path "/usr/lib/git-core")
+  (transient-replace-suffix 'magit-commit 'magit-commit-autofixup
+    '("x" "Absorb changes" magit-commit-absorb))
   (setf magit-buffer-log-args '("-n256" "--color" "--decorate" "--graph"))
   (defun dm/change-commit-author (arg)
     "Change the commit author during an interactive rebase in Magit.
@@ -381,24 +471,8 @@ on the current line, if any."
                      ""))
        arg)))
 
-  (define-key git-rebase-mode-map (kbd "h") #'dm/change-commit-author)
+  ;;(define-key git-rebase-mode-map (kbd "h") #'dm/change-commit-author)
   )
-;;;;(use-package magit-gitflow)
-;;;;;; (use-package magithub)
-;;;;(use-package git-timemachine)
-;; (use-package git-gutter-fringe
-;;   :config
-;;   (if (fboundp 'fringe-mode) (fringe-mode '8))
-
-;;   ;; places the git gutter outside the margins.
-;;   (setq-default fringes-outside-margins t)
-;;   ;; thin fringe bitmaps
-;;   (define-fringe-bitmap 'git-gutter-fr:added [224]
-;;     nil nil '(center repeated))
-;;   (define-fringe-bitmap 'git-gutter-fr:modified [224]
-;;     nil nil '(center repeated))
-;;   (define-fringe-bitmap 'git-gutter-fr:deleted [128 192 224 240]
-;;     nil nil 'bottom))
 
 (use-package format-all)
 
@@ -407,142 +481,118 @@ on the current line, if any."
   (add-to-list 'auto-mode-alist '("defconfig\\'" . dts-mode))
   (add-to-list 'auto-mode-alist '("defconfig\\'" . dts-mode))
   (setq auto-mode-alist (append auto-mode-alist '(("defconfig\\'" . dts-mode)
-						                          ("\\.its" . dts-mode)))))
-;; (use-package kconfig-mode)
-;;;;(use-package yaml-mode
-;;;;  :config
-;;;;  (add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode)))
-;;;;
-;;;;(use-package yasnippet
-;;;;  :config
-;;;;  (yas-global-mode))
-;;;;(use-package auto-yasnippet)
-;;;;(use-package yasnippet-snippets)
-;;;;
-;;;;;;; langs
-;;;;(use-package ccls
-;;;;  :config
-;;;;  (add-to-list 'lsp-enabled-clients 'ccls))
-;;;;
-;;;;(use-package pyvenv)
-;;;;(use-package pydoc
-;;;;  :straight (pydoc :type git
-;;;;                   :host github
-;;;;                   :branch "master"
-;;;;                   :repo "Overdr0ne/pydoc"))
-;;;;(use-package lsp-jedi
-;;;;  :config
-;;;;  (with-eval-after-load "lsp-mode"
-;;;;    (add-to-list 'lsp-disabled-clients 'pyls)
-;;;;    (add-to-list 'lsp-enabled-clients 'jedi))
-;;;;  ;; (setf lsp-ui-doc-mode -1)
-;;;;  )
-;;;;
+                                                  ("\\.its" . dts-mode)))))
+(use-package kconfig-mode)
+(use-package yaml-mode
+  :config
+  (add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode)))
+
+;; langs
+;; (use-package ccls
+;;  :config
+;;  (add-to-list 'lsp-enabled-clients 'ccls))
+
+;; (use-package pyvenv)
+;; (use-package pydoc
+;;  :straight (pydoc :type git
+;;                   :host github
+;;                   :branch "master"
+;;                   :repo "Overdr0ne/pydoc"))
+;; (use-package lsp-jedi
+;;  :config
+;;  (with-eval-after-load "lsp-mode"
+;;    (add-to-list 'lsp-disabled-clients 'pyls)
+;;    (add-to-list 'lsp-enabled-clients 'jedi))
+;;  ;; (setf lsp-ui-doc-mode -1)
+;;  )
+
 (use-package adaptive-wrap)
-;;;;(use-package evil-tex)
-;;;;
-;;;;(use-package markdown-toc)
-;;;;
-;;;;(use-package org
-;;;;  :config
-;;;;  (setq org-directory "~/notes")
-;;;;  (setq org-agenda-files '("~/notes"))
-;;;;  (setq org-default-notes-file (concat org-directory "/default.org")))
-;;;;;; (use-package evil-org
-;;;;;;   :config
-;;;;;;   (add-hook 'org-mode-hook 'evil-org-mode)
-;;;;;;   (add-hook 'evil-org-mode-hook
-;;;;;;             (lambda ()
-;;;;;;               (evil-org-set-key-theme)))
-;;;;;;   (require 'evil-org-agenda)
-;;;;;;   (evil-org-agenda-set-keys))
-;;;;(use-package toc-org)
-;;;;(use-package org-superstar
-;;;;  :config
-;;;;  (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1))))
-;;;;;;(use-package org-ref)
-;;;;;; (use-package org-roam
-;;;;;;   :init
-;;;;;;   (setq org-roam-directory "~/notes")
-;;;;;;   (add-hook 'after-init-hook 'org-roam-mode))
-;;
-;;;;(use-package web-mode)
+;; (use-package markdown-toc)
+
+;; (use-package org
+;;   :config
+;;   (setq org-directory "~/notes")
+;;   (setq org-agenda-files '("~/notes"))
+;;   (setq org-default-notes-file (concat org-directory "/default.org")))
+;; (use-package evil-org
+;;   :config
+;;   (add-hook 'org-mode-hook 'evil-org-mode)
+;;   (add-hook 'evil-org-mode-hook
+;;             (lambda ()
+;;               (evil-org-set-key-theme)))
+;;   (require 'evil-org-agenda)
+;;   (evil-org-agenda-set-keys))
+;; (use-package toc-org)
+;; (use-package org-superstar
+;;   :config
+;;   (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1))))
+;; (use-package org-ref)
+;; (use-package org-roam
+;;   :init
+;;   (setq org-roam-directory "~/notes")
+;;   (add-hook 'after-init-hook 'org-roam-mode))
+
+;; (use-package web-mode)
 (use-package rainbow-mode)
-;;;;(use-package sass-mode)
-;;;;(use-package slim-mode)
-;;;;(use-package nix-mode)
-;;;;(use-package racket-mode)
+;; (use-package sass-mode)
+;; (use-package slim-mode)
+;; (use-package nix-mode)
+;; (use-package racket-mode)
 
 (use-package rainbow-delimiters)
 
-;;(use-package cmake-mode)
-;;(use-package modern-cpp-font-lock)
-;;(use-package demangle-mode)
-;;
-;;(use-package csv-mode)
-;;
-;;(use-package py-isort)
-;;(use-package pyimport)
-;;
-;;;;(use-package bash-completion
-;;;;  :config
-;;;;  (autoload 'bash-completion-dynamic-complete
-;;;;          "bash-completion"
-;;;;          "BASH completion hook")
-;;;;  (add-hook 'shell-dynamic-complete-functions
-;;;;            'bash-completion-dynamic-complete))
-;;
-;;(use-package request)
-;;
-;;(use-package treemacs)
-;;(use-package treemacs-perspective)
-;;(use-package treemacs-projectile)
+(use-package cmake-mode)
+;; (use-package modern-cpp-font-lock)
+;; (use-package demangle-mode)
+
+(use-package csv-mode)
+
+;; (use-package py-isort)
+;; (use-package pyimport)
+
+(use-package bash-completion
+  :config
+  (autoload 'bash-completion-dynamic-complete
+    "bash-completion"
+    "BASH completion hook")
+  (add-hook 'shell-dynamic-complete-functions
+            'bash-completion-dynamic-complete))
+
+;; (use-package request)
+
+;; (use-package treemacs)
+;; (use-package treemacs-perspective)
 
 (use-package vi-tilde-fringe
   :config
   (global-vi-tilde-fringe-mode +1))
 
-;;(use-package multi-compile
+;; (use-package multi-compile
 ;;  :config
 ;;  (setq multi-compile-alist '(
 ;;                              (c-mode . (("build" . "gcc -g *.c"))))))
-;;
-;;(use-package browse-kill-ring)
-;;(use-package clipmon
-;;  :config
-;;  (clipmon-mode-start))
-;;
+
 ;;(use-package multiple-cursors)
 ;;
 ;;(use-package cider)
-;;
-;;;;(use-package w3m)
-;;
-;;(use-package interaction-log)
 
-;;;; (use-package workgroups
-;;;;   :after (radix-tree))
+;;(use-package w3m)
+
 (use-package perspective
   :init
   (setq persp-suppress-no-prefix-key-warning t)
-  ;; :config
-  ;; (persp-mode +1)
+  (setq persp-show-modestring nil)
+  (persp-mode +1)
   )
 
-;; (use-package persp-projectile
-;;  ;;  :after (persp projectile)
-;;  )
+;; (use-package find-file-in-project)
 
-;;(use-package visual-fill-column)
-;;
-;;;;;; (use-package find-file-in-project)
-;;;;
-;;;;;; (use-package bookmark+)
-;;;;
+;; (use-package bookmark+)
+
 ;;;;(use-package system-packages
 ;;;;  :config
 ;;;;  (add-to-list 'system-packages-supported-package-managers
-;;;;	           '(pacaur .
+;;;;               '(pacaur .
 ;;;;                        ((default-sudo . nil)
 ;;;;                         (install . "pacaur -S")
 ;;;;                         (search . "pacaur -Ss")
@@ -569,17 +619,15 @@ on the current line, if any."
 (use-package paredit)
 ;; (use-package macrostep)
 (use-package smartparens)
-;; (use-package smartparens
-;;   :config
-;;   (require 'smartparens-config))
+(use-package smart-tabs-mode)
 
-;;;;(use-package lispy)
-;;
-;;(use-package clojure-mode)
-;;(use-package elein)
-;;
-;;(use-package systemd)
-;;
+;; (use-package lispy)
+
+;; (use-package clojure-mode)
+;; (use-package elein)
+
+;; (use-package systemd)
+
 (use-package dired
   :straight (:type built-in)
   :config
@@ -590,13 +638,8 @@ on the current line, if any."
   (diredfl-global-mode))
 (use-package all-the-icons-dired
   :config
-  (add-hook 'dired-mode-hook 'all-the-icons-dired-mode))
-;;(use-package dired-ranger)
-;;(use-package dired-filter)
-;;(use-package dired+
-;;  :init
-;;  (setq diredp-hide-details-initially-flag nil)
-;;  (add-hook 'dired-mode-hook 'hl-line-mode))
+  (add-hook 'dired-mode-hook 'all-the-icons-dired-mode)
+  (setq all-the-icons-dired-monochrome nil))
 ;;(use-package dired-du)
 ;;(use-package dired-subtree
 ;;  :config
@@ -610,193 +653,46 @@ on the current line, if any."
   (highlight-defined-mode +1))
 (use-package hl-line
   :straight (hl-line :type built-in)
-  :config
-  (setq global-hl-line-mode +1)
+  :init
+  (global-hl-line-mode +1)
   (defun enable-hl-line-mode ()
     (interactive)
     (hl-line-mode +1)))
 
-;;;;(use-package deft
-;;;;  :config
-;;;;  (add-to-list 'evil-insert-state-modes 'deft-mode)
-;;;;  (setq deft-directory "~/notes"))
-;;;;
-;;;;(use-package auto-compile
-;;;;  :init
-;;;;  (setq load-prefer-newer t)
-;;;;  :config
-;;;;  (auto-compile-on-load-mode)
-;;;;  (auto-compile-on-save-mode))
-;;;;
-;;;;(use-package all-the-icons-ibuffer
-;;;;  :config
-;;;;  (all-the-icons-ibuffer-mode))
-;;;;
-;;;;(use-package rcirc
-;;;;  :config
-;;;;  (rcirc-track-minor-mode t)
-;;;;  (add-hook 'rcirc-mode-hook (lambda ()
-;;;;                               (flyspell-mode 1)
-;;;;                               (rcirc-omit-mode)))
-;;;;
-;;;;  (setq rcirc-server-alist
-;;;;        '(("irc.libera.chat" :channels ("#emacs"))))
-;;;;  (evil-set-initial-state 'rcirc-mode 'insert)
-;;;;  (setq rcirc-buffer-maximum-lines 1000)
-;;;;  (setq rcirc-default-nick "Overdr0ne")
-;;;;  (setq rcirc-default-user-name "Overdr0ne")
-;;;;  (setq rcirc-log-flag t))
-;;;;
-;;;;(use-package explain-pause-mode)
-;;;;
-;;;;;; (use-package daemons)
-;;;;
-;;;;;; (use-package pretty-mode
-;;;;;;   :config
-;;;;;;   (global-pretty-mode t)
-;;;;;;   (pretty-deactivate-groups
-;;;;;;    '(:equality :ordering :ordering-double :ordering-triple
-;;;;;; 			   :arrows :arrows-twoheaded :punctuation
-;;;;;; 			   :logic :sets))
-;;;;;;   (pretty-activate-groups
-;;;;;;    '(:sub-and-superscripts :greek :arithmetic-nary)))
-;;
-;;(use-package names)
-;;
-;;;; (use-package sx
-;;;;  :config
-;;;;  (evil-set-initial-state 'sx-question-list-mode 'emacs))
-;;
-;;(use-package multiple-cursors)
-;;;;(use-package evil-mc)
-;;;;
-;;;;(use-package quelpa)
-;;;;
-;;;;(use-package bbdb
-;;;;  :config
-;;;;  (setq
-;;;;   bbdb-file "~/.bbdb"
-;;;;   bbdb-offer-save 'auto
-;;;;   bbdb-notice-auto-save-file t
-;;;;   bbdb-expand-mail-aliases t
-;;;;   bbdb-canonicalize-redundant-nets-p t
-;;;;   bbdb-always-add-addresses t
-;;;;   bbdb-complete-name-allow-cycling t))
-;;;;
-;;;;(use-package all-the-icons-gnus
-;;;;  :config
-;;;;  (all-the-icons-gnus-setup))
-;;;;(use-package gnus
-;;;;  :config
-;;;;  (setq user-mail-address "scmorris.dev@gmail.com"
-;;;;        user-full-name "Sam")
-;;;;  (setq gnus-asynchronous t)
-;;;;  (setq gnus-use-article-prefetch 15)
-;;;;
-;;;;  (setq gnus-select-method '(nnnil ""))
-;;;;  (setq gnus-secondary-select-methods
-;;;;        '((nnimap "Mail"
-;;;;                  (nnimap-address "localhost")
-;;;;                  (nnimap-stream network)
-;;;;                  (nnimap-authenticator login)
-;;;;                  (nnir-search-engine imap))
-;;;;          (nntp "news.gwene.org")))
-;;;;  (setq mail-user-agent 'gnus-user-agent)
-;;;;  (setq read-mail-command 'gnus)
-;;;;
-;;;;  (setq nnir-method-default-engines
-;;;;        '((nnmaildir . notmuch)))
-;;;;
-;;;;  ;; threading
-;;;;  (setq gnus-thread-sort-functions
-;;;;        '(gnus-thread-sort-by-most-recent-number
-;;;;          gnus-thread-sort-by-subject
-;;;;          (not gnus-thread-sort-by-total-score)
-;;;;          gnus-thread-sort-by-most-recent-date))
-;;;;  (setq gnus-summary-thread-gathering-function 'gnus-gather-threads-by-references)
-;;;;  (setq gnus-summary-make-false-root-always 'adopt)
-;;;;
-;;;;  ;; groups
-;;;;  (setq gnus-group-line-format "%M%p%P%5y:%B%(%g%)\n")
-;;;;  (setq gnus-group-mode-line-format "%%b")
-;;;;  (add-hook 'gnus-group-mode-hook 'hl-line-mode)
-;;;;  (add-hook 'gnus-select-group-hook 'gnus-group-set-timestamp)
-;;;;  (add-hook 'gnus-group-mode-hook 'gnus-topic-mode)
-;;;;  (setq gnus-parameters
-;;;;        '((".."
-;;;;           (display . 200))
-;;;;          ("nnimap\\\\..*"
-;;;;           (display . 200))
-;;;;          ("list\\..*"
-;;;;           (total-expire . t)
-;;;;           (broken-reply-to . t))))
-;;;;
-;;;;  ;; summary
-;;;;  (add-hook 'gnus-summary-mode-hook 'hl-line-mode)
-;;;;  (setq gnus-auto-select-first nil)
-;;;;  (setq gnus-summary-ignore-duplicates t)
-;;;;  (setq gnus-suppress-duplicates t)
-;;;;  (setq gnus-save-duplicate-list t)
-;;;;  (setq gnus-summary-goto-unread nil)
-;;;;  (setq gnus-summary-make-false-root 'adopt)
-;;;;  (setq gnus-summary-thread-gathering-function
-;;;;        'gnus-gather-threads-by-subject)
-;;;;  (setq gnus-summary-gather-subject-limit 'fuzzy)
-;;;;  (setq gnus-thread-sort-functions
-;;;;        '((not gnus-thread-sort-by-date)
-;;;;          (not gnus-thread-sort-by-number)))
-;;;;  (setq gnus-subthread-sort-functions
-;;;;        'gnus-thread-sort-by-date)
-;;;;  (setq gnus-thread-hide-subtree nil)
-;;;;  (setq gnus-thread-ignore-subject nil)
-;;;;  (setq gnus-user-date-format-alist
-;;;;        '(((gnus-seconds-today) . "Today at %R")
-;;;;          ((+ (* 60 60 24) (gnus-seconds-today)) . "Yesterday, %R")
-;;;;          (t . "%Y-%m-%d %R")))
-;;;;
-;;;;  ;; topics
-;;;;  (setq gnus-topic-line-format "%i[ %(%{%n -- %A%}%) ]%v\n")
-;;;;  ;; format
-;;;;  (copy-face 'font-lock-variable-name-face 'gnus-face-6)
-;;;;  (setq gnus-face-6 'gnus-face-6)
-;;;;  (copy-face 'font-lock-warning-face 'gnus-face-7)
-;;;;  (setq gnus-face-7 'gnus-face-7)
-;;;;  (copy-face 'gnus-face-7 'gnus-summary-normal-unread)
-;;;;  (copy-face 'font-lock-function-name-face 'gnus-face-8)
-;;;;  (set-face-foreground 'gnus-face-8 "gray50")
-;;;;  (setq gnus-face-8 'gnus-face-8)
-;;;;  (copy-face 'font-lock-type-face 'gnus-face-9)
-;;;;  (set-face-foreground 'gnus-face-9 "gray70")
-;;;;  (setq gnus-face-9 'gnus-face-9)
-;;;;  (setq gnus-summary-line-format
-;;;;        (concat
-;;;;         "%0{%U%R%z%}"
-;;;;         "%3{│%}" "%1{%d%}" "%3{│%}"
-;;;;         "  "
-;;;;         "%4{%-20,20f%}"
-;;;;         "  "
-;;;;         "%3{│%}"
-;;;;         " "
-;;;;         "%1{%B%}"
-;;;;         "%s\n"))
-;;;;  (setq gnus-summary-line-format "%8{%4k│%}%8{%d│%}%9{%U%R%z%}%8{│%}%*%(%-23,23f%)%7{║%} %6{%B%} %S\n"
-;;;;        gnus-sum-thread-tree-indent " "
-;;;;        gnus-sum-thread-tree-root " ┏● "
-;;;;        gnus-sum-thread-tree-false-root " ○ "
-;;;;        gnus-sum-thread-tree-single-indent " ● "
-;;;;        gnus-sum-thread-tree-leaf-with-other "┣━━► "
-;;;;        gnus-sum-thread-tree-vertical "┃"
-;;;;        gnus-sum-thread-tree-single-leaf "┗━━► "))
-;;
-;;(use-package wordnut)
-;;
-;;;;(use-package xwwp)
-;;;;
-;;;;;; (defun proced-settings ()
-;;;;;;   (proced-toggle-auto-update))
-;;;;;; (add-hook 'proced-mode-hook 'proced-settings)
+;; (use-package rcirc
+;;   :config
+;;   (rcirc-track-minor-mode t)
+;;   (add-hook 'rcirc-mode-hook (lambda ()
+;;                                (flyspell-mode 1)
+;;                                (rcirc-omit-mode)))
 
-;;(use-package calfw)
+;;   (setq rcirc-server-alist
+;;         '(("irc.libera.chat" :channels ("#emacs"))))
+;;   (evil-set-initial-state 'rcirc-mode 'insert)
+;;   (setq rcirc-buffer-maximum-lines 1000)
+;;   (setq rcirc-default-nick "Overdr0ne")
+;;   (setq rcirc-default-user-name "Overdr0ne")
+;;   (setq rcirc-log-flag t))
+
+;; (use-package explain-pause-mode)
+
+;; (use-package daemons)
+
+;; (use-package pretty-mode
+;;   :config
+;;   (global-pretty-mode t)
+;;   (pretty-deactivate-groups
+;;    '(:equality :ordering :ordering-double :ordering-triple
+;;                 :arrows :arrows-twoheaded :punctuation
+;;                 :logic :sets))
+;;   (pretty-activate-groups
+;;    '(:sub-and-superscripts :greek :arithmetic-nary)))
+
+;; (use-package wordnut)
+
+;; (use-package xwwp)
+
+;; (use-package calfw)
 
 (use-package minions
   :custom
@@ -806,81 +702,48 @@ on the current line, if any."
   :config
   (minions-mode))
 
-;;;; (use-package undo-tree
-;;;;   :init
-;;;;   (global-undo-tree-mode))
-;;
-;;;; (use-package hyperbole
-;;;;   :init
-;;;;   (setf hkey-init nil))
-
 (use-package which-key
   :config
   (which-key-mode))
 
-;;;; (use-package sfs
-;;;;   :straight (sfs :type git
-;;;;                  :host github
-;;;;                  :repo "Overdr0ne/sfs"
-;;;;                  :branch "master"
-;;;;                  :files ("sfs.el"
-;;;;                          "sfs-recoll.el"
-;;;;                          "sfs-tui.el"
-;;;;                          "sfs-tag.el"
-;;;;                          "sfs-reindex.el"
-;;;;                          "service.py"
-;;;;                          "evil-collection-sfs.el"))
-;;;;   :config
-;;;;   (add-to-list 'evil-insert-state-modes 'sfs-research-mode)
-;;;;   (global-sfs-mode 1))
+;; (use-package sfs
+;;   :straight (sfs :type git
+;;                  :host github
+;;                  :repo "Overdr0ne/sfs"
+;;                  :branch "master"
+;;                  :files ("sfs.el"
+;;                          "sfs-recoll.el"
+;;                          "sfs-tui.el"
+;;                          "sfs-tag.el"
+;;                          "sfs-reindex.el"
+;;                          "service.py"
+;;                          "evil-collection-sfs.el"))
+;;   :config
+;;   (add-to-list 'evil-insert-state-modes 'sfs-research-mode)
+;;   (global-sfs-mode 1))
 
 ;; themes
-;;(use-package load-theme-buffer-local)
-;;(use-package nofrils-acme-theme)
-;;;; (use-package plan9-theme)
-;;;; (use-package cyberpunk-2019-theme
-;;;;   :config
-;;;;   (load-theme 'cyberpunk-2019 t))
-;;;; (use-package acme-theme
-;;;;   :config
-;;;;   (load-theme 'acme t))
+;; (use-package load-theme-buffer-local)
+;; (use-package nofrils-acme-theme)
+;; (use-package plan9-theme)
+;; (use-package acme-theme
+;;   :config
+;;   (load-theme 'acme t))
 (use-package gruvbox-theme)
 (use-package alect-themes)
-;;;; (use-package adwaita
-;;;;   :config
-;;;;   (load-theme 'adwaita 't))
-;;;; (use-package dichromacy
-;;;;   :config
-;;;;   (load-theme 'dichromacy 't))
+;; (use-package adwaita
+;;   :config
+;;   (load-theme 'adwaita 't))
+;; (use-package dichromacy
+;;   :config
+;;   (load-theme 'dichromacy 't))
 
 (use-package dracula-theme
   :straight (dracula-theme :type git
-			               :host github
-			               :repo "Overdr0ne/emacs")
+                           :host github
+                           :repo "Overdr0ne/emacs")
   :config
   (load-theme 'dracula t))
-;; (use-package tokyo-theme
-;;   :straight (tokyo-theme :type git
-;; 			             :host github
-;;                          :branch "main"
-;; 			             :repo "fowler/tokyo-theme"))
-;;(use-package solarized-theme
-;; ;; :config
-;; ;; (load-theme 'solarized-light t)
-;; )
-;;(use-package spacemacs-theme
-;; :straight (spacemacs-theme :type git
-;;			                 :host github
-;;			                 :repo "Overdr0ne/spacemacs-theme")
-;; :defer t
-;; ;; :init
-;; ;; (load-theme 'spacemacs-light t)
-;; )
-
-;;;;(use-package mixed-pitch)
-;;;;(use-package writeroom-mode)
-
-;; (use-package multi-term)
 
 (use-package imenu
   :config
@@ -893,62 +756,81 @@ on the current line, if any."
   :config
   (good-scroll-mode +1))
 
-;;(use-package command-mode
-;; :straight (command-mode :type git
-;;                         :host github
-;;                         :repo "Overdr0ne/command-mode"
-;;                         :branch "master"))
-;;
-
-(use-package shelldon
-  :straight (shelldon :type git
-                      :host github
-                      :repo "Overdr0ne/shelldon"
-                      :branch "master"
-                      :files ("shelldon.el"))
-  :config
+;; (use-package shelldon
+;;   :straight (shelldon :type git
+;;                       :host github
+;;                       :repo "Overdr0ne/shelldon"
+;;                       :branch "master"
+;;                       :files ("shelldon.el"))
+;;   :config
+;;   (setf shell-command-switch "-ic")
+;;   (setf enable-recursive-minibuffers t)
+;;   ;; (add-to-list 'evil-normal-state-modes 'shelldon-mode)
+;;   ;; (setenv "TERM" "eterm-color")
+;;   (add-hook 'shelldon-mode-hook 'ansi-color-for-comint-mode-on)
+;;   (add-to-list 'comint-output-filter-functions 'ansi-color-process-output)
+;;   (autoload 'ansi-color-for-comint-mode-on "ansi-color" nil t)
+;;   (advice-add #'shelldon-output-history :around
+;;                (lambda (old-fn)
+;;                  (let ((selectrum-should-sort nil))
+;;                    (funcall old-fn)))))
+(progn
+  (load "~/src/shelldon/shelldon.el")
+                                        ; tell bash this shell is interactive
   (setf shell-command-switch "-ic")
+                                        ; recursive minibuffers for nested autocompletion from minibuffer commands,
+                                        ; to e.g. interactively select from the kill-ring
   (setf enable-recursive-minibuffers t)
-  ;; (add-to-list 'evil-normal-state-modes 'shelldon-mode)
-  ;; (setenv "TERM" "eterm-color")
+                                        ; comint output may contain SGR control sequences that may be translated into
+                                        ; text properties if emacs has something equivalent. This requires special
+                                        ; processing.
   (add-hook 'shelldon-mode-hook 'ansi-color-for-comint-mode-on)
-  (add-hook 'shelldon-mode-hook #'(lambda () (view-mode -1)))
   (add-to-list 'comint-output-filter-functions 'ansi-color-process-output)
   (autoload 'ansi-color-for-comint-mode-on "ansi-color" nil t)
-  (advice-add #'shelldon-output-history :around
-	          (lambda (old-fn)
-		        (let ((selectrum-should-sort nil))
-		          (funcall old-fn)))))
+  (add-to-list 'display-buffer-alist
+               '("*shelldon:"
+                 (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-in-side-window display-buffer-pop-up-window)
+                 (side . bottom)
+                 (slot . 0)
+                 (window-height . (lambda (win) (sit-for 1) (fit-window-to-buffer win 20)))
+                 ))
+  )
 
 (use-package bash-completion
   :config
   (add-hook 'shell-dynamic-complete-functions
             'bash-completion-dynamic-complete))
 
-;; (use-package emacs-application-framework
-;;   :straight (emacs-application-framework :type git
-;; 					 :host github
-;; 					 :repo "manateelazycat/emacs-application-framework"
-;; 					 :files ("*")))
-
-;; (use-package webkit
-;;   :straight (webkit :type git
-;; 		    :host github
-;; 		    :repo "akirakyle/emacs-webkit"
-;; 		    :branch "main"
-;; 		    :files (:defaults "*.js" "*.css" "*.so")
-;; 		    :build ("make")))
-;;
+;; completion at point overlay
 (use-package corfu
   :init
   (defun corfu-setup-advice ()
     (defvar corfu-mode-map-alist)
     (setq corfu-mode-map-alist `((completion-in-region-mode . ,corfu-map)))
     (add-to-list 'emulation-mode-map-alists 'corfu-mode-map-alist))
-  (setf corfu-quit-at-boundary t)
+  (setf corfu-quit-at-boundary nil)
+  (global-corfu-mode +1)
+  ;; (defun corfu-enable-in-minibuffer ()
+  ;;   "Enable Corfu in the minibuffer if `completion-at-point' is bound."
+  ;;   (when (where-is-internal #'completion-at-point (list (current-local-map)))
+  ;;     ;; (setq-local corfu-auto nil) ;; Enable/disable auto completion
+  ;;     (setq-local corfu-echo-delay nil ;; Disable automatic echo and popup
+  ;;                 corfu-popupinfo-delay nil)
+  ;;     (corfu-mode 1)))
+  ;; (add-hook 'minibuffer-setup-hook #'corfu-enable-in-minibuffer)
   ;; (advice-add 'corfu--setup :before #'corfu-setup-advice)
+  ;; :config
+  ;; (add-hook 'prog-mode-hook 'corfu-mode)
+  )
+
+;; icons for corfu
+(use-package kind-icon
+  :after corfu
+  :custom
+  (kind-icon-default-face 'corfu-default) ; to compute blended backgrounds correctly
   :config
-  (add-hook 'prog-mode-hook 'corfu-mode))
+  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
+
 (use-package cape
   ;;  :after (corfu)
   :init
@@ -979,21 +861,58 @@ on the current line, if any."
                           :repo "zk-phi/indent-guide"
                           :branch "master"))
 
-;;(use-package transpose-frame)
-
 (use-package buffer-move)
 
-;;;; (use-package sclang)
-;;;; (use-package sclang
-;;;;   :straight (sclang :type git
-;;;;                     :host github
-;;;;                     :repo "Overdr0ne/scel"
-;;;;                     :branch "master"))
-;;;; (setq sclang-help-path '("/home/sam/.local/share/SuperCollider/Help"))
-;;(use-package sclang-extensions)
-;;(use-package sclang-snippets)
-;;
-;;(use-package haskell-mode)
+;; (use-package mastodon)
+
+;; (use-package sclang
+;;   :straight (sclang :type git
+;;                     :host github
+;;                     :repo "Overdr0ne/scel"
+;;                     :branch "main"))
+;; (setq sclang-help-path '("/home/sam/.local/share/SuperCollider/Help"))
+;; (use-package sclang-extensions)
+;; (use-package sclang-snippets)
+
+;; (use-package haskell-mode)
+
+(progn
+  (setf gumshoe-slot-schema '(time perspective buffer position line))
+  (add-to-list 'load-path "~/src/gumshoe")
+  (load "~/src/gumshoe/gumshoe.el")
+  (global-gumshoe-mode +1)
+
+  (add-to-list 'load-path "~/src/completionist")
+  (load "~/src/completionist/completionist.el")
+  (load "~/src/completionist/extensions/completionist-flat.el")
+  (load "~/src/completionist/extensions/completionist-mouse.el")
+  (completionist-mode +1)
+  (completionist-flat-mode +1)
+  (completionist-mouse-mode +1)
+  (defun completionist-persp-switch ()
+    (interactive)
+    (completionist--complete "persp:" #'persp-names #'persp-switch " *persps*"))
+  (defun completionist-persp-switch-unfocused ()
+    (interactive)
+    (completionist--complete "persp:" #'persp-names #'persp-switch " *persps*" t))
+  (defun process-names ()
+    (mapcar #'process-name
+            (process-list)))
+  (defun completionist-kill-process ()
+    (interactive)
+    ;; (mapcar (lambda (process)
+    ;;           (concat (process-name process) "|" (symbol-name (process-type process)) "|" (symbol-name (process-status process))))
+    ;;         (process-list))
+    (completionist-persp-switch-unfocused #'process-names
+                                          (lambda (process-name) (signal-process process-name 'SIGABRT)))
+    )
+  (defun completionist-process-buffer-switch ()
+    (interactive)
+    (completionist--complete "processes:" #'process-names
+                             (lambda (process) (switch-to-buffer (process-buffer process)))
+                             "*comp-procs*")
+    )
+  (add-hook 'persp-created-hook #'completionist-persp-switch-unfocused))
 
 ;; (use-package gumshoe
 ;;   :straight (gumshoe :type git
@@ -1001,41 +920,46 @@ on the current line, if any."
 ;;                      :repo "Overdr0ne/gumshoe"
 ;;                      :branch "master")
 ;;   :init
-;;   (global-gumshoe-persp-mode 1)
+;;   ;;  (global-gumshoe-persp-mode 1)
 ;;   (setf gumshoe-slot-schema '(time perspective buffer position line))
 ;;   (advice-add #'gumshoe-peruse-globally :around
-;; 	          (lambda (old-fn)
-;; 		        (let ((selectrum-should-sort nil))
-;; 		          (funcall old-fn))))
+;;                (lambda (old-fn)
+;;                  (let ((selectrum-should-sort nil))
+;;                    (funcall old-fn))))
 ;;   (advice-add #'gumshoe-peruse-in-persp :around
-;; 	          (lambda (old-fn)
-;; 		        (let ((selectrum-should-sort nil))
-;; 		          (funcall old-fn))))
+;;                (lambda (old-fn)
+;;                  (let ((selectrum-should-sort nil))
+;;                    (funcall old-fn))))
 ;;   (advice-add #'gumshoe-peruse-in-buffer :around
-;; 	          (lambda (old-fn)
-;; 		        (let ((selectrum-should-sort nil))
-;; 		          (funcall old-fn)))))
+;;                (lambda (old-fn)
+;;                  (let ((selectrum-should-sort nil))
+;;                    (funcall old-fn))))
+;;   )
 
-(use-package embark
-  :config
-  (setq embark-action-indicator
-        (lambda (map _target)
-          (which-key--show-keymap "Embark" map nil nil 'no-paging)
-          #'which-key--hide-popup-ignore-command)
-        embark-become-indicator embark-action-indicator))
 (use-package embark-consult
   :hook
   (embark-collect-mode . consult-preview-at-point-mode))
-;;
-;;;;;; (use-package better-jumper)
-;;;;
-;;;;;; (use-package esup)
-;;
-;;(use-package package-lint)
-;;
-;;;;;; (use-package bufler)
-;;
-;;(use-package burly)
+
+(use-package embark
+  :config
+  (setq embark-prompter 'embark-completing-read-prompter)
+  (add-to-list 'display-buffer-alist
+               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                 nil
+                 (window-parameters (mode-line-format . none))))
+  ;; (setq embark-action-indicator
+  ;;       (lambda (map _target)
+  ;;         (which-key--show-keymap "Embark" map nil nil 'no-paging)
+  ;;         #'which-key--hide-popup-ignore-command)
+  ;;       embark-become-indicator embark-action-indicator)
+  )
+;; (use-package esup)
+
+;; (use-package package-lint)
+
+;; (use-package bufler)
+
+;; (use-package burly)
 
 ;; (use-package prism
 ;;   :straight (prism :type git
@@ -1044,18 +968,18 @@ on the current line, if any."
 ;;                    :repo "Overdr0ne/prism.el")
 ;;   :config
 ;;   (setf prism-num-faces 30
-;; 	    prism-color-attribute :background
-;; 	    prism-colors (list "maroon" "violet" "blue violet" "blue" "light sea green" "green" "yellow green" "yellow" "orange" "red")
-;; 	    prism-desaturations (list 0 0 0)
-;; 	    prism-lightens (list 0 0 0)
-;; 	    prism-opacities (list 10 30 90)
-;; 	    prism-comments-fn (lambda (color) color)
-;; 	    prism-strings-fn (lambda (color) color)
-;; 	    prism-parens-fn (lambda (color) color))
+;;          prism-color-attribute :background
+;;          prism-colors (list "maroon" "violet" "blue violet" "blue" "light sea green" "green" "yellow green" "yellow" "orange" "red")
+;;          prism-desaturations (list 0 0 0)
+;;          prism-lightens (list 0 0 0)
+;;          prism-opacities (list 10 30 90)
+;;          prism-comments-fn (lambda (color) color)
+;;          prism-strings-fn (lambda (color) color)
+;;          prism-parens-fn (lambda (color) color))
 ;;   ;; (prism-save-colors)
 ;;  )
 
-;;;;;; (load "~/src/winblows/winblows.el")
+;; (load "~/src/winblows/winblows.el")
 
 ;; (use-package loccur)
 
@@ -1071,22 +995,15 @@ on the current line, if any."
   ;; (setf bitbake-build-directory "/home/sam/workspaces/dtech/build")
   ;; (setf bitbake-poky-directory "/home/sam/workspaces/impinj")
   ;; (setf bitbake-build-directory "/home/sam/workspaces/impinj/build")
-  (setf bitbake-poky-directory "/home/sam/workspaces/big-bend/container/data")
-  (setf bitbake-build-directory "/home/sam/workspaces/big-bend/container/data/build")
+  (setf bitbake-poky-directory "/home/sam/workspaces/impinj/container/build")
+  (setf bitbake-build-directory "/home/sam/workspaces/impinj/container/build/build")
   ;; (setf bitbake-poky-directory "/home/sam/tmp/impinj")
   ;; (setf bitbake-build-directory "/home/sam/tmp/impinj/build")
   ;; (setf bitbake-poky-directory "/home/sam/workspaces/atlas/build/")
   ;; (setf bitbake-build-directory "/home/sam/workspaces/atlas/build")
   )
 
-;;;;;; (use-package exec-path-from-shell)
-;;;;
-;;;;(use-package tmm
-;;;;  :config
-;;;;  (setf tmm-completion-prompt "")
-;;;;  (setf tmm-mid-prompt ":"))
-;;;;
-;;(use-package docker
+;; (use-package docker
 ;;  :config
 ;;  (setf docker-image-run-default-args '("-i" "-t" "--rm")))
 
@@ -1094,17 +1011,17 @@ on the current line, if any."
   :config
   (add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-mode)))
 
-;;;;;; (use-package keychain-environment
-;;;;;;   :straight (keychain-environment :type git
-;;;;;; 				  :host github
-;;;;;; 				  :repo "tarsius/keychain-environment"
-;;;;;; 				  :branch "master"))
-;;;;;; (use-package wrap-region-mode
-;;;;;;   :straight (wrap-region-mode :type git
-;;;;;; 			      :host github
-;;;;;; 			      :repo "rejeep/wrap-region.el"
-;;;;;; 			      :branch "master")
-;;;;;;   )
+;; (use-package keychain-environment
+;;   :straight (keychain-environment :type git
+;;                    :host github
+;;                    :repo "tarsius/keychain-environment"
+;;                    :branch "master"))
+;; (use-package wrap-region-mode
+;;   :straight (wrap-region-mode :type git
+;;                    :host github
+;;                    :repo "rejeep/wrap-region.el"
+;;                    :branch "master")
+;;   )
 
 (use-package ediff
   :straight (:type built-in)
@@ -1146,20 +1063,16 @@ on the current line, if any."
 (use-package magit-popup)
 (use-package guix)
 
-;;(use-package recentf
-;; :straight (recentf :type built-in)
-;; :init
-;; (recentf-mode +1))
+(use-package recentf
+  :straight (recentf :type built-in)
+  :init
+  (recentf-mode +1))
 
-(load "~/src/evim/evim.el")
-
-(load "~/src/holymotion/holymotion.el")
-
-(use-package tempel
-  :config
-  (add-to-list 'completion-at-point-functions #'tempel-expand)
-  (setf tempel-path "~/.emacs.d/overdr0ne/template.el")
-  )
+;; (use-package tempel
+;;   :config
+;;   (add-to-list 'completion-at-point-functions #'tempel-expand)
+;;   (setf tempel-path "~/.emacs.d/overdr0ne/template.el")
+;;   )
 
 (use-package cmake-mode)
 
@@ -1174,7 +1087,47 @@ on the current line, if any."
 
 (use-package avy)
 
-(load "~/.emacs.d/overdr0ne/holymotion.el")
+(eval-after-load 'avy
+  (progn
+    (load "~/src/holymotion/holymotion.el")
+    ;;(holymotion-make-motion
+    ;; holymotion-backward-whitespace #'sp-backward-whitespace
+    ;; :scope 'line))
+    ))
+(use-package holymotion
+  :straight (holymotion :type git
+                        :host github
+                        :repo "Overdr0ne/holymotion"
+                        :branch "dev"
+                        :files ("*.el"))
+  :config
+  (holymotion-make-motion
+   holymotion-forward-sexp #'sp-forward-sexp)
+  (holymotion-make-motion
+   holymotion-backward-sexp #'sp-backward-sexp))
+(use-package all-the-icons-completion
+  :after (all-the-icons)
+  :init
+  (setq all-the-icons-scale-factor 0.9)
+  (all-the-icons-completion-mode +1))
+
+;; (use-package wrap-region
+;;   :config
+;;   (wrap-region-add-wrapper "~" "~" "~" '(org-mode))
+;;   ;; (wrap-region-global-mode +1)
+;;   )
+
+(load "~/src/evim/evim.el")
+
+(use-package eglot)
+
+;; (use-package scel)
+
+(use-package extempore-mode)
+
+(use-package markdown-toc)
+
+(use-package jenkinsfile-mode)
 
 (provide '+modules)
 ;;; +modules.el ends here

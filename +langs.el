@@ -29,9 +29,10 @@
 
 (setq global-whitespace-mode +1)
 ;; (setq-default show-trailing-whitespace t)
-(defvar whitespace-style '(face tabs spaces trailing lines space-before-tab newline indentation empty space-after-tab space-mark tab-mark))
+(defvar whitespace-style
+  '(face tabs spaces trailing lines space-before-tab newline indentation empty space-after-tab space-mark tab-mark))
 ;; (smart-tabs-mode nil)
-(setq indent-tabs-mode nil)
+;; (setq indent-tabs-mode nil)
 
 ;;; special modes
 ;; (add-hook 'special-mode-hook 'enable-hl-line-mode)
@@ -45,8 +46,8 @@
 ;;; prog modes
 (defun sam-set-cape-funcs ()
   (setq completion-at-point-functions
-	(setq completion-at-point-functions
-	      '(cape-file cape-line cape-keyword cape-dict cape-dabbrev t)))
+        (setq completion-at-point-functions
+              '(cape-file cape-line cape-keyword cape-dict cape-dabbrev t)))
   ;; (add-to-list 'completion-at-point-functions #'cape-dabbrev)
   ;; (add-to-list 'completion-at-point-functions #'cape-dict)
   ;; (add-to-list 'completion-at-point-functions #'cape-keyword)
@@ -54,27 +55,42 @@
   ;; (add-to-list 'completion-at-point-functions #'cape-file)
   )
 (dolist (fun
-         '(highlight-defined-mode  hs-minor-mode sam-set-cape-funcs rainbow-delimiters-mode indent-guide-mode (lambda () (setq-local show-trailing-whitespace t))))
+         '( highlight-defined-mode  hs-minor-mode sam-set-cape-funcs rainbow-delimiters-mode indent-guide-mode
+            (lambda ()
+              (setq-local show-trailing-whitespace t))))
   (dolist (hook '(prog-mode-hook conf-mode-hook))
     (add-hook hook fun)))
-;; (general-add-hook '(c-mode-hook c++-mode-hook python-mode-hook)
-;;                   '((lambda () (lsp) (lsp-ui-doc-mode -1)))
-;; 		  )
+
+(dolist (fun '(electric-pair-mode electric-quote-mode electric-layout-mode))
+  (add-hook 'prog-mode-hook fun))
+
+(dolist (fun '( indent-tabs-mode
+                (lambda ()
+                  (setq-local tab-width 8))))
+  (dolist (hook '(c-mode-hook c++-mode-hook dts-mode-hook))
+    (add-hook hook fun)))
 
 ;;; evim
-(dolist (hook '(prog-mode-hook conf-mode-hook Info-mode-hook helpful-mode-hook bitbake-mode-hook))
-    (add-hook hook #'evim-normal-mode))
+(dolist (hook '(bitbake-mode-hook))
+  (lambda ()
+    (setq-local tab-width 4)))
+
+;;; evim
+(dolist (hook '( text-mode-hook prog-mode-hook conf-mode-hook Info-mode-hook helpful-mode-hook bitbake-mode-hook extempore-mode-hook))
+  (add-hook hook #'evim-normal-mode))
 
 ;;; sexps
 (dolist (hook '(closure-mode-hook elisp-mode-hook emacs-lisp-mode-hook lisp-mode-hook racket-mode-hook sexpy-mode-hook))
-  (dolist (fun '(show-paren-mode visual-line-mode  electric-pair-mode electric-quote-mode electric-layout-mode
-				    (lambda () (add-to-list 'completion-at-point-functions
-							    #'elisp-completion-at-point))))
+  (dolist (fun '( show-paren-mode visual-line-mode electric-pair-mode electric-quote-mode electric-layout-mode
+                  (lambda ()
+                    (add-to-list 'completion-at-point-functions
+                                 #'elisp-completion-at-point)
+                    (setq-local tab-width 2))))
     (add-hook hook fun)))
 ;; (general-add-hook '(closure-mode-hook elisp-mode-hook emacs-lisp-mode-hook lisp-mode-hook racket-mode-hook sexpy-mode-hook)
 ;;                  '(show-paren-mode visual-line-mode  electric-pair-mode electric-quote-mode electric-layout-mode
-;;				    (lambda () (add-to-list 'completion-at-point-functions
-;;							    #'elisp-completion-at-point))))
+;;            (lambda () (add-to-list 'completion-at-point-functions
+;;                  #'elisp-completion-at-point))))
 ;;; lisps
 ;; (dolist ('(closure-mode-hook elisp-mode-hook emacs-lisp-mode-hook lisp-mode-hook racket-mode-hook))
 ;;                   '(highlight-defined-mode))
@@ -90,7 +106,7 @@
 
 ;;; text
 (remove-hook 'text-mode-hook 'auto-fill-mode)
-(dolist (fun '(visual-line-mode flyspell-mode evim-normal-mode))
+(dolist (fun '(visual-line-mode flyspell-mode))
   (add-hook 'text-mode-hook fun))
 
 (dolist (fun '(visual-line-mode))

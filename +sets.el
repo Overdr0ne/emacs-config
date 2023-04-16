@@ -18,6 +18,6 @@
 (setq +all-maps
       (cl-remove-duplicates
        (append +all-maps +repl-maps +evim-maps +minibuffer-maps
-               '(Info-mode-map diff-mode-map dired-mode-map bitbake-minor-mode-map term-mode-map debugger-mode-map helpful-mode-map))))
+               '(Info-mode-map diff-mode-map dired-mode-map bitbake-minor-mode-map term-mode-map debugger-mode-map helpful-mode-map debugger-mode-map))))
 
 (provide '+sets)
