@@ -182,9 +182,6 @@
   :config
   (setq select-enable-primary t))
 
-;; (use-package simple
-;;   :straight (simple :type built-in))
-
 (use-package sh-script
   :straight (sh-script :type built-in)
   :config
@@ -334,20 +331,6 @@
                  args)))
   )
 
-;; (use-package lsp-mode
-;;   :commands lsp
-;;   :config
-;;   (setq gc-cons-threshold 1600000)
-;;   (setq read-process-output-max (* 1024 1024)))
-;; (use-package lsp-ui
-;;   :commands lsp-ui-mode
-;;   :config
-;;   ;; (setf lsp-ui-doc-mode -1)
-;;   ;; (setf (alist-get 'width lsp-ui-doc-frame-parameters) 80)
-;;   )
-;; (use-package consult-lsp
-;; ;;  :after (consult lsp)
-;;   )
 (use-package marginalia
   :init
   (marginalia-mode +1))
@@ -423,6 +406,7 @@
           (anzu--reset-mode-line)
           (force-mode-line-update))))))
 ;; (use-package iedit)
+(use-package nerd-icons)
 (use-package doom-modeline
   :init
   (setq doom-modeline-height 1)
@@ -488,49 +472,7 @@ on the current line, if any."
   (add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode)))
 
 ;; langs
-;; (use-package ccls
-;;  :config
-;;  (add-to-list 'lsp-enabled-clients 'ccls))
-
-;; (use-package pyvenv)
-;; (use-package pydoc
-;;  :straight (pydoc :type git
-;;                   :host github
-;;                   :branch "master"
-;;                   :repo "Overdr0ne/pydoc"))
-;; (use-package lsp-jedi
-;;  :config
-;;  (with-eval-after-load "lsp-mode"
-;;    (add-to-list 'lsp-disabled-clients 'pyls)
-;;    (add-to-list 'lsp-enabled-clients 'jedi))
-;;  ;; (setf lsp-ui-doc-mode -1)
-;;  )
-
 (use-package adaptive-wrap)
-;; (use-package markdown-toc)
-
-;; (use-package org
-;;   :config
-;;   (setq org-directory "~/notes")
-;;   (setq org-agenda-files '("~/notes"))
-;;   (setq org-default-notes-file (concat org-directory "/default.org")))
-;; (use-package evil-org
-;;   :config
-;;   (add-hook 'org-mode-hook 'evil-org-mode)
-;;   (add-hook 'evil-org-mode-hook
-;;             (lambda ()
-;;               (evil-org-set-key-theme)))
-;;   (require 'evil-org-agenda)
-;;   (evil-org-agenda-set-keys))
-;; (use-package toc-org)
-;; (use-package org-superstar
-;;   :config
-;;   (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1))))
-;; (use-package org-ref)
-;; (use-package org-roam
-;;   :init
-;;   (setq org-roam-directory "~/notes")
-;;   (add-hook 'after-init-hook 'org-roam-mode))
 
 ;; (use-package web-mode)
 (use-package rainbow-mode)
@@ -542,8 +484,6 @@ on the current line, if any."
 (use-package rainbow-delimiters)
 
 (use-package cmake-mode)
-;; (use-package modern-cpp-font-lock)
-;; (use-package demangle-mode)
 
 (use-package csv-mode)
 
@@ -567,11 +507,6 @@ on the current line, if any."
   :config
   (global-vi-tilde-fringe-mode +1))
 
-;; (use-package multi-compile
-;;  :config
-;;  (setq multi-compile-alist '(
-;;                              (c-mode . (("build" . "gcc -g *.c"))))))
-
 ;;(use-package multiple-cursors)
 ;;
 ;;(use-package cider)
@@ -589,33 +524,33 @@ on the current line, if any."
 
 ;; (use-package bookmark+)
 
-;;;;(use-package system-packages
-;;;;  :config
-;;;;  (add-to-list 'system-packages-supported-package-managers
-;;;;               '(pacaur .
-;;;;                        ((default-sudo . nil)
-;;;;                         (install . "pacaur -S")
-;;;;                         (search . "pacaur -Ss")
-;;;;                         (uninstall . "pacaur -Rs")
-;;;;                         (update . "pacaur -Syu")
-;;;;                         (clean-cache . "pacaur -Sc")
-;;;;                         (log . "cat /var/log/pacman.log")
-;;;;                         (get-info . "pacaur -Qi")
-;;;;                         (get-info-remote . "pacaur -Si")
-;;;;                         (list-files-provided-by . "pacaur -Ql")
-;;;;                         (verify-all-packages . "pacaur -Qkk")
-;;;;                         (verify-all-dependencies . "pacaur -Dk")
-;;;;                         (remove-orphaned . "pacaur -Rns $(pacman -Qtdq)")
-;;;;                         (list-installed-packages . "pacaur -Qe")
-;;;;                         (list-installed-packages-all . "pacaur -Q")
-;;;;                         (list-dependencies-of . "pacaur -Qi")
-;;;;                         (noconfirm . "--noconfirm"))))
-;;;;  (setq system-packages-use-sudo nil)
-;;;;  (setq system-packages-package-manager 'pacaur))
-;;;;;; (use-package arch-packer)
-;;;;
-;;(use-package web-search)
-;;
+;; (use-package system-packages
+;;  :config
+;;  (add-to-list 'system-packages-supported-package-managers
+;;               '(pacaur .
+;;                        ((default-sudo . nil)
+;;                         (install . "pacaur -S")
+;;                         (search . "pacaur -Ss")
+;;                         (uninstall . "pacaur -Rs")
+;;                         (update . "pacaur -Syu")
+;;                         (clean-cache . "pacaur -Sc")
+;;                         (log . "cat /var/log/pacman.log")
+;;                         (get-info . "pacaur -Qi")
+;;                         (get-info-remote . "pacaur -Si")
+;;                         (list-files-provided-by . "pacaur -Ql")
+;;                         (verify-all-packages . "pacaur -Qkk")
+;;                         (verify-all-dependencies . "pacaur -Dk")
+;;                         (remove-orphaned . "pacaur -Rns $(pacman -Qtdq)")
+;;                         (list-installed-packages . "pacaur -Qe")
+;;                         (list-installed-packages-all . "pacaur -Q")
+;;                         (list-dependencies-of . "pacaur -Qi")
+;;                         (noconfirm . "--noconfirm"))))
+;;  (setq system-packages-use-sudo nil)
+;;  (setq system-packages-package-manager 'pacaur))
+;; (use-package arch-packer)
+
+;; (use-package web-search)
+
 (use-package paredit)
 ;; (use-package macrostep)
 (use-package smartparens)
@@ -787,12 +722,19 @@ on the current line, if any."
   (add-hook 'shelldon-mode-hook 'ansi-color-for-comint-mode-on)
   (add-to-list 'comint-output-filter-functions 'ansi-color-process-output)
   (autoload 'ansi-color-for-comint-mode-on "ansi-color" nil t)
+  ;; (add-to-list 'display-buffer-alist
+  ;;              '("*shelldon:"
+  ;;                (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-in-side-window display-buffer-pop-up-window)
+  ;;                (side . bottom)
+  ;;                (slot . 0)
+  ;;                (window-height . (lambda (win) (sit-for 1) (fit-window-to-buffer win 20)))
+  ;;                ))
   (add-to-list 'display-buffer-alist
                '("*shelldon:"
                  (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-in-side-window display-buffer-pop-up-window)
-                 (side . bottom)
+                 (side . left)
                  (slot . 0)
-                 (window-height . (lambda (win) (sit-for 1) (fit-window-to-buffer win 20)))
+                 (window-width . 80)
                  ))
   )
 
@@ -891,10 +833,22 @@ on the current line, if any."
   (completionist-mouse-mode +1)
   (defun completionist-persp-switch ()
     (interactive)
-    (completionist--complete "persp:" #'persp-names #'persp-switch " *persps*"))
+    (let ((window-sides-slots '(2 2 2 2))
+          (action '((display-buffer-in-side-window)
+                    (window-height . 1)
+                    (preserve-size . t)
+                    (side . top)
+                    (slot . 0))))
+      (completionist--complete "persp:" #'persp-names #'persp-switch " *persps*" action)))
   (defun completionist-persp-switch-unfocused ()
     (interactive)
-    (completionist--complete "persp:" #'persp-names #'persp-switch " *persps*" t))
+    (let ((window-sides-slots '(2 2 2 2))
+          (action '((display-buffer-in-side-window)
+                    (window-height . 1)
+                    (preserve-size . t)
+                    (side . top)
+                    (slot . 0))))
+      (completionist--complete "persp:" #'persp-names #'persp-switch " *persps*" action t)))
   (defun process-names ()
     (mapcar #'process-name
             (process-list)))
@@ -908,9 +862,16 @@ on the current line, if any."
     )
   (defun completionist-process-buffer-switch ()
     (interactive)
-    (completionist--complete "processes:" #'process-names
-                             (lambda (process) (switch-to-buffer (process-buffer process)))
-                             "*comp-procs*")
+    (let ((window-sides-slots '(3 3 3 3))
+          (action '((display-buffer-in-side-window)
+                    (window-height . 1)
+                    (preserve-size . t)
+                    (side . top)
+                    (slot . 2))))
+      (completionist--complete "processes:" #'process-names
+                               (lambda (process) (switch-to-buffer (process-buffer process)))
+                               "*comp-procs*"
+                               action))
     )
   (add-hook 'persp-created-hook #'completionist-persp-switch-unfocused))
 
@@ -1039,7 +1000,7 @@ on the current line, if any."
   (add-hook 'ediff-before-setup-hook #'my-store-pre-ediff-winconfig)
   (add-hook 'ediff-quit-hook #'my-restore-pre-ediff-winconfig))
 
-;;;;(use-package elgrep)
+;; (use-package elgrep)
 
 ;; (use-package rg)
 
@@ -1061,7 +1022,9 @@ on the current line, if any."
 (use-package edit-indirect)
 (use-package build-farm)
 (use-package magit-popup)
-(use-package guix)
+(use-package guix
+  :config
+  (setq guix-home-profile "/home/sam/.guix-profile"))
 
 (use-package recentf
   :straight (recentf :type built-in)
@@ -1111,15 +1074,20 @@ on the current line, if any."
   (setq all-the-icons-scale-factor 0.9)
   (all-the-icons-completion-mode +1))
 
+(load "~/src/evim/evim.el")
 ;; (use-package wrap-region
 ;;   :config
 ;;   (wrap-region-add-wrapper "~" "~" "~" '(org-mode))
 ;;   ;; (wrap-region-global-mode +1)
 ;;   )
 
-(load "~/src/evim/evim.el")
-
-(use-package eglot)
+(use-package eglot
+  ;; :config
+  ;; (setq eglot-withhold-process-id "1")
+  ;; (with-eval-after-load 'eglot
+    ;; (add-to-list 'eglot-server-programs `(c-mode .     ("~sam/workspaces/legend/hepafilter700/Docker/" "metio/devcontainers-nodejs" "c-language-server --stdio"))))
+  :straight (eglot :type built-in
+                      ))
 
 ;; (use-package scel)
 
@@ -1128,6 +1096,10 @@ on the current line, if any."
 (use-package markdown-toc)
 
 (use-package jenkinsfile-mode)
+
+(use-package vundo)
+
+(use-package swift-mode)
 
 (provide '+modules)
 ;;; +modules.el ends here

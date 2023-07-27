@@ -92,6 +92,12 @@
         ;; ("\\*"
         ;;  (display-buffer-reuse-window display-buffer-pop-up-window))
         ))
+(add-to-list 'display-buffer-alist
+             '("*scratch"
+               (display-buffer-in-side-window)
+               (side . bottom)
+               (slot . 0)
+               (window-height . 10)))
 
 (set-language-environment "UTF-8")
 (set-default-coding-systems 'utf-8)
@@ -161,9 +167,11 @@
 
 (setq delete-pair-blink-delay .15)
 
-;; (set-frame-font "Fira Code 14")
+;; (set-frame-font "-UKWN-Mononoki Nerd Font Mono-bold-normal-normal-*-15-*-*-*-m-0-iso10646-1")
 
 ;; (desktop-save-mode 1)
+
+(setq initial-scratch-message nil)
 
 (provide '+core)
 ;;; +core.el ends here

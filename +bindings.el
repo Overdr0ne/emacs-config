@@ -55,7 +55,7 @@
    ("i"   insert-file)
    ("l"   load-file)
    ("m"   make-directory)
-   ("n"   rename-file)
+   ("r"   rename-file)
    ))
 
 (defvar +go-keymap (make-sparse-keymap))
@@ -111,9 +111,11 @@
  '(+window-map)
 
  `(("C-h" windmove-left)
+   ("C-M-h" sam-delete-left-side-window)
    ("C-j" windmove-down)
    ("C-k" windmove-up)
    ("C-l" windmove-right)
+   ("C-M-l" sam-delete-right-side-window)
    ("C-o" delete-other-windows)
    ("C-p" window-swap-states)
    ("C-d" delete-window)
@@ -289,7 +291,7 @@
 
    ("v" magit-status)
 
-   ("x"    persp-switch-to-scratch-buffer)
+   ("x"    +persp-pop-to-scratch)
 
    ("y"    org-capture)
 
@@ -449,6 +451,7 @@
  '(evim-insert-mode-map)
  `(
    ("`" (lambda () (interactive) (insert "`")))
+   ("C-M-h" sam-kill-backward-line)
    ("<C-m>" sam-match)
    ("C-v" consult-yank-from-kill-ring)))
 
@@ -491,7 +494,7 @@
    ("\""  consult-register)
    ("*" consult-line-symbol-at-point)
  
-   ("+" consult-line-symbol-at-point)
+   ("+" goto-line)
 
    (";" execute-extended-command)
    ("C-;" eval-expression)
@@ -902,6 +905,14 @@
 ;; ;; "l" #'evil-window-hydra/evil-window-right)
 
 ;; ;;; tools
+(skey-define-keys
+ '(compilation-minor-mode-map)
+ `(
+   ("<M-return>" compilation-display-error)))
+(skey-define-keys
+ '(compilation-mode-map)
+ `(
+   ("<return>" compilation-display-error)))
 ;; (general-define-key
 ;;  :keymaps 'compilation-mode-map
 ;;  :states 'normal
@@ -918,29 +929,32 @@
 ;;  :keymaps '(gnus-mode-map gnus-topic-mode-map gnus-group-mode-map gnus-browse-mode-map gnus-summary-mode-map gnus-article-mode-map)
 ;;  "SPC" +command-mode-map)
 
+(evim-define-default-derived-modes 'magit-blame)
+(add-hook 'magit-blame-mode-hook #'evim-normal-magit-blame-mode)
+
 (skey-define-keys
- '(magit-mode-map magit-diff-mode-map magit-status-mode-map magit-revision-mode-map)
+ '(evim-normal-magit-blame-mode-map magit-mode-map magit-diff-mode-map magit-status-mode-map magit-revision-mode-map)
  ;; "<return>" #'magit-visit-thing
  `(
    ("<C-return>" ,slink-keymap)
    ("<tab>" magit-section-toggle)
    ("SPC" ,+command-mode-map)
-   ("C-b"   ,+buffer-keymap)
+   ("C-b" ,+buffer-keymap)
    ("C-d" dired-jump)
    ("C-w" ,+window-map)
    ))
 
 (skey-define-keys
- '(magit-blame-mode-map)
- `(("<return>" magit-show-commit)))
-;; (general-define-key
-;;  :keymaps '(magit-diff-mode-map)
-;;  "J" #'evil-scroll-page-down
-;;  "K" #'evil-scroll-page-up)
-;; (general-define-key
-;;  :keymaps '(magit-status-mode-map)
-;;  :states '(normal)
-;;  "M-;" #'shelldon)
+ '(evim-normal-magit-blame-mode-map magit-blame-mode-map magit-blame-read-only-mode-map)
+ `(("<return>" magit-show-commit)
+   ("SPC" ,+command-mode-map)))
+;; (skey-define-keys
+;;  '(magit-diff-mode-map)
+;;  `(("J" evil-scroll-page-down
+;;     "K" evil-scroll-page-up)))
+(skey-define-keys
+ '(magit-status-mode-map)
+ `(("M-;" shelldon)))
 
 ;; '(lisp-mode-map emacs-lisp-mode-map)
 (skey-define-keys

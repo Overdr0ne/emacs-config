@@ -51,9 +51,11 @@
 
 (defun sam-eval-this-sexp ()
   (interactive)
-  (pulse-momentary-highlight-region (point)
-                                    (+ (point)
-                                       (length (thing-at-point 'sexp t))))
+  (let ((pulse-flag t)
+        (pulse-delay .03))
+    (pulse-momentary-highlight-region (point)
+                                      (+ (point)
+                                         (length (thing-at-point 'sexp t)))))
   (message "%S" (eval (read (thing-at-point 'sexp t)) t)))
 
 (defun sam-insert-line-above ()
@@ -555,9 +557,9 @@ Version 2017-07-02"
 
 (defun sam-make-filename-unique (filename)
   (let ((base (file-name-sans-extension filename))
-	    (ext (file-name-extension filename))
-	    (name filename)
-	    (cnt 1))
+	      (ext (file-name-extension filename))
+	      (name filename)
+	      (cnt 1))
     (while (file-exists-p name)
       (setf name (concat base "-" (int-to-string cnt) "." ext))
       (1+ cnt))
@@ -583,14 +585,6 @@ Version 2017-07-02"
   (interactive)
   (avy-goto-word-or-subword-1))
 
-(defun sam-delete-side-windows (side)
-  "Delete windows at SIDE."
-  (mapc #'(lambda (window) (delete-window window)) (window-at-side-list nil side)))
-
-(defun sam-delete-window-right-side ()
-  (interactive)
-  (sam-delete-side-windows 'right))
-
 (defun sam-dired-group-marked (directory)
   "Create a directory called DIRECTORY.
 Parent directories of DIRECTORY are created as needed.
@@ -598,14 +592,14 @@ If DIRECTORY already exists, signal an error."
   (interactive
    (list (read-file-name "Create directory: " (dired-current-directory))))
   (let* ((expanded (directory-file-name (expand-file-name directory)))
-	     (marked (dired-get-marked-files))
-	     new)
+	       (marked (dired-get-marked-files))
+	       new)
     (unless (file-exists-p expanded)
       (setq new (dired--find-topmost-parent-dir expanded))
       (make-directory expanded t)
       (when new
-	    (dired-add-file new)
-	    (dired-move-to-filename)))
+	      (dired-add-file new)
+	      (dired-move-to-filename)))
     (mapc #'(lambda (file) (rename-file file (concat expanded "/"))) marked)
     (revert-buffer)))
 
@@ -616,8 +610,8 @@ If DIRECTORY already exists, signal an error."
   (interactive
    (list (read-file-name "Create directory: " default-directory)))
   (let* ((expanded (directory-file-name (expand-file-name directory)))
-	     (filename (buffer-file-name))
-	     (new (concat expanded "/" (f-filename (buffer-file-name)))))
+	       (filename (buffer-file-name))
+	       (new (concat expanded "/" (f-filename (buffer-file-name)))))
     (unless (file-exists-p expanded)
       (make-directory expanded t))
     (rename-file filename new)
@@ -625,27 +619,51 @@ If DIRECTORY already exists, signal an error."
     (get-buffer-create new)
     (set-buffer-modified-p nil)))
 
+(defvar-local sam-wic-src-dir "~/")
+(defvar-local sam-wic-src-file "")
+(defvar-local sam-wic-tar-dir "/dev/")
+(defvar-local sam-wic-tar-file "mmcblk0")
 (defun sam-flash-wic ()
   "Flash IMAGE to DEVICE."
   (interactive)
-  (with-temp-buffer
-    (let* ((image (read-file-name "Image: "))
-	       (device (read-file-name "Device: " "/dev/" nil nil "mmcblk")))
-      (setq image (expand-file-name image))
-      (cd "/sudo::/")
-      (shell-command (concat "umount " device "*"))
-      (async-shell-command (concat "bmaptool copy " image " " device)))))
+  
+  (let* ((image (read-file-name "Image: " sam-wic-src-dir nil nil sam-wic-src-file))
+	       (device (read-file-name "Device: " sam-wic-tar-dir nil nil sam-wic-tar-file))
+         default-directory)
+    (setq image (expand-file-name image))
+    (cd "/sudo::/")
+    (shell-command (concat "umount " device "*"))
+    (async-shell-command (concat "bmaptool copy " image " " device))))
 
 (defun sam-flash-ext4 ()
   "Flash IMAGE to DEVICE."
   (interactive)
   (with-temp-buffer
     (let* ((image (read-file-name "Image: "))
-	       (device (read-file-name "Device: " "/dev/" nil nil "sd")))
+	         (device (read-file-name "Device: " "/dev/" nil nil "sd")))
       (setq image (expand-file-name image))
       (cd "/sudo::/")
       (shell-command (concat "umount " device "*"))
       (async-shell-command (concat "bmaptool copy " image " " device)))))
+
+(defvar-local sam-sdcard-src-dir "~/")
+(defvar-local sam-sdcard-src-file "")
+(defvar-local sam-sdcard-tar-dir "/dev/")
+(defvar-local sam-sdcard-tar-file "mmcblk0")
+(defun sam-flash-sdcard ()
+  (interactive)
+  (let* ((src (read-file-name "Image: " sam-sdcard-src-dir nil nil sam-sdcard-src-file))
+         (tar (read-file-name "Device: " sam-sdcard-tar-dir nil nil sam-sdcard-tar-file))
+         default-directory)
+    (setq src (expand-file-name src))
+    (cd "/sudo::/")
+    (shell-command (concat "umount " tar "*"))
+    ;; (shell-command (concat "cp -v " src " " tar))
+    (shell-command (concat "dd if=" src " of=" tar))
+    (shell-command "sync")
+    (shell-command (concat "umount " tar "*"))
+    (message "Flash complete!")
+    ))
 
 (defun sam-find-file-here ()
   "Find file within current directory."
@@ -663,7 +681,7 @@ If DIRECTORY already exists, signal an error."
   "Return true if serial PORT is active."
   (cl-dolist (buffer (buffer-list))
     (when (string= (buffer-name buffer)
-		           "/dev/ttyUSB0")
+		               "/dev/ttyUSB0")
       (cl-return buffer))))
 (defun sam-serial-term (port speed &optional line-mode)
   "Start a terminal-emulator for a serial port in a new buffer.
@@ -695,13 +713,13 @@ use in that buffer.
                      :noquery t))
            (buffer (process-buffer process)))
       (with-current-buffer buffer
-	    (term-mode)
-	    (unless line-mode
+	      (term-mode)
+	      (unless line-mode
           (term-char-mode))
-	    (goto-char (point-max))
-	    (set-marker (process-mark process) (point))
-	    (set-process-filter process #'term-emulate-terminal)
-	    (set-process-sentinel process #'term-sentinel))
+	      (goto-char (point-max))
+	      (set-marker (process-mark process) (point))
+	      (set-process-filter process #'term-emulate-terminal)
+	      (set-process-sentinel process #'term-sentinel))
       (switch-to-buffer buffer)
       buffer)))
 
@@ -714,33 +732,33 @@ use in that buffer.
                     (setq execute-extended-command--last-typed
                           (minibuffer-contents)))
                   nil 'local)
-	    (set (make-local-variable 'minibuffer-default-add-function)
-	         (lambda ()
-	           ;; Get a command name at point in the original buffer
-	           ;; to propose it after M-n.
-	           (with-current-buffer (window-buffer (minibuffer-selected-window))
-		         (and (commandp (function-called-at-point))
-		              (format "%S" (function-called-at-point)))))))
+	      (set (make-local-variable 'minibuffer-default-add-function)
+	           (lambda ()
+	             ;; Get a command name at point in the original buffer
+	             ;; to propose it after M-n.
+	             (with-current-buffer (window-buffer (minibuffer-selected-window))
+		             (and (commandp (function-called-at-point))
+		                  (format "%S" (function-called-at-point)))))))
     ;; Read a string, completing from and restricting to the set of
     ;; all defined commands.  Don't provide any initial input.
     ;; Save the command read on the extended-command history list.
     (completing-read
      (concat (cond
-	          ((eq current-prefix-arg '-) "- ")
-	          ((and (consp current-prefix-arg)
-		            (eq (car current-prefix-arg) 4)) "C-u ")
-	          ((and (consp current-prefix-arg)
-		            (integerp (car current-prefix-arg)))
-	           (format "%d " (car current-prefix-arg)))
-	          ((integerp current-prefix-arg)
-	           (format "%d " current-prefix-arg)))
-	         ;; This isn't strictly correct if `execute-extended-command'
-	         ;; is bound to anything else (e.g. [menu]).
-	         ;; It could use (key-description (this-single-command-keys)),
-	         ;; but actually a prompt other than "M-x" would be confusing,
-	         ;; because "M-x" is a well-known prompt to read a command
-	         ;; and it serves as a shorthand for "Extended command: ".
-	         "M-x ")
+	            ((eq current-prefix-arg '-) "- ")
+	            ((and (consp current-prefix-arg)
+		                (eq (car current-prefix-arg) 4)) "C-u ")
+	            ((and (consp current-prefix-arg)
+		                (integerp (car current-prefix-arg)))
+	             (format "%d " (car current-prefix-arg)))
+	            ((integerp current-prefix-arg)
+	             (format "%d " current-prefix-arg)))
+	           ;; This isn't strictly correct if `execute-extended-command'
+	           ;; is bound to anything else (e.g. [menu]).
+	           ;; It could use (key-description (this-single-command-keys)),
+	           ;; but actually a prompt other than "M-x" would be confusing,
+	           ;; because "M-x" is a well-known prompt to read a command
+	           ;; and it serves as a shorthand for "Extended command: ".
+	           "M-x ")
      (lambda (string pred action)
        (let ((pred
               (if (memq action '(nil t))
@@ -762,27 +780,27 @@ use in that buffer.
 (defun sam-read-tsv ()
   "Read a IMAGE in the minibuffer, with completion."
   (read-file-name "TSV: "
-		          "."
-		          nil
-		          nil
-		          nil
-		          (lambda (filename) (or (string-match-p "tsv" filename)
-					                     (string-match-p "/" filename)))))
+		              "."
+		              nil
+		              nil
+		              nil
+		              (lambda (filename) (or (string-match-p "tsv" filename)
+					                               (string-match-p "/" filename)))))
 (defun sam-stm32-program (tsv)
   "Run stm32 programmer with TSV."
   (interactive (list (sam-read-tsv)))
   (let ((cmd "/home/sam/apps/stm32programmer/bin/STM32_Programmer_CLI")
-	    (port "usb1"))
+	      (port "usb1"))
 
     (setq tsv (expand-file-name tsv))
     ;; (cd "/sudo::/")
     (message tsv)
     (async-shell-command (concat "sudo "
-				                 cmd
-				                 " -c "
-				                 " port=" port
-				                 " -w "
-				                 tsv))
+				                         cmd
+				                         " -c "
+				                         " port=" port
+				                         " -w "
+				                         tsv))
     (cd default-directory)))
 
 (defun sam-pushb-or-embark (pos &optional event)
@@ -792,7 +810,7 @@ use in that buffer.
     ;; If there is no button at point, then use the one at the start
     ;; of the line, if it is a custom-group-link (bug#2298).
     (if button
-	    (push-button pos)
+	      (push-button pos)
       ;; (widget-apply-action button event)
       (call-interactively #'sam-embark-act))))
 
@@ -803,7 +821,7 @@ use in that buffer.
     ;; If there is no button at point, then use the one at the start
     ;; of the line, if it is a custom-group-link (bug#2298).
     (if button
-	    (widget-button-press pos)
+	      (widget-button-press pos)
       ;; (widget-apply-action button event)
       (call-interactively #'embark-act))))
 
@@ -856,16 +874,16 @@ See `embark-act' for the meaning of the prefix ARG."
 (defun sam-flash-itb ()
   (interactive)
   (let ((itb-path (read-file-name "itb: " (expand-file-name bitbake-deploy-dir) "" t nil
-				                  (lambda (filename) (string-match-p "\.itb" filename))))
-	    (rpi-tftpboot (expand-file-name itb-target)))
+				                          (lambda (filename) (string-match-p "\.itb" filename))))
+	      (rpi-tftpboot (expand-file-name itb-target)))
     (copy-file itb-path rpi-tftpboot t)))
 
 (setq itb-target "ubuntu@10.102.3.1:/tftpboot")
 (defun sam-impinj-flash-itb ()
   (interactive)
   (let* ((itb-path (read-file-name "itb: " (expand-file-name bitbake-deploy-dir) "" t nil
-				                   (lambda (filename) (string-match-p "\.itb" filename))))
-	     (rpi-tftpboot itb-target)
+				                           (lambda (filename) (string-match-p "\.itb" filename))))
+	       (rpi-tftpboot itb-target)
          (cmd (format "rsync -chazvP --progress --stats %s %s" itb-path rpi-tftpboot)))
     (message cmd)
     (shell-command cmd)))
@@ -873,10 +891,10 @@ See `embark-act' for the meaning of the prefix ARG."
 (defun sam-impinj-flash-imx ()
   (interactive)
   (let* ((src (read-file-name "imx: " (expand-file-name "~/workspaces/impinj/container/build/build/tmp/deploy/images/r700/u-boot-impinj/") "" t nil
-			                 (lambda (filename) (or (string-match-p "\.imx" filename)
-						                            (string-match-p "/" filename)))))
-	    (tar "impinj-rpi:/home/ubuntu/files/sam/")
-        (cmd (format "rsync -chazvP --progress --stats %s %s" src tar)))
+			                        (lambda (filename) (or (string-match-p "\.imx" filename)
+						                                         (string-match-p "/" filename)))))
+	       (tar "impinj-rpi:/home/ubuntu/files/sam/")
+         (cmd (format "rsync -chazvP --progress --stats %s %s" src tar)))
     (message cmd)
     (shell-command cmd)
     ;; (copy-file src tar t)
@@ -936,19 +954,19 @@ to directory DIR."
 This is almost the same as `term' apart from always creating a new buffer,
 and `C-x' being marked as a `term-escape-char'."
   (interactive (list (read-from-minibuffer "Run program: "
-					                       (or explicit-shell-file-name
-					                           (getenv "ESHELL")
-					                           shell-file-name))))
+					                                 (or explicit-shell-file-name
+					                                     (getenv "ESHELL")
+					                                     shell-file-name))))
 
   ;; Pick the name of the new buffer.
   (setq term-ansi-buffer-name
-	    (if new-buffer-name
-	        new-buffer-name
-	      (if term-ansi-buffer-base-name
-	          (if (eq term-ansi-buffer-base-name t)
-		          (file-name-nondirectory program)
-		        term-ansi-buffer-base-name)
-	        "ansi-term")))
+	      (if new-buffer-name
+	          new-buffer-name
+	        (if term-ansi-buffer-base-name
+	            (if (eq term-ansi-buffer-base-name t)
+		              (file-name-nondirectory program)
+		            term-ansi-buffer-base-name)
+	          "ansi-term")))
 
   (setq term-ansi-buffer-name (concat "*" term-ansi-buffer-name "*"))
 
@@ -1032,15 +1050,15 @@ If ARG is the atom `-', scroll downward by nearly full screen."
       (scroll-up arg))                   ; signal error
      (t
       (condition-case nil
-	      (scroll-up arg)
+	        (scroll-up arg)
         (end-of-buffer
          (if arg
-	         ;; When scrolling by ARG lines can't be done,
-	         ;; move by ARG lines instead.
-	         (forward-line arg)
-	       ;; When ARG is nil for full-screen scrolling,
-	       ;; move to the bottom of the buffer.
-	       (goto-char (point-max)))))))
+	           ;; When scrolling by ARG lines can't be done,
+	           ;; move by ARG lines instead.
+	           (forward-line arg)
+	         ;; When ARG is nil for full-screen scrolling,
+	         ;; move to the bottom of the buffer.
+	         (goto-char (point-max)))))))
     (setq top-line (save-excursion (move-to-window-line 0)
                                    (line-number-at-pos)))
     (goto-line (+ rel-line top-line))
@@ -1071,15 +1089,15 @@ If ARG is the atom `-', scroll upward by nearly full screen."
       (scroll-down arg))                 ; signal error
      (t
       (condition-case nil
-	      (scroll-down arg)
+	        (scroll-down arg)
         (beginning-of-buffer
          (if arg
-	         ;; When scrolling by ARG lines can't be done,
-	         ;; move by ARG lines instead.
-	         (forward-line (- arg))
-	       ;; When ARG is nil for full-screen scrolling,
-	       ;; move to the top of the buffer.
-	       (goto-char (point-min)))))))
+	           ;; When scrolling by ARG lines can't be done,
+	           ;; move by ARG lines instead.
+	           (forward-line (- arg))
+	         ;; When ARG is nil for full-screen scrolling,
+	         ;; move to the top of the buffer.
+	         (goto-char (point-min)))))))
     (setq top-line (save-excursion (move-to-window-line 0)
                                    (line-number-at-pos)))
     (goto-line (+ rel-line top-line))
@@ -1191,5 +1209,43 @@ target."
   (interactive "DLocal source: \nsRemote user: \nsRemote addr: \nsRemote target: ")
   (async-shell-command (format "rsshfs %s %s %s 10000 %s" src user addr tar))
   )
+
+(defun +persp-pop-to-scratch ()
+  (interactive)
+  (pop-to-buffer (persp-get-scratch-buffer)))
+
+(defun sam-delete-side-window (side)
+  (delete-window (window-with-parameter 'window-side side)))
+(defun sam-delete-right-side-window ()
+  (interactive)
+  (sam-delete-side-window 'right))
+(defun sam-delete-left-side-window ()
+  (interactive)
+  (sam-delete-side-window 'left))
+
+(defun sam-plist ()
+  (split-string (shell-command-to-string "ps x -o comm=") "[\f\n]+" t))
+
+(defmacro comment-out (&rest args) nil)
+
+(defun sam-pkill (process)
+  (interactive (list (completing-read "Process: " (sam-plist))))
+
+  (let (default-directory)
+     (cd "/sudo::/")
+     (shell-command (concat "sudo killall -9 " process))
+     )
+  )
+
+(defun sam-generate-tags-c (dir-name)
+  "Create tags file."
+  (interactive "DDirectory: ")
+  (shell-command "find . -name \"*.[chCH]\" -print | etags -"
+   ))
+
+(defun sam-kill-backward-line ()
+  (interactive)
+  (kill-line 0))
+
 (provide '+functions)
 ;;; +functions.el ends here

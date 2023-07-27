@@ -28,9 +28,12 @@
 
 ;;(windmove-display-same-window)
 ;; (sfs-recollect)
-(persp-mode +1)
-(run-with-idle-timer 1 nil
-                     (lambda () (call-interactively #'sam-project-persp-switch-project)))
+(run-with-idle-timer 1.5 nil
+                     (lambda ()
+                       (set-frame-font "-CTDB-FiraMono Nerd Font-normal-normal-normal-*-16-*-*-*-m-0-iso10646-1")
+                       (require '+disambiguate-keys)
+                       (persp-mode +1)
+                       (call-interactively #'sam-project-persp-switch-project)))
 
 (provide '+splash)
 ;;; +splash.el ends here
