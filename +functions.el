@@ -268,7 +268,7 @@ current buffer directory."
     (consult-buffer)))
 
 (defun dired-buffer-p (buffer)
-  (if buffer
+  (if (and buffer (consp buffer))
       (with-current-buffer (car buffer)
         (equal major-mode #'dired-mode))
     nil))
@@ -513,13 +513,13 @@ Version 2017-07-02"
 (defun sam-aw-move-window (window)
   "Swap buffers of current window and WINDOW."
   (cl-labels ((swap-windows (window1 window2)
-                            "Swap the buffers of WINDOW1 and WINDOW2."
-                            (let ((buffer1 (window-buffer window1))
-                                  (buffer2 (window-buffer window2)))
-                              (set-window-buffer window1 buffer2)
-                              (set-window-buffer window2 buffer1)
-                              (select-window window2)
-                              (delete-window window1))))
+                "Swap the buffers of WINDOW1 and WINDOW2."
+                (let ((buffer1 (window-buffer window1))
+                      (buffer2 (window-buffer window2)))
+                  (set-window-buffer window1 buffer2)
+                  (set-window-buffer window2 buffer1)
+                  (select-window window2)
+                  (delete-window window1))))
     (let ((frame (window-frame window))
           (this-window (selected-window)))
       (when (and (frame-live-p frame)
@@ -544,16 +544,16 @@ Version 2017-07-02"
   (newline-and-indent))
 
 (deftoggle sam-hs-toggle-all
-  "Toggle showing all top-level blocks"
-  (hs-hide-all)
-  (hs-show-all))
+           "Toggle showing all top-level blocks"
+           (hs-hide-all)
+           (hs-show-all))
 
 (deftoggle sam-toggle-theme
-  "Toggle theme between light and dark."
-  (progn (disable-theme 'dracula)
-         (load-theme 'spacemacs-light t))
-  (progn (disable-theme 'spacemacs-light)
-         (load-theme 'dracula t)))
+           "Toggle theme between light and dark."
+           (progn (disable-theme 'dracula)
+                  (load-theme 'spacemacs-light t))
+           (progn (disable-theme 'spacemacs-light)
+                  (load-theme 'dracula t)))
 
 (defun sam-make-filename-unique (filename)
   (let ((base (file-name-sans-extension filename))
@@ -626,14 +626,49 @@ If DIRECTORY already exists, signal an error."
 (defun sam-flash-wic ()
   "Flash IMAGE to DEVICE."
   (interactive)
-  
   (let* ((image (read-file-name "Image: " sam-wic-src-dir nil nil sam-wic-src-file))
 	       (device (read-file-name "Device: " sam-wic-tar-dir nil nil sam-wic-tar-file))
          default-directory)
     (setq image (expand-file-name image))
     (cd "/sudo::/")
     (shell-command (concat "umount " device "*"))
-    (async-shell-command (concat "bmaptool copy " image " " device))))
+    (shell-command (concat "bmaptool copy " image " " device " && sync"))))
+(defun sam-dd-wic ()
+  "Flash IMAGE to DEVICE."
+  (interactive)
+  (let* ((image (read-file-name "Image: " sam-wic-src-dir nil nil sam-wic-src-file))
+	       (device (read-file-name "Device: " sam-wic-tar-dir nil nil sam-wic-tar-file))
+         default-directory)
+    (setq image (expand-file-name image))
+    (cd "/sudo::/")
+    (shell-command (concat "umount " device "*"))
+    (async-shell-command (concat "dd status=progress if=" image " of=" device " && umount " device "* && sync"))
+    ))
+
+(defun sam-cp-image ()
+  "Flash IMAGE to DEVICE."
+  (interactive)
+  (let* ((image (read-file-name "Image: " sam-wic-src-dir nil nil sam-wic-src-file))
+	       (device (read-file-name "Device: " sam-wic-tar-dir nil nil sam-wic-tar-file))
+         default-directory)
+    (setq image (expand-file-name image))
+    (cd "/sudo::/")
+    (shell-command (concat "umount " device "*"))
+    (shell-command (concat "wipefs -a " device "*"))
+    (async-shell-command (concat "cp " image " " device " && umount " device "* ; sync"))
+    ))
+
+(defun sam-rsync-wic ()
+  "Flash IMAGE to DEVICE."
+  (interactive)
+  (let* ((image (read-file-name "Image: " sam-wic-src-dir nil nil sam-wic-src-file))
+	       (device (read-file-name "Device: " sam-wic-tar-dir nil nil sam-wic-tar-file))
+         default-directory)
+    (setq image (expand-file-name image))
+    (cd "/sudo::/")
+    (shell-command (concat "umount " device "*"))
+    (async-shell-command (concat "rsync --progress " image " " device " && umount " device "* ; sync"))
+    ))
 
 (defun sam-flash-ext4 ()
   "Flash IMAGE to DEVICE."
@@ -663,6 +698,58 @@ If DIRECTORY already exists, signal an error."
     (shell-command "sync")
     (shell-command (concat "umount " tar "*"))
     (message "Flash complete!")
+    ))
+
+(defvar-local sam-dfu-image-dir "~/")
+(defvar-local sam-dfu-fit-image "")
+(defvar-local sam-machine "")
+(defun sam-dfu-update ()
+  (interactive)
+  (let* (
+         (boot-image (string-join `(,sam-dfu-image-dir ,sam-machine ,sam-dfu-fit-image) "/"))
+         (linux-image (expand-file-name (read-file-name "Linux Fit Image: " (concat sam-dfu-image-dir "/" sam-machine "/") nil nil sam-linux-fit-image)))
+         (image-dir (expand-file-name (file-name-directory boot-image)))
+         (tfa-file (concat image-dir "/trusted-firmware-a/tf-a.stm32"))
+         (fip-file (concat image-dir "/trusted-firmware-a/fip.bin"))
+         (max-mini-window-height 1)
+         default-directory)
+    (cd (concat "/sudo::/" image-dir))
+    (async-shell-command (concat "dfu-util -a 1 -D " tfa-file " && "
+                                 "dfu-util -a 0 -D " boot-image " && "
+                                 "dfu-util -a 3 -D " fip-file " && "
+                                 "dfu-util -a 0 -e && echo \"Updater started\" && "
+                                 "sleep 1 && "
+                                 "dfu-util -a 0 -D " linux-image " && dfu-util -a 0 -e && "
+                                 "echo \"Update complete\""
+                                 ))
+    ))
+
+(defun sam-dfu-start-updater ()
+  (interactive)
+  (let* (
+         (boot-image (string-join `(,sam-dfu-image-dir ,sam-machine ,sam-dfu-fit-image) "/"))
+         (image-dir (expand-file-name (file-name-directory boot-image)))
+         (tfa-file (concat image-dir "/trusted-firmware-a/tf-a.stm32"))
+         (fip-file (concat image-dir "/trusted-firmware-a/fip.bin"))
+         (max-mini-window-height 1)
+         default-directory)
+    (cd (concat "/sudo::/" image-dir))
+    (async-shell-command (concat "dfu-util -a 1 -D " tfa-file " && "
+                                 "dfu-util -a 0 -D " boot-image " && "
+                                 "dfu-util -a 3 -D " fip-file " && "
+                                 "dfu-util -a 0 -e && echo \" Complete\""
+                                 )) ))
+
+(defvar-local sam-linux-fit-image "")
+(defun sam-dfu-linux-update ()
+  (interactive)
+  (let* (
+         (linux-image (expand-file-name (read-file-name "Linux Fit Image: " (concat sam-dfu-image-dir "/" sam-machine "/") nil nil sam-linux-fit-image)))
+         (image-dir (expand-file-name (file-name-directory linux-image)))
+         (max-mini-window-height 1)
+         default-directory)
+    (cd (concat "/sudo::/" image-dir))
+    (async-shell-command (concat "dfu-util -a 0 -D " linux-image " && dfu-util -a 0 -e"))
     ))
 
 (defun sam-find-file-here ()
@@ -812,6 +899,17 @@ use in that buffer.
     (if button
 	      (push-button pos)
       ;; (widget-apply-action button event)
+      (call-interactively #'embark-act))))
+
+(defun sam-pushb-or-sam-embark (pos &optional event)
+  "Invoke button at POS, or call embark-act."
+  (interactive "@d")
+  (let ((button (get-char-property pos 'button)))
+    ;; If there is no button at point, then use the one at the start
+    ;; of the line, if it is a custom-group-link (bug#2298).
+    (if button
+	      (push-button pos)
+      ;; (widget-apply-action button event)
       (call-interactively #'sam-embark-act))))
 
 (defun sam-pushw-or-embark (pos &optional event)
@@ -927,6 +1025,50 @@ See `embark-act' for the meaning of the prefix ARG."
     (kill-region (minibuffer-prompt-end) (line-end-position))
     (insert selection)))
 
+(defun sam-project-find-dir ()
+  "Start Dired in a directory inside the current project."
+  (interactive)
+  (let* ((project (project-current t default-directory))
+         (all-files (project-files project))
+         (completion-ignore-case read-file-name-completion-ignore-case)
+         ;; FIXME: This misses directories without any files directly
+         ;; inside.  Consider DIRS-ONLY as an argument for
+         ;; `project-files-filtered', and see
+         ;; https://stackoverflow.com/a/50685235/615245 for possible
+         ;; implementation.
+         (all-dirs (mapcar #'file-name-directory all-files))
+         (dir (funcall project-read-file-name-function
+                       "Dired"
+                       ;; Some completion UIs show duplicates.
+                       (delete-dups all-dirs)
+                       nil 'file-name-history)))
+    (dired dir)))
+
+(defun sam-project-find-file ()
+  "Start Dired in a directory inside the current project."
+  (interactive)
+  (let* ((project (project-current t default-directory))
+         (all-files (project-files project))
+         (completion-ignore-case read-file-name-completion-ignore-case)
+         ;; FIXME: This misses directories without any files directly
+         ;; inside.  Consider DIRS-ONLY as an argument for
+         ;; `project-files-filtered', and see
+         ;; https://stackoverflow.com/a/50685235/615245 for possible
+         ;; implementation.
+         (file (funcall project-read-file-name-function
+                        "Dired"
+                        ;; Some completion UIs show duplicates.
+                        all-files
+                        nil 'file-name-history)))
+    (find-file file)))
+
+(setf project-switch-commands
+      '((sam-project-find-file "Find file")
+        (project-find-regexp "Find regexp")
+        (project-find-dir "Find directory")
+        (magit-status "VC-Dir")
+        (project-eshell "Eshell")))
+
 (defun sam-project-persp-switch-project (dir)
   "\"Switch\" to another project by running an Emacs command.
 The available commands are presented as a dispatch menu
@@ -935,15 +1077,21 @@ made from `project-switch-commands'.
 When called in a program, it will use the project corresponding
 to directory DIR."
   (interactive (list (project-prompt-project-dir)))
-  (message "SAMSAM: %s" dir)
   (project-remember-project (project--find-in-directory dir))
   (persp-switch (car (last (split-string (directory-file-name dir) "/"))))
-  (let ((command (if (symbolp project-switch-commands)
-                     project-switch-commands
-                   (project--switch-project-command))))
-    (let ((default-directory dir)
-          (project-current-inhibit-prompt t))
-      (call-interactively command))))
+  (let ((default-directory dir)
+        (project-current-inhibit-prompt t))
+    (magit-status))
+  ;;   (let ((command (if (symbolp project-switch-commands)
+  ;;                      project-switch-commands
+  ;;                    (project--switch-project-command))))
+  ;;     (let ((default-directory dir)
+  ;;           (project-current-inhibit-prompt t))
+  ;;       (setq default-directory dir)
+  ;;       ;; cant pass default-directory or and command to interactive command
+  ;;       (call-interactively command)
+  ;; )
+  )
 
 (defun sam-comment-line ()
   (interactive)
@@ -1138,7 +1286,8 @@ target."
          (default-done nil))
     (unwind-protect
         (while
-            (let* ((select (completing-read "Embark target: "
+            (let* (
+                   (select (completing-read "Embark target: "
                                             selects))
                    (target (alist-get select
                                       targets-alist nil nil 'equal))
@@ -1232,20 +1381,294 @@ target."
   (interactive (list (completing-read "Process: " (sam-plist))))
 
   (let (default-directory)
-     (cd "/sudo::/")
-     (shell-command (concat "sudo killall -9 " process))
-     )
+    (cd "/sudo::/")
+    (shell-command (concat "sudo killall -9 " process))
+    )
   )
 
 (defun sam-generate-tags-c (dir-name)
   "Create tags file."
   (interactive "DDirectory: ")
   (shell-command "find . -name \"*.[chCH]\" -print | etags -"
-   ))
+                 ))
 
 (defun sam-kill-backward-line ()
   (interactive)
   (kill-line 0))
+
+(defun sam-indent-rigidly-right ()
+  (interactive)
+  (setq deactivate-mark nil)
+  (indent-rigidly-right
+   (min (point) (mark))
+   (max (mark) (point)))
+  (call-interactively #'indent-rigidly)
+  )
+
+(defun sam-indent-rigidly-right (start end arg &optional interactive)
+  "Indent all lines starting in the region.
+ If called interactively with no prefix argument, activate a
+ transient mode in which the indentation can be adjusted interactively
+ by typing \\<indent-rigidly-map>\\[indent-rigidly-left], \\[indent-rigidly-right], \\[indent-rigidly-left-to-tab-stop], or \\[indent-rigidly-right-to-tab-stop].
+In addition, \\`TAB' is also bound (and calls `indent-rigidly-right').
+
+Typing any other key exits this mode, and this key is then
+acted upon as normally.  If `transient-mark-mode' is enabled,
+exiting also deactivates the mark.
+
+If called from a program, or interactively with prefix ARG,
+indent all lines starting in the region forward by ARG columns.
+If called from a program, START and END specify the beginning and
+end of the text to act on, in place of the region.
+
+Negative values of ARG indent backward, so you can remove all
+indentation by specifying a large negative ARG."
+  (interactive "r\nP\np")
+  (if (and (not arg) interactive)
+      (progn
+        (indent-rigidly-right
+         (min (mark) (point))
+         (max (point) (mark)))
+        (set-transient-map indent-rigidly-map t #'deactivate-mark
+                           "Indent region with %k")
+        )
+    (save-excursion
+      (goto-char end)
+      (setq end (point-marker))
+      (goto-char start)
+      (or (bolp) (forward-line 1))
+      (while (< (point) end)
+        (let ((indent (current-indentation))
+              eol-flag)
+          (save-excursion
+            (skip-chars-forward " \t")
+            (setq eol-flag (eolp)))
+          (or eol-flag
+              (indent-to (max 0 (+ indent (prefix-numeric-value arg))) 0))
+          (delete-region (point) (progn (skip-chars-forward " \t") (point))))
+        (forward-line 1))
+      (move-marker end nil)
+      ;; Keep the active region in transient mode.
+      (when (eq (cadr overriding-terminal-local-map) indent-rigidly-map)
+	      (setq deactivate-mark nil)))))
+
+(defun sam-persp-switch-to-buffer* ()
+  (interactive)
+  (let ((vertico-sort-function nil))
+    (call-interactively #'persp-switch-to-buffer*)
+    (setq vertico-sort-function 'vertico-sort-history-length-alpha))
+  )
+(defun sam-persp-switch-to-buffer* (buffer-or-name)
+  "Like `switch-to-buffer', restricted to the current perspective.
+This respects ido-ignore-buffers, since we automatically add
+buffer filtering to ido-mode already (see use of
+PERSP-SET-IDO-BUFFERS)."
+  (let ((vertico-sort-function nil))
+    (interactive
+     (list
+      (if (or current-prefix-arg (not persp-mode))
+          (let ((read-buffer-function nil))
+            (read-buffer-to-switch "Switch to buffer"))
+        (let* ((candidates (persp-current-buffer-names t))
+               (other (buffer-name (persp-other-buffer (current-buffer)))))
+          ;; NB: This intentionally calls completing-read instead of
+          ;; persp-interactive-completion-function, since it is expected to have
+          ;; been replaced by a completion framework.
+          (completing-read (format "Switch to buffer%s: "
+                                   (if other
+                                       (format " (default %s)" other)
+                                     ""))
+                           (lambda (string predicate action)
+                             (if (eq 'metadata action)
+                                 '(metadata (category . buffer))
+                               (complete-with-action action candidates string predicate)))
+                           nil nil nil nil
+                           other))))))
+  (let ((buffer (window-normalize-buffer-to-switch-to buffer-or-name)))
+    (switch-to-buffer buffer)))
+
+(defun sam-wrap-region-with (left right)
+  "Wraps region with LEFT and RIGHT."
+  (run-hooks 'wrap-region-before-wrap-hook)
+  (let ((beg (region-beginning))
+        (end (region-end))
+        (pos (point))
+        (deactivate-mark nil))
+    (save-excursion
+      (goto-char beg)
+      (insert left)
+      (goto-char (+ end (length left)))
+      (insert right))
+    (if (= pos end) (forward-char 1))
+    (indent-region left (+ right 2))
+    (deactivate-mark)
+    )
+  (run-hooks 'wrap-region-after-wrap-hook))
+
+
+(defmacro sam-make-region-wrapper (left right)
+  `(progn
+     (defun ,(intern (concat "wrap-region-" left "-" right)) ()
+       (interactive)
+       (sam-wrap-region-with ,left ,right)
+       )))
+
+(defun sam-dired-up-directory ()
+  (interactive)
+  (find-alternate-file ".."))
+
+(defun sam-ctrlf-forward-region ()
+  (interactive)
+  (let ((beg (region-beginning))
+        (end (region-end)))
+    (ctrlf-forward 'literal t (buffer-substring beg end))
+    ))
+
+(defun sam-bookmark-replace-line-location (bookmark-name &optional no-history)
+  "Insert the name of the file associated with BOOKMARK-NAME.
+
+Optional second arg NO-HISTORY means don't record this in the
+minibuffer history list `bookmark-history'."
+  (interactive (list (bookmark-completing-read "Insert bookmark location")))
+  (or no-history (bookmark-maybe-historicize-string bookmark-name))
+  (ignore-errors (kill-whole-line))
+  (insert (bookmark-location bookmark-name)))
+
+(defun sam-insert-open-file-path (file-buffer)
+  "Insert the path to an active DIR-BUFFER."
+  (interactive (list
+                (read-buffer "File buffer: ")))
+  (insert (buffer-file-name (get-buffer file-buffer))))
+
+(defun sam-replace-line-open-file-path (file-buffer)
+  "Insert the path to an active DIR-BUFFER."
+  (interactive (list
+                (read-buffer "File buffer: ")))
+  (ignore-errors (kill-whole-line))
+  (insert (buffer-file-name (get-buffer file-buffer))))
+
+(defun sam-insert-open-dir-path (dir-path)
+  "Insert the path to an active DIR-BUFFER."
+  (interactive (list
+                (consult-dir--pick "In directory: ")))
+  (insert dir-path))
+
+(defun sam-replace-line-open-dir-path (dir-path)
+  "Insert the path to an active DIR-BUFFER."
+  (interactive (list
+               (consult-dir--pick "In directory: ")))
+  (ignore-errors (kill-whole-line 0))
+  (insert dir-path))
+
+(defun sam-open (file)
+  "Insert the path to an active DIR-BUFFER."
+  (interactive "fFile:")
+  (message "%s" file)
+  (shell-command (concat "kde-open '" (expand-file-name file) "'") "/dev/null" "/dev/null"))
+
+(defun sam-open-async (file)
+  "Insert the path to an active DIR-BUFFER."
+  (interactive "fFile:")
+  (message "%s" file)
+  (async-shell-command (concat "kde-open '" (expand-file-name file) "'") "/dev/null" "/dev/null"))
+
+(defun sam-yank-from-kill-ring (string &optional arg)
+  "Select STRING from the kill ring and insert it.
+With prefix ARG, put point at beginning, and mark at end, like `yank' does.
+
+This command behaves like `yank-from-kill-ring' in Emacs 28, which also offers
+a `completing-read' interface to the `kill-ring'.  Additionally the Consult
+version supports preview of the selected string."
+  (interactive (list (consult--read-from-kill-ring) current-prefix-arg))
+  (when string
+    (setq yank-window-start (window-start))
+    (push-mark)
+    (insert-for-yank string)
+    (setq this-command 'yank)
+    (when consult-yank-rotate
+      (if-let (pos (seq-position kill-ring string))
+          (setq kill-ring-yank-pointer (nthcdr pos kill-ring))
+        (kill-new string)))
+    (when (consp arg)
+      ;; Swap point and mark like in `yank'.
+      (goto-char (prog1 (mark t)
+                   (set-marker (mark-marker) (point) (current-buffer)))))
+    (unless (equal string (current-kill 0))
+      (kill-new string))))
+
+(defun sam-replace-line-from-kill-ring (string &optional arg)
+  "Select STRING from the kill ring and insert it.
+With prefix ARG, put point at beginning, and mark at end, like `yank' does.
+
+This command behaves like `yank-from-kill-ring' in Emacs 28, which also offers
+a `completing-read' interface to the `kill-ring'.  Additionally the Consult
+version supports preview of the selected string."
+  (interactive (list (consult--read-from-kill-ring) current-prefix-arg))
+  (ignore-errors (kill-whole-line))
+  (sam-yank-from-kill-ring string))
+
+(defun sam-embark-completing-read-prompter (keymap update &optional no-default)
+  "Prompt via completion for a command bound in KEYMAP.
+If NO-DEFAULT is t, no default value is passed to`completing-read'.
+
+UPDATE is the indicator update function.  It is not used directly
+here, but if the user switches to `embark-keymap-prompter', the
+UPDATE function is passed to it."
+  (let* ((candidates+def (embark--formatted-bindings keymap))
+         (candidates (car candidates+def))
+         (def (and (not no-default) (cdr candidates+def)))
+         (buf (current-buffer))
+         (choice
+          (catch 'choice
+            (minibuffer-with-setup-hook
+                (lambda ()
+                  (let ((map (make-sparse-keymap)))
+                    (define-key map "\M-q"
+                                (lambda ()
+                                  (interactive)
+                                  (with-current-buffer buf
+                                    (embark-toggle-quit))))
+                    (when-let (cycle (embark--cycle-key))
+                      ;; Rebind `embark-cycle' in order allow cycling
+                      ;; from the `completing-read' prompter. Additionally
+                      ;; `embark-cycle' can be selected via
+                      ;; `completing-read'. The downside is that this breaks
+                      ;; recursively acting on the candidates of type
+                      ;; embark-keybinding in the `completing-read' prompter.
+                      (define-key map cycle
+                        (cond
+                         ((eq (lookup-key keymap cycle) 'embark-cycle)
+                          (lambda ()
+                            (interactive)
+                            (throw 'choice 'embark-cycle)))
+                         ((null embark-cycle-key)
+                          (lambda ()
+                            (interactive)
+                            (minibuffer-message
+                             "No cycling possible; press `%s' again to act."
+                             (key-description cycle))
+                            (define-key map cycle #'embark-act))))))
+                    (when embark-keymap-prompter-key
+                      (keymap-set map embark-keymap-prompter-key
+                        (lambda ()
+                          (interactive)
+                          (message "Press key binding")
+                          (let ((cmd (embark-keymap-prompter keymap update)))
+                            (if (null cmd)
+                                (user-error "Unknown key")
+                              (throw 'choice cmd))))))
+                    (use-local-map
+                     (make-composed-keymap map (current-local-map)))))
+              (completing-read
+               "Command: "
+               (embark--with-category 'embark-keybinding candidates)
+               nil nil nil 'embark--prompter-history def)))))
+    (pcase (assoc choice candidates)
+      (`(,_formatted ,_name ,cmd ,key ,_desc)
+       ;; Set last-command-event as it would be from the command loop.
+       (setq last-command-event (aref key (1- (length key))))
+       cmd)
+      ('nil (intern-soft choice)))))
 
 (provide '+functions)
 ;;; +functions.el ends here

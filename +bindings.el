@@ -52,6 +52,7 @@
    ("f"   find-file)
    ("c"   copy-file)
    ("d"   delete-file)
+   ("D"   delete-directory)
    ("i"   insert-file)
    ("l"   load-file)
    ("m"   make-directory)
@@ -84,6 +85,7 @@
    ("C-k"  which-key-show-top-level)
    ("C-l"  describe-language-environment)
    ("L"    global-command-log-mode)
+   ("m"    describe-minor-mode)
    ("C-m"  info-emacs-manual)
    ("o"    ace-link-help)
    ("p"    describe-package)
@@ -111,14 +113,21 @@
  '(+window-map)
 
  `(("C-h" windmove-left)
-   ("C-M-h" sam-delete-left-side-window)
    ("C-j" windmove-down)
    ("C-k" windmove-up)
    ("C-l" windmove-right)
+
+   ("C-M-h" sam-delete-left-side-window)
    ("C-M-l" sam-delete-right-side-window)
+   ("C-d" nil)
+   ("C-d C-d" delete-window)
+   ("C-d C-h" windmove-delete-left)
+   ("C-d C-j" windmove-delete-down)
+   ("C-d C-k" windmove-delete-up)
+   ("C-d C-l" windmove-delete-right)
    ("C-o" delete-other-windows)
+
    ("C-p" window-swap-states)
-   ("C-d" delete-window)
    ("C-q" quit-window)
    ("C-s" window-swap-states)
    ("C-t" window-toggle-side-windows)
@@ -191,7 +200,7 @@
 
 (skey-define-keys
  '(project-prefix-map)
- '(("f" project-find-file)
+ '(("f" sam-project-find-file)
    ("p" sam-project-persp-switch-project)
    ("v" magit-status)))
 
@@ -319,13 +328,31 @@
    ("C-]"  persp-next)
    ("C-;"  consult-complex-command)
    ("C-SPC" tmm-menubar)
-   ("C-b" persp-switch-to-buffer)
+   ("C-b" persp-switch-to-buffer*)
    ;; ("C-c" sfs-recollect)
    ;; ("C-f"  sfs-research)
    ;; ("C-g" consult-bookmark)
    ("C-k" kill-buffer-and-window)
    ("<C-m>" bookmark-set)
    ("C-t" sam-toggle-theme)))
+
+(skey-define-keys
+ '(bookmark-map)
+ `(
+   ("C-d" bookmark-delete)
+   ("C-e" edit-bookmarks)
+   ("C-f" bookmark-insert-location)
+   ("C-i" bookmark-insert)
+   ("C-g" bookmark-jump)
+   ("C-j" bookmark-jump)
+   ("C-l" bookmark-load)
+   ("<C-m>" bookmark-set)
+   ("C-o" bookmark-jump-other-window)
+   ("C-r" bookmark-set)
+   ("C-s" bookmark-save)
+   ("C-w" bookmark-write)
+   ("C-x" bookmark-set)
+   ))
 
 (defvar slink-keymap (make-sparse-keymap))
 (skey-define-keys
@@ -453,13 +480,19 @@
    ("`" (lambda () (interactive) (insert "`")))
    ("C-M-h" sam-kill-backward-line)
    ("<C-m>" sam-match)
-   ("C-v" consult-yank-from-kill-ring)))
+   ("C-v" sam-yank-from-kill-ring)))
 
 (skey-define-keys
  '(evim-visual-mode-map)
  `(
+   ("(" ,(sam-make-region-wrapper "(" ")"))
+   ("{" ,(sam-make-region-wrapper "{" "}"))
+   ("[" ,(sam-make-region-wrapper "[" "]"))
    ("<return>" sam-pushb-or-embark)
    ("<C-m>" sam-match)
+   ("s" nil)
+   ("s f" ctrlf-forward-default)
+   ("s b" ctrlf-backward-default)
    ("r" anzu-query-replace-regexp)))
 
 (skey-define-keys
@@ -492,8 +525,11 @@
    ("C-/" comment-dwim)
    ;;  "\\"   #'avy-goto-word-or-subword-1
    ("\""  consult-register)
+
+   ("%" sam-match)
+
    ("*" consult-line-symbol-at-point)
- 
+   
    ("+" goto-line)
 
    (";" execute-extended-command)
@@ -518,19 +554,8 @@
    ;;  "C-h"  help-map
    ;;  "M-h" #'back-to-indentation
 
-   ("C-i" gumshoe-peruse-in-buffer)
-   ;; ("M-i" gumshoe-peruse-in-persp)
-   ("C-M-i" gumshoe-peruse-globally)
-   ;;  "C-i" #'gumshoe-buf-backtrack-forward
-   ;;  "M-i" #'gumshoe-persp-backtrack-forward
-   ;;  "C-M-i" #'gumshoe-backtrack-forward
-   ;;  "C-S-i" #'gumshoe-peruse-in-buffer
-   ;;  "M-S-i" #'gumshoe-peruse-in-persp
-   ;;  "C-M-S-i" #'gumshoe-peruse-globally
-
    ("j" next-line)
    ("C-j" sam-scroll-page-up)
-   ("J"  sam-scroll-up-command)
    ;; ("M-j" sam-next-line-start)
    ("M-j" scroll-up-line)
    ;; ("C-j" scroll-up-line)
@@ -540,7 +565,6 @@
 
    ("k" previous-line)
    ("C-k" sam-scroll-page-down)
-   ("K"  sam-scroll-down-command)
    ;; ("M-k" sam-previous-line-start)
    ("M-k" scroll-down-line)
    ;; ("C-k" scroll-down-line)
@@ -550,20 +574,19 @@
    ;; ("C-M-k" holymotion-previous-visual-line)
 
    ("m" point-to-register)
-   ("<C-m>" sam-match)
+
+   ("<C-m>" bookmark-map)
 
    ;;  "C-n" #'evil-paste-pop-next
    ("n"  consult-line-repeat)
 
-   ;;  "A-o" #'sam-open-between
-   ("C-o" gumshoe-buf-backtrack)
-   ;; ("M-o" gumshoe-persp-backtrack)
-   ("C-M-o" gumshoe-backtrack-back)
-   ;;  "C-S-o" #'gumshoe-peruse-in-buffer
-   ;;  "M-S-o" #'gumshoe-peruse-in-persp
-   ;;  "C-M-S-o" #'gumshoe-peruse-globally
+   ("o" nil)
+   ("o o" sam-open)
+   ("o j" evim-open-line-below)
+   ("o k" evim-open-line-above)
 
    ("C-p" ,perspective-map)
+   ("M-p" sam-yank-from-kill-ring)
 
    ;;  "C-r" #'iedit-mode
    ("M-r" anzu-query-replace-regexp)
@@ -589,17 +612,12 @@
    ("X"  delete-pair)
    ))
 
-;; (general-define-key
-;;  :states 'visual
-;;  :keymaps root-modes
-;;  "d" #'kill-region
-;;  "y" #'copy-region-as-kill)
-
-;; (general-define-key
-;;  :states 'insert
-;;  :keymaps '(shell-mode-map)
-;;  "<tab>" #'completion-at-point)
-
+(skey-define-keys
+ '(evim-normal-mode-map evim-visual-mode-map)
+ `(
+   ("J"  sam-scroll-up-command)
+   ("K"  sam-scroll-down-command)
+   ))
 ;; (general-define-key
 ;;  :states 'normal
 ;;  :keymaps '(custom-mode-map Custom-mode-map)
@@ -681,10 +699,12 @@
 ;;  "C-j" (my/embark-split-action find-file windmove-display-down)
 ;;  "C-k" (my/embark-split-action find-file windmove-display-up)
 ;;  "C-l" (my/embark-split-action find-file windmove-display-right))
-;; (general-define-key
-;;  :keymaps 'embark-symbol-map
-;;  "RET" #'helpful-at-point
-;;  "<C-return>" #'xref-find-definitions)
+(skey-define-keys
+ '(embark-symbol-map)
+ `(("<return>" helpful-at-point)
+   ;; ("<C-return>" #'xref-find-definitions)
+   ("C-<return>" embark-find-definition)
+   ))
 
 ;; (with-eval-after-load 'debug
 ;;   (general-define-key
@@ -709,20 +729,20 @@
 ;;  :keymaps 'outline-mode-map
 ;;  "C-;" #'eval-expression)
 
-;; (general-define-key
-;;  :states 'normal
-;;  :keymaps '(Info-mode-map)
-;;  "C-n" #'Info-forward-node
-;;  "C-p" #'Info-backward-node
-;;  "C-h" #'Info-history-back
-;;  "C-j" #'evil-scroll-line-down
-;;  "C-k" #'evil-scroll-line-up
-;;  "C-l" #'Info-history-forward
-;;  "M-h" #'Info-prev
-;;  "M-k" #'Info-up
-;;  "M-l" #'Info-next
-;;  "M-w" #'Info-next-reference
-;;  "M-b" #'Info-prev-reference)
+(skey-define-keys
+ '(evim-normal-Info-mode-map)
+ `(
+   ("<return>" Info-follow-nearest-node)
+   ("C-n" Info-forward-node)
+   ("C-p" Info-backward-node)
+   ("C-h" Info-history-back)
+   ("C-l" Info-history-forward)
+   ("M-h" Info-prev)
+   ("M-k" Info-up)
+   ("M-l" Info-next)
+   ("M-w" Info-next-reference)
+   ("M-b" Info-prev-reference)
+   ))
 
 ;; ;;; lang bindings
 ;; ;;(require 'evil-easymotion)
@@ -774,14 +794,17 @@
 ;;  "M-SPC" +command-mode-map
 ;;  "C-l" #'completion-at-point)
 
-;; (general-define-key
-;;  :states 'normal
-;;  :keymaps 'clojure-mode-map
-;;  :prefix "C-e"
-;;  ""   nil
-;;  "C-e" #'cider-eval-sexp-at-point
-;;  "C-f" #'cider-eval-file
-;;  "C-b" #'cider-eval-buffer)
+(skey-define-keys
+ '(evim-normal-clojure-mode-map)
+ `(("<return>" cider-doc)
+   ("C-e C-e" cider-eval-sexp-at-point)
+   ("C-e C-f" cider-eval-file)
+   ("C-e C-b" cider-eval-buffer)))
+(skey-define-keys
+ '(cider-repl-mode-map)
+ `(
+   ("C-w" ,+window-map)
+   ))
 
 ;;; completion
 ;; (general-define-key
@@ -796,6 +819,22 @@
 ;;  :keymaps '(prog-mode-map org-mode-map markdown-mode-map)
 ;;  :states 'insert
 ;;  "`" (lambda () (interactive) (insert "`")))
+
+
+(skey-define-keys
+ '(evim-normal-mode-map)
+ `(
+   ("C-i" gumshoe-peruse-in-buffer)
+
+   ("M-i" gumshoe-peruse-in-persp)
+   ("C-M-i" gumshoe-peruse-globally)
+
+   ("C-o" gumshoe-buf-backtrack)
+
+   ;; ("C-M-o" gumshoe-backtrack-back)
+   ("M-o" gumshoe-persp-backtrack)
+
+   ))
 (skey-define-keys
  '(global-gumshoe-backtracking-mode-map)
  `(
@@ -808,28 +847,23 @@
    ("C-j" corfu-next)
    ("C-k" corfu-previous)
    ("C-l" corfu-complete)))
-;; (general-define-key
-;;  :keymaps 'tempel-map
-;;  :states 'insert
-;;  "<tab>" #'tempel-next
-;;  "<backtab>" #'tempel-previous)
 
 (skey-define-keys
  '(dired-mode-map)
  `(
-   ;; ("<tab>" dired-subtree-toggle)
    (";"   execute-extended-command)
-   ;; ("C-/" dired-narrow)
+   ("/" dired-narrow)
    ("C-b" ,+buffer-keymap)
    ("f" find-file)
    ("C-f" consult-line)
    ("C-l" dired-do-symlink)
+   ("<C-m>" bookmark-map)
    ("C-;" eval-expression)
    ("M-f" find-file)
-   ("h"   dired-up-directory)
+   ("h"   sam-dired-up-directory)
    ("j"   dired-next-line)
    ("k"   dired-previous-line)
-   ("l"   dired-find-file)
+   ("l"   dired-find-alternate-file)
    ("p"   sam-dired-yank-here)
    ("C-p" nil)
    ("C-p" ,perspective-map)
@@ -865,7 +899,7 @@
    ;; ("<tab>" evil-collection-term-send-tab)
    ;; ("C-l" evil-collection-term-send-tab)
    (";" execute-extended-command)
-   ("C-v" consult-yank-from-kill-ring)
+   ("C-v" sam-yank-from-kill-ring)
    ("C-b" ,+buffer-keymap)
    ("SPC" ,+command-mode-map)
    ("<tab>" (lambda () (interactive) (insert "\t")))
@@ -917,8 +951,8 @@
 ;;  :keymaps 'compilation-mode-map
 ;;  :states 'normal
 ;;  "<return>" #'compilation-display-error
-;;  "M-j" #'compilation-next-error
-;;  "M-k" #'compilation-previous-error)
+;;  "M-j" #'#'compilation-next-error
+;;  "M-k" compilation-previous-error)
 ;; (general-define-key
 ;;  :keymaps 'evil-magit
 ;;  ;; fix conflicts with private bindings
@@ -985,12 +1019,18 @@
 (skey-define-keys
  '(evim-normal-term-mode-map)
  `(
+   ("<prior>" sam-scroll-down-command)
+   ("<next>" sam-scroll-up-command)
    ("J" sam-scroll-up-command)
-   ("K" sam-scroll-down-command)))
+   ("K" sam-scroll-down-command)
+   ("M-!" shell-command)
+   ))
 
 (skey-define-keys
  '(evim-insert-term-mode-map)
  `(
+   ("<prior>" sam-scroll-down)
+   ("<next>" sam-scroll-up)
    ("C-v" (lambda ()
             (interactive)
             (term-send-raw-string (consult--read-from-kill-ring))))))
@@ -998,7 +1038,7 @@
 (skey-define-keys
  '(evim-insert-lisp-mode-map)
  `(
-   ("C-v" consult-yank-from-kill-ring)
+   ("C-v" sam-yank-from-kill-ring)
    ("M-j" sam-sexp-spawn-below)
    ("M-l" sam-sexp-eject-right)
    ("M-p" sam-sexp-reparent)))
@@ -1091,9 +1131,14 @@
 
 (skey-define-keys
  +minibuffer-maps
- `(("C-g"    abort-recursive-edit)
+ `(
+   ("C-g"    abort-recursive-edit)
    ("C-M-h"  ,help-map)
-   ("C-v"    consult-yank-from-kill-ring)
+   ("C-v" nil)
+   ("C-v C-d"    sam-replace-line-open-dir-path)
+   ("C-v C-f"    sam-replace-line-open-file-path)
+   ("C-v C-v"    sam-replace-line-from-kill-ring)
+   ("C-v C-b"    sam-bookmark-replace-line-location)
    ("M-v"    sam-insert-path)
    ("C-a"    beginning-of-line)
    ("C-e"    end-of-line)
@@ -1115,68 +1160,21 @@
    ("M-n" next-line-or-history-element)
    ("M-p" previous-line-or-history-element)))
 
-;; (defvar +minibuffer-completion-maps
-;;   '(ivy-minibuffer-map vertico-map selectrum-minibuffer-map minibuffer-local-completion-map minibuffer-local-must-match-map)
-;;   "A list of all the keymaps used for minibuffer completion.")
-;; (general-define-key
-;;  :keymaps +minibuffer-completion-maps
-;;  "<tab>" #'minibuffer-complete
-;;  "<home>" help-map
-;;  "<C-space>" +command-mode-map
-;;  "<C-return>" #'embark-act
-;;  "C-v" #'yank
-;;  "C-a" #'beginning-of-line
-;;  "C-e" #'end-of-line
-;;  "C-f" #'forward-char
-;;  "C-b" #'backward-char
-;;  "C-g" #'abort-recursive-edit
-;;  "C-h" #'backward-delete-char-untabify
-;;  "M-h" #'sp-backward-delete-symbol
-;;  "C-M-h" #'kill-whole-line
-;;  "M-w" #'forward-word
-;;  "M-b" #'backward-word
-;;  "C-j" #'next-line
-;;  "C-k" #'previous-line)
-;; (general-define-key
-;;  :keymaps 'flyspell-mouse-map
-;;  "<return>" #'flyspell-correct-at-point)
-;; (general-define-key
-;;  :keymaps 'popup-menu-keymap
-;;  "<return>" #'popup-select)
-;; (general-define-key
-;;  :keymaps 'selectrum-minibuffer-map
-;;  "<home>" help-map
-;;  "<tab>" #'selectrum-insert-current-candidate
-;;  "C-l"   #'selectrum-insert-current-candidate)
-(skey-define-keys
- '(vertico-map)
- `(
-   ("<home>" ,help-map)
-   ("C-r" sam-minibuffer-history)
-   ("C-p" previous-history-element)
-   ("C-n" next-history-element)
-   ("<tab>" vertico-insert)
-   ("C-l"   vertico-insert)
-   ))
+(with-eval-after-load 'vertico
+  (skey-define-keys
+   '(vertico-map)
+   `(
+     ("C-l" vertico-insert))))
 
-
-;; (general-define-key
-;;  :states 'normal
-;;  :keymaps '(help-mode-map helpful-mode-map)
-;;  "q" #'quit-window
-;;  "M-b" #'backward-button
-;;  "M-w" #'forward-button)
-
-;; (general-define-key
-;;  :states '(insert visual)
-;;  :keymaps '(global prog-mode-map)
-;;  "<C-[>" #'evil-force-normal-state)
-
-;; (general-define-key
-;;  :keymaps 'emacs-lisp-mode-map
-;;  :states '(insert)
-;;  "C-l" #'completion-at-point
-;;  "M-l" #'tempel-complete)
+(with-eval-after-load 'icomplete
+  (skey-define-keys
+   '(icomplete-vertical-mode-minibuffer-map)
+   `(
+     ("<return>" icomplete-force-complete-and-exit)
+     ("C-l" icomplete-force-complete)
+     ("C-j" icomplete-forward-completions)
+     ("C-k" icomplete-backward-completions)
+     )))
 
 (skey-define-keys
  '(embark-file-map)
@@ -1187,7 +1185,8 @@
 (skey-define-keys
  +all-maps
  `(
-   ("M-;" shelldon)
+   ("M-;" shelldon-kill-output)
+   ("M-:" shelldon-async)
    ("C-;" eval-expression)
    ("C-w" nil)
    ("C-w" ,+window-map)))

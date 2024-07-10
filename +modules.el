@@ -44,6 +44,48 @@
                       ;;                       :build (:not compile)
                       ))
 
+(when t
+  (setf gumshoe-slot-schema '(time perspective buffer position line))
+  (setf gumshoe-footprint-strategy 'delete-overlapping)
+  (add-to-list 'load-path "~/src/gumshoe")
+  (load "~/src/gumshoe/gumshoe.el")
+  (global-gumshoe-mode +1)
+  )
+
+;; (use-package gumshoe
+;;   :straight (gumshoe :type git
+;;                      :host github
+;;                      :repo "Overdr0ne/gumshoe"
+;;                      :branch "master"
+;;                      ;; :branch "feature/footprint-strategy"
+;;                      )
+;;   :init
+;;   (setf gumshoe-slot-schema '(time perspective buffer position line))
+;;   ;; (add-to-list 'load-path "~/src/gumshoe")
+;;   ;; (load "~/src/gumshoe/gumshoe.el")
+;;   (global-gumshoe-mode +1)
+;;   ;;  (global-gumshoe-persp-mode 1)
+;;   ;; (setf gumshoe-slot-schema '(time perspective buffer position line))
+;;   ;; (advice-add #'gumshoe-peruse-globally :around
+;;   ;;              (lambda (old-fn)
+;;   ;;                (let ((selectrum-should-sort nil))
+;;   ;;                  (funcall old-fn))))
+;;   ;; (advice-add #'gumshoe-peruse-in-persp :around
+;;   ;;              (lambda (old-fn)
+;;   ;;                (let ((selectrum-should-sort nil))
+;;   ;;                  (funcall old-fn))))
+;;   ;; (advice-add #'gumshoe-peruse-in-buffer :around
+;;   ;;              (lambda (old-fn)
+;;   ;;                (let ((selectrum-should-sort nil))
+;;   ;;                  (funcall old-fn))))
+;;   )
+
+(use-package subword
+  :straight (subword :type built-in)
+  :hook ((python-mode) . subword-mode))
+
+(use-package aggressive-indent-mode)
+
 (use-package frame
   :straight (frame :type built-in)
   :init
@@ -187,9 +229,29 @@
   :config
   (add-to-list 'auto-mode-alist '("\\.env\\'" . sh-mode)))
 
+(use-package simple
+  :straight (simple :type built-in)
+  :config
+  (setf kill-ring-max 1000)
+  ;; :config
+  ;; (add-to-list 'auto-mode-alist '("\\.Shell Command\\'" . text-mode))
+  ;; (add-to-list 'auto-mode-alist '("\\.Async Shell Command\\'" . text-mode))
+  )
+
+(use-package view
+  :straight (view :type built-in)
+  ;; :config
+  ;; (add-to-list 'auto-mode-alist '("\\.Shell Command\\'" . view-mode))
+  ;; (add-to-list 'auto-mode-alist '("\\.Async Shell Command\\'" . view-mode))
+  )
+
+(use-package logview)
+
 (use-package term
   :straight (term :type built-in)
   :config
+  (defmacro term-pager-enabled () nil)
+  (setq term-pager-count nil)
   ;; (setq term-suppress-hard-newline t)
   ;; (defun term--unwrap-visible-long-lines (width) nil)
   )
@@ -197,6 +259,7 @@
 (use-package project
   :straight (project :type built-in)
   :config
+  (setq project-vc-merge-submodules nil)
   (setq project-switch-commands
         '((find-file "Find file" ?f)
           (project-find-regexp "Find regexp")
@@ -225,15 +288,18 @@
   (savehist-mode +1)
   ;; (add-to-list 'savehist-additional-variables
   ;;              'projectile-relevant-known-projects)
+  ;; (setq savehist-additional-variables
+  ;;       (append savehist-additional-variables
+  ;;               '(kill-ring search-ring regexp-search-ring compile-history log-edit-comment-ring)))
   (setq savehist-additional-variables
-        (append savehist-additional-variables
-                '(kill-ring search-ring regexp-search-ring compile-history log-edit-comment-ring)))
+        '(search-ring regexp-search-ring compile-history log-edit-comment-ring))
   )
 
 (use-package cl-lib
   :straight (cl-lib :type built-in))
 
 (use-package transient
+  ;; :straight (transient :build (:not compile))
   ;;  :after (compat)
   )
 
@@ -248,26 +314,41 @@
   :init
   (winner-mode +1))
 
+;; (use-package icomplete
+;;   :init
+;;   (setf icomplete-show-matches-on-no-input t)
+;;   (setf icomplete-vertical-mode +1))
+
+(use-package minibuffer
+  :straight (minibuffer :type built-in)
+  :config
+  (setq completions-sort 'historical)
+  )
 (use-package vertico
   :straight (vertico
              :files ("*.el" "extensions/*.el"))
   :init
+  ;; (setf vertico-sort-function nil)
+  (setf vertico-sort-function 'vertico-sort-history-length-alpha)
   (vertico-mode +1)
   (vertico-mouse-mode +1)
-  :config
-  (vertico-multiform-mode +1)
+  (setf completion-ignored-extensions nil)
+  ;; :config
+  ;; (vertico-multiform-mode +1)
 
   ;; Configure the display per command.
   ;; Use a buffer with indices for imenu
   ;; and a flat (Ido-like) menu for M-x.
-  (setq vertico-multiform-commands
-        '((shelldon-output-history (vertico-sort-function . nil))
-          ;; (gumshoe-peruse-globally (vertico-sort-function . nil))
-          ;; (gumshoe-peruse-in-buffer (vertico-sort-function . nil))
-          ;; (gumshoe-peruse-in-window (vertico-sort-function . nil))
-          ;; (consult-imenu buffer indexed)
-          ;; (persp-switch-to-buffer* (vertico-sort-function . vertico-sort-history-alpha))
-          ))
+  ;; (setq vertico-multiform-commands
+  ;;       '((shelldon-output-history (vertico-sort-function . nil))
+  ;;         ;; (gumshoe-peruse-globally (vertico-sort-function . nil))
+  ;;         ;; (gumshoe-peruse-in-buffer (vertico-sort-function . nil))
+  ;;         ;; (gumshoe-peruse-in-window (vertico-sort-function . nil))
+  ;;         ;; (consult-imenu buffer indexed)
+  ;;         ;; (persp-switch-to-buffer* (vertico-sort-function . vertico-sort-history-alpha))
+  ;;         ))
+
+  ;; (advice-add #'vertico--sort-function :before-until #'completion-category-sort-function)
 
   ;; (setq vertico-multiform-categories
   ;;       '(
@@ -329,7 +410,25 @@
                      #'consult-completion-in-region
                    #'completion--in-region)
                  args)))
+
+
+  (defvar consult--source-perspective-buffer
+    `( :name     "Project Buffer"
+       :narrow   ?b
+       :category buffer
+       :face     consult-buffer
+       :history  buffer-name-history
+       :state    ,#'consult--buffer-state
+       :enabled  ,(lambda () consult-project-function)
+       :items
+       ,(lambda ()
+          (when-let (root (consult--project-root))
+            (consult--buffer-query :sort 'visibility
+                                   :directory root
+                                   :as #'buffer-name))))
+    "Project buffer candidate source for `consult-buffer'.")
   )
+(use-package consult-dir)
 
 (use-package marginalia
   :init
@@ -432,11 +531,15 @@
 (use-package git-modes)
 
 (use-package magit
+  ;; :straight (magit :build (:not compile))
+  :after transient
   :config
   (add-to-list 'exec-path "/usr/lib/git-core")
   (transient-replace-suffix 'magit-commit 'magit-commit-autofixup
     '("x" "Absorb changes" magit-commit-absorb))
-  (setf magit-buffer-log-args '("-n256" "--color" "--decorate" "--graph"))
+  (setq-default magit-buffer-log-args '("-n256" "--color" "--decorate" "--graph"))
+  (put 'magit-log-mode 'magit-log-default-arguments
+     magit-buffer-log-args)
   (defun dm/change-commit-author (arg)
     "Change the commit author during an interactive rebase in Magit.
 With a prefix argument, insert a new change commit author command
@@ -509,14 +612,13 @@ on the current line, if any."
 
 ;;(use-package multiple-cursors)
 ;;
-;;(use-package cider)
-
 ;;(use-package w3m)
 
 (use-package perspective
   :init
   (setq persp-suppress-no-prefix-key-warning t)
   (setq persp-show-modestring nil)
+  (add-hook 'persp-mode-hook (lambda () (setq read-buffer-function nil)))
   (persp-mode +1)
   )
 
@@ -558,8 +660,13 @@ on the current line, if any."
 
 ;; (use-package lispy)
 
-;; (use-package clojure-mode)
+(use-package clojure-mode)
+(use-package cider)
 ;; (use-package elein)
+
+(use-package ein)
+
+(use-package notifications)
 
 ;; (use-package systemd)
 
@@ -575,12 +682,12 @@ on the current line, if any."
   :config
   (add-hook 'dired-mode-hook 'all-the-icons-dired-mode)
   (setq all-the-icons-dired-monochrome nil))
+(use-package dired-narrow)
 ;;(use-package dired-du)
 ;;(use-package dired-subtree
 ;;  :config
 ;;  (setf dired-subtree-use-backgrounds nil))
 ;;(use-package dired-filter)
-;;(use-package dired-narrow)
 
 (use-package highlight)
 (use-package highlight-defined
@@ -729,12 +836,18 @@ on the current line, if any."
   ;;                (slot . 0)
   ;;                (window-height . (lambda (win) (sit-for 1) (fit-window-to-buffer win 20)))
   ;;                ))
+  (defun shelldon-fit-window-to-buffer (&optional window max-height min-height max-width min-width preserve-size)
+    (message "sam")
+    (set-window-point win 0)
+    (fit-window-to-buffer win 20))
+ 
   (add-to-list 'display-buffer-alist
                '("*shelldon:"
                  (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-in-side-window display-buffer-pop-up-window)
-                 (side . left)
+                 (side . bottom)
                  (slot . 0)
                  (window-width . 80)
+                 (window-height . fit-window-to-buffer)
                  ))
   )
 
@@ -812,18 +925,16 @@ on the current line, if any."
 ;;                     :host github
 ;;                     :repo "Overdr0ne/scel"
 ;;                     :branch "main"))
+;; (use-package sclang)
 ;; (setq sclang-help-path '("/home/sam/.local/share/SuperCollider/Help"))
 ;; (use-package sclang-extensions)
 ;; (use-package sclang-snippets)
 
 ;; (use-package haskell-mode)
 
-(progn
-  (setf gumshoe-slot-schema '(time perspective buffer position line))
-  (add-to-list 'load-path "~/src/gumshoe")
-  (load "~/src/gumshoe/gumshoe.el")
-  (global-gumshoe-mode +1)
+(use-package treepy)
 
+(progn
   (add-to-list 'load-path "~/src/completionist")
   (load "~/src/completionist/completionist.el")
   (load "~/src/completionist/extensions/completionist-flat.el")
@@ -875,35 +986,18 @@ on the current line, if any."
     )
   (add-hook 'persp-created-hook #'completionist-persp-switch-unfocused))
 
-;; (use-package gumshoe
-;;   :straight (gumshoe :type git
-;;                      :host github
-;;                      :repo "Overdr0ne/gumshoe"
-;;                      :branch "master")
-;;   :init
-;;   ;;  (global-gumshoe-persp-mode 1)
-;;   (setf gumshoe-slot-schema '(time perspective buffer position line))
-;;   (advice-add #'gumshoe-peruse-globally :around
-;;                (lambda (old-fn)
-;;                  (let ((selectrum-should-sort nil))
-;;                    (funcall old-fn))))
-;;   (advice-add #'gumshoe-peruse-in-persp :around
-;;                (lambda (old-fn)
-;;                  (let ((selectrum-should-sort nil))
-;;                    (funcall old-fn))))
-;;   (advice-add #'gumshoe-peruse-in-buffer :around
-;;                (lambda (old-fn)
-;;                  (let ((selectrum-should-sort nil))
-;;                    (funcall old-fn))))
-;;   )
-
-(use-package embark-consult
-  :hook
-  (embark-collect-mode . consult-preview-at-point-mode))
+;; (use-package embark-consult
+;;   :hook
+;;   (embark-collect-mode . consult-preview-at-point-mode))
 
 (use-package embark
   :config
-  (setq embark-prompter 'embark-completing-read-prompter)
+  ;; (setq embark-prompter 'embark-completing-read-prompter)
+  (setq embark-prompter 'embark-keymap-prompter)
+  (setq embark-verbose-indicator-display-action
+        '((display-buffer-in-side-window)
+          (side . bottom)))
+  (add-hook 'embark-collect-mode-hook #'consult-preview-at-point-mode)
   (add-to-list 'display-buffer-alist
                '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
                  nil
@@ -1085,9 +1179,9 @@ on the current line, if any."
   ;; :config
   ;; (setq eglot-withhold-process-id "1")
   ;; (with-eval-after-load 'eglot
-    ;; (add-to-list 'eglot-server-programs `(c-mode .     ("~sam/workspaces/legend/hepafilter700/Docker/" "metio/devcontainers-nodejs" "c-language-server --stdio"))))
+  ;; (add-to-list 'eglot-server-programs `(c-mode .     ("~sam/workspaces/legend/hepafilter700/Docker/" "metio/devcontainers-nodejs" "c-language-server --stdio"))))
   :straight (eglot :type built-in
-                      ))
+                   ))
 
 ;; (use-package scel)
 
@@ -1100,6 +1194,12 @@ on the current line, if any."
 (use-package vundo)
 
 (use-package swift-mode)
+
+(use-package kotlin-mode)
+;; (use-package kotlin-ts-mode)
+
+(use-package hierarchy
+  :straight (hierarchy :type built-in))
 
 (provide '+modules)
 ;;; +modules.el ends here
