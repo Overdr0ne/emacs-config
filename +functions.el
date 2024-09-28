@@ -24,30 +24,12 @@
 
 ;;; Code:
 
-(defun empire/haskell/module->test ()
-  "Jump from a module to a test."
-  (let ((filename (->> buffer-file-name
-                       (s-replace "/src/" "/test/")
-                       (s-replace ".hs" "Test.hs")
-                       find-file)))
-    (make-directory (f-dirname filename) t)
-    (find-file filename)))
+(require 'firmware)
 
-(defun empire/haskell/test->module ()
-  "Jump from a test to a module."
-  (let ((filename (->> buffer-file-name
-                       (s-replace "/test/" "/src/")
-                       (s-replace "Test.hs" ".hs")
-                       )))
-    (make-directory (f-dirname filename) t)
-    (find-file filename)))
-
-(defun empire/haskell/test<->module ()
-  "Toggle between test and module in Haskell."
-  (interactive)
-  (if (s-contains? "/src/" buffer-file-name)
-      (empire/haskell/module->test)
-    (empire/haskell/test->module)))
+(defun sam-eval-expression (exp)
+  (interactive (list
+                (completing-read "Eval: " read-expression-history nil nil nil 'read-expression-history)))
+  (eval-expression (read exp)))
 
 (defun sam-eval-this-sexp ()
   (interactive)
@@ -148,16 +130,6 @@ current buffer directory."
     (not (or (string-match-p "*" buff-name)
              (member buff-mode '(neotree-mode dired-mode))))))
 
-(defun wpc/find-or-create-clojure-or-clojurescript-repl ()
-  (interactive)
-  (require 'projectile)
-  (with-current-buffer (current-buffer)
-    (let ((buffer-name   (wpc/buffer-name-for-clojure-mode major-mode))
-          (repl-function (wpc/repl-function-for-clojure-mode major-mode)))
-      (if (get-buffer buffer-name)
-          (switch-to-buffer buffer-name)
-        (funcall repl-function)))))
-
 (defun sam-move-line-down ()
   (interactive)
   (let ((col (current-column)))
@@ -223,16 +195,6 @@ current buffer directory."
         (replace-string str-orig str-replace nil (point) (mark))
       (replace-string str-orig str-replace nil (point-min) (point-max)))))
 
-;; (defvar-local hs-hidden-p nil)
-;; (defun hs-toggle-level ()
-;;   (interactive)
-;;   (if hs-hidden-p
-;;       (progn
-;;         (hs-show-all)
-;;         (setq-local hs-hidden-p nil))
-;;     (progn
-;;       (hs-hide-level 1)
-;;       (setq-local hs-hidden-p t))))
 (defun hs-toggle-block ()
   (interactive)
   (if (hs-already-hidden-p)
@@ -490,19 +452,6 @@ Version 2017-07-02"
   (interactive)
   (copy-file (ring-ref sam-file-ring 0) (read-file-name "Target: ")))
 
-(defun sam-create-project (dir)
-  "Create projectile project in DIR and spawn perspective."
-  (interactive "Ddir: ")
-  (require 'perspective)
-  (require 'projectile)
-  (message dir)
-  (projectile-add-known-project dir)
-  (message (projectile-project-name dir))
-  (persp-switch (projectile-project-name dir))
-  (projectile-switch-project-by-name dir)
-  (find-file dir)
-  (f-touch ".projectile"))
-
 (defun sam-create-persp-dir (dir)
   "Create perspective in DIR."
   (interactive "Ddir: ")
@@ -619,139 +568,6 @@ If DIRECTORY already exists, signal an error."
     (get-buffer-create new)
     (set-buffer-modified-p nil)))
 
-(defvar-local sam-wic-src-dir "~/")
-(defvar-local sam-wic-src-file "")
-(defvar-local sam-wic-tar-dir "/dev/")
-(defvar-local sam-wic-tar-file "mmcblk0")
-(defun sam-flash-wic ()
-  "Flash IMAGE to DEVICE."
-  (interactive)
-  (let* ((image (read-file-name "Image: " sam-wic-src-dir nil nil sam-wic-src-file))
-	       (device (read-file-name "Device: " sam-wic-tar-dir nil nil sam-wic-tar-file))
-         default-directory)
-    (setq image (expand-file-name image))
-    (cd "/sudo::/")
-    (shell-command (concat "umount " device "*"))
-    (shell-command (concat "bmaptool copy " image " " device " && sync"))))
-(defun sam-dd-wic ()
-  "Flash IMAGE to DEVICE."
-  (interactive)
-  (let* ((image (read-file-name "Image: " sam-wic-src-dir nil nil sam-wic-src-file))
-	       (device (read-file-name "Device: " sam-wic-tar-dir nil nil sam-wic-tar-file))
-         default-directory)
-    (setq image (expand-file-name image))
-    (cd "/sudo::/")
-    (shell-command (concat "umount " device "*"))
-    (async-shell-command (concat "dd status=progress if=" image " of=" device " && umount " device "* && sync"))
-    ))
-
-(defun sam-cp-image ()
-  "Flash IMAGE to DEVICE."
-  (interactive)
-  (let* ((image (read-file-name "Image: " sam-wic-src-dir nil nil sam-wic-src-file))
-	       (device (read-file-name "Device: " sam-wic-tar-dir nil nil sam-wic-tar-file))
-         default-directory)
-    (setq image (expand-file-name image))
-    (cd "/sudo::/")
-    (shell-command (concat "umount " device "*"))
-    (shell-command (concat "wipefs -a " device "*"))
-    (async-shell-command (concat "cp " image " " device " && umount " device "* ; sync"))
-    ))
-
-(defun sam-rsync-wic ()
-  "Flash IMAGE to DEVICE."
-  (interactive)
-  (let* ((image (read-file-name "Image: " sam-wic-src-dir nil nil sam-wic-src-file))
-	       (device (read-file-name "Device: " sam-wic-tar-dir nil nil sam-wic-tar-file))
-         default-directory)
-    (setq image (expand-file-name image))
-    (cd "/sudo::/")
-    (shell-command (concat "umount " device "*"))
-    (async-shell-command (concat "rsync --progress " image " " device " && umount " device "* ; sync"))
-    ))
-
-(defun sam-flash-ext4 ()
-  "Flash IMAGE to DEVICE."
-  (interactive)
-  (with-temp-buffer
-    (let* ((image (read-file-name "Image: "))
-	         (device (read-file-name "Device: " "/dev/" nil nil "sd")))
-      (setq image (expand-file-name image))
-      (cd "/sudo::/")
-      (shell-command (concat "umount " device "*"))
-      (async-shell-command (concat "bmaptool copy " image " " device)))))
-
-(defvar-local sam-sdcard-src-dir "~/")
-(defvar-local sam-sdcard-src-file "")
-(defvar-local sam-sdcard-tar-dir "/dev/")
-(defvar-local sam-sdcard-tar-file "mmcblk0")
-(defun sam-flash-sdcard ()
-  (interactive)
-  (let* ((src (read-file-name "Image: " sam-sdcard-src-dir nil nil sam-sdcard-src-file))
-         (tar (read-file-name "Device: " sam-sdcard-tar-dir nil nil sam-sdcard-tar-file))
-         default-directory)
-    (setq src (expand-file-name src))
-    (cd "/sudo::/")
-    (shell-command (concat "umount " tar "*"))
-    ;; (shell-command (concat "cp -v " src " " tar))
-    (shell-command (concat "dd if=" src " of=" tar))
-    (shell-command "sync")
-    (shell-command (concat "umount " tar "*"))
-    (message "Flash complete!")
-    ))
-
-(defvar-local sam-dfu-image-dir "~/")
-(defvar-local sam-dfu-fit-image "")
-(defvar-local sam-machine "")
-(defun sam-dfu-update ()
-  (interactive)
-  (let* (
-         (boot-image (string-join `(,sam-dfu-image-dir ,sam-machine ,sam-dfu-fit-image) "/"))
-         (linux-image (expand-file-name (read-file-name "Linux Fit Image: " (concat sam-dfu-image-dir "/" sam-machine "/") nil nil sam-linux-fit-image)))
-         (image-dir (expand-file-name (file-name-directory boot-image)))
-         (tfa-file (concat image-dir "/trusted-firmware-a/tf-a.stm32"))
-         (fip-file (concat image-dir "/trusted-firmware-a/fip.bin"))
-         (max-mini-window-height 1)
-         default-directory)
-    (cd (concat "/sudo::/" image-dir))
-    (async-shell-command (concat "dfu-util -a 1 -D " tfa-file " && "
-                                 "dfu-util -a 0 -D " boot-image " && "
-                                 "dfu-util -a 3 -D " fip-file " && "
-                                 "dfu-util -a 0 -e && echo \"Updater started\" && "
-                                 "sleep 1 && "
-                                 "dfu-util -a 0 -D " linux-image " && dfu-util -a 0 -e && "
-                                 "echo \"Update complete\""
-                                 ))
-    ))
-
-(defun sam-dfu-start-updater ()
-  (interactive)
-  (let* (
-         (boot-image (string-join `(,sam-dfu-image-dir ,sam-machine ,sam-dfu-fit-image) "/"))
-         (image-dir (expand-file-name (file-name-directory boot-image)))
-         (tfa-file (concat image-dir "/trusted-firmware-a/tf-a.stm32"))
-         (fip-file (concat image-dir "/trusted-firmware-a/fip.bin"))
-         (max-mini-window-height 1)
-         default-directory)
-    (cd (concat "/sudo::/" image-dir))
-    (async-shell-command (concat "dfu-util -a 1 -D " tfa-file " && "
-                                 "dfu-util -a 0 -D " boot-image " && "
-                                 "dfu-util -a 3 -D " fip-file " && "
-                                 "dfu-util -a 0 -e && echo \" Complete\""
-                                 )) ))
-
-(defvar-local sam-linux-fit-image "")
-(defun sam-dfu-linux-update ()
-  (interactive)
-  (let* (
-         (linux-image (expand-file-name (read-file-name "Linux Fit Image: " (concat sam-dfu-image-dir "/" sam-machine "/") nil nil sam-linux-fit-image)))
-         (image-dir (expand-file-name (file-name-directory linux-image)))
-         (max-mini-window-height 1)
-         default-directory)
-    (cd (concat "/sudo::/" image-dir))
-    (async-shell-command (concat "dfu-util -a 0 -D " linux-image " && dfu-util -a 0 -e"))
-    ))
-
 (defun sam-find-file-here ()
   "Find file within current directory."
   (interactive)
@@ -858,38 +674,6 @@ use in that buffer.
          (complete-with-action action obarray string pred)))
      #'commandp t initial-input 'extended-command-history)))
 
-(defun sam-bitbake ()
-  "Read command with bitbake as prefix."
-  (interactive)
-  (let ((cmd (intern-soft (sam-read-extended-command "bitbake- "))))
-    (command-execute cmd 'record)))
-
-(defun sam-read-tsv ()
-  "Read a IMAGE in the minibuffer, with completion."
-  (read-file-name "TSV: "
-		              "."
-		              nil
-		              nil
-		              nil
-		              (lambda (filename) (or (string-match-p "tsv" filename)
-					                               (string-match-p "/" filename)))))
-(defun sam-stm32-program (tsv)
-  "Run stm32 programmer with TSV."
-  (interactive (list (sam-read-tsv)))
-  (let ((cmd "/home/sam/apps/stm32programmer/bin/STM32_Programmer_CLI")
-	      (port "usb1"))
-
-    (setq tsv (expand-file-name tsv))
-    ;; (cd "/sudo::/")
-    (message tsv)
-    (async-shell-command (concat "sudo "
-				                         cmd
-				                         " -c "
-				                         " port=" port
-				                         " -w "
-				                         tsv))
-    (cd default-directory)))
-
 (defun sam-pushb-or-embark (pos &optional event)
   "Invoke button at POS, or call embark-act."
   (interactive "@d")
@@ -958,46 +742,6 @@ See `embark-act' for the meaning of the prefix ARG."
                      (embark--quit-p action)))
     (user-error "No target found")))
 
-(defun sam-impinj-flash ()
-  (interactive)
-  (let ()
-    (shell-command "ssh impinj-rpi \"i2cset -f -y 1 0x18 2\"")
-    (shell-command "swpwrctl.sh 10.102.3.2 4 0")
-    (shell-command "swpwrctl.sh 10.102.3.2 4 1")
-    (shell-command "ssh impinj-rpi \"sudo /home/ubuntu/utils/imx_usb_loader/imx_usb /home/ubuntu/files/u-boot-dtb.imx\""))
-  )
-
-(defvar bitbake-deploy-dir "~/workspaces/")
-(defvar itb-target "/ssh:impinj-rpi:/tftpboot/")
-(defun sam-flash-itb ()
-  (interactive)
-  (let ((itb-path (read-file-name "itb: " (expand-file-name bitbake-deploy-dir) "" t nil
-				                          (lambda (filename) (string-match-p "\.itb" filename))))
-	      (rpi-tftpboot (expand-file-name itb-target)))
-    (copy-file itb-path rpi-tftpboot t)))
-
-(setq itb-target "ubuntu@10.102.3.1:/tftpboot")
-(defun sam-impinj-flash-itb ()
-  (interactive)
-  (let* ((itb-path (read-file-name "itb: " (expand-file-name bitbake-deploy-dir) "" t nil
-				                           (lambda (filename) (string-match-p "\.itb" filename))))
-	       (rpi-tftpboot itb-target)
-         (cmd (format "rsync -chazvP --progress --stats %s %s" itb-path rpi-tftpboot)))
-    (message cmd)
-    (shell-command cmd)))
-
-(defun sam-impinj-flash-imx ()
-  (interactive)
-  (let* ((src (read-file-name "imx: " (expand-file-name "~/workspaces/impinj/container/build/build/tmp/deploy/images/r700/u-boot-impinj/") "" t nil
-			                        (lambda (filename) (or (string-match-p "\.imx" filename)
-						                                         (string-match-p "/" filename)))))
-	       (tar "impinj-rpi:/home/ubuntu/files/sam/")
-         (cmd (format "rsync -chazvP --progress --stats %s %s" src tar)))
-    (message cmd)
-    (shell-command cmd)
-    ;; (copy-file src tar t)
-    ))
-
 (defun sam-rsync (src tar)
   (interactive "fSource: \nfTarget: ")
   (let* ((cmd (format "rsync -chazvP --progress --stats %s %s" src tar)))
@@ -1010,10 +754,6 @@ See `embark-act' for the meaning of the prefix ARG."
   (interactive (list (completing-read "Variable: " obarray)))
   (set (intern var-name) (not (eval (intern var-name))))
   (message "Variable %s set to %S." var-name (eval (intern var-name))))
-
-(defun sam-projectile-find-root ()
-  (interactive)
-  (find-file (projectile-project-root)))
 
 (defun sam-buffer-reload ()
   (interactive)
@@ -1062,6 +802,25 @@ See `embark-act' for the meaning of the prefix ARG."
                         nil 'file-name-history)))
     (find-file file)))
 
+(setq-default sam-root-dir "~/")
+(defun sam-find-file (filename)
+  "Open a file from the \"root\" directory."
+  (interactive (list
+                (read-file-name "File: " sam-root-dir)))
+  (find-file (expand-file-name filename)))
+(defun sam-find-note (filename)
+  (interactive (list
+                (let ((note-dir (expand-file-name (concat sam-root-dir "notes/"))))
+                  (when (not (f-exists-p note-dir)) (make-directory note-dir))
+                  (read-file-name "Note: " note-dir))))
+  (find-file (expand-file-name filename)))
+(defun sam-find-scratch (filename)
+  (interactive (list
+                (let ((note-dir (expand-file-name (concat sam-root-dir "scratch/"))))
+                  (when (not (f-exists-p note-dir)) (make-directory note-dir))
+                  (read-file-name "Scratch: " note-dir))))
+  (find-file (expand-file-name filename)))
+
 (setf project-switch-commands
       '((sam-project-find-file "Find file")
         (project-find-regexp "Find regexp")
@@ -1078,9 +837,11 @@ When called in a program, it will use the project corresponding
 to directory DIR."
   (interactive (list (project-prompt-project-dir)))
   (project-remember-project (project--find-in-directory dir))
-  (persp-switch (car (last (split-string (directory-file-name dir) "/"))))
   (let ((default-directory dir)
-        (project-current-inhibit-prompt t))
+        (project-current-inhibit-prompt t)
+        (project-persp-name (car (last (split-string (directory-file-name dir) "/")))))
+    (persp-switch project-persp-name)
+    (completionist--exhibit " *persps*")
     (magit-status))
   ;;   (let ((command (if (symbolp project-switch-commands)
   ;;                      project-switch-commands
@@ -1371,6 +1132,12 @@ target."
 (defun sam-delete-left-side-window ()
   (interactive)
   (sam-delete-side-window 'left))
+(defun sam-delete-top-side-window ()
+  (interactive)
+  (sam-delete-side-window 'top))
+(defun sam-delete-bottom-side-window ()
+  (interactive)
+  (sam-delete-side-window 'bottom))
 
 (defun sam-plist ()
   (split-string (shell-command-to-string "ps x -o comm=") "[\f\n]+" t))
@@ -1534,18 +1301,31 @@ minibuffer history list `bookmark-history'."
   (ignore-errors (kill-whole-line))
   (insert (bookmark-location bookmark-name)))
 
-(defun sam-insert-open-file-path (file-buffer)
-  "Insert the path to an active DIR-BUFFER."
-  (interactive (list
-                (read-buffer "File buffer: ")))
-  (insert (buffer-file-name (get-buffer file-buffer))))
+(defun sam-consult-read-file ()
+  (consult--read
+    (or
+     (mapcar #'consult--fast-abbreviate-file-name (bound-and-true-p recentf-list))
+     (user-error "No recent files, `recentf-mode' is %s"
+                 (if recentf-mode "enabled" "disabled")))
+    :prompt "Find recent file: "
+    :sort nil
+    :require-match t
+    :category 'file
+    :state (consult--file-preview)
+    :history 'file-name-history))
 
-(defun sam-replace-line-open-file-path (file-buffer)
+(defun sam-insert-file-path (path)
   "Insert the path to an active DIR-BUFFER."
   (interactive (list
-                (read-buffer "File buffer: ")))
+                (sam-consult-read-file)))
+  (insert path))
+
+(defun sam-replace-line-file-path (path)
+  "Insert the path to an active DIR-BUFFER."
+  (interactive (list
+                (sam-consult-read-file)))
   (ignore-errors (kill-whole-line))
-  (insert (buffer-file-name (get-buffer file-buffer))))
+  (insert path))
 
 (defun sam-insert-open-dir-path (dir-path)
   "Insert the path to an active DIR-BUFFER."
@@ -1553,12 +1333,38 @@ minibuffer history list `bookmark-history'."
                 (consult-dir--pick "In directory: ")))
   (insert dir-path))
 
+(defun +slurp (f)
+  (with-temp-buffer
+    (insert-file-contents f)
+    (buffer-substring-no-properties
+     (point-min)
+     (point-max))))
+
+(defun sam-zsh-history-to-list ()
+  (mapcar (lambda (str)
+            (nth 1 (split-string str ";")))
+          (split-string (+slurp "~/.zsh_history") "\n")))
+
+(defun sam-insert-zsh-command (cmd)
+  "Insert the path to an active DIR-BUFFER."
+  (interactive (list
+                (completing-read "Command: "
+                                 (sam-zsh-history-to-list))))
+  (insert cmd))
+
 (defun sam-replace-line-open-dir-path (dir-path)
   "Insert the path to an active DIR-BUFFER."
   (interactive (list
-               (consult-dir--pick "In directory: ")))
+                (consult-dir--pick "In directory: ")))
   (ignore-errors (kill-whole-line 0))
   (insert dir-path))
+
+(defun sam-file-directory ()
+  (file-name-directory buffer-file-name))
+
+(defun sam-cd-here ()
+  "Change default directory here."
+  (cd (sam-file-directory)))
 
 (defun sam-open (file)
   "Insert the path to an active DIR-BUFFER."
@@ -1636,27 +1442,27 @@ UPDATE function is passed to it."
                       ;; recursively acting on the candidates of type
                       ;; embark-keybinding in the `completing-read' prompter.
                       (define-key map cycle
-                        (cond
-                         ((eq (lookup-key keymap cycle) 'embark-cycle)
-                          (lambda ()
-                            (interactive)
-                            (throw 'choice 'embark-cycle)))
-                         ((null embark-cycle-key)
-                          (lambda ()
-                            (interactive)
-                            (minibuffer-message
-                             "No cycling possible; press `%s' again to act."
-                             (key-description cycle))
-                            (define-key map cycle #'embark-act))))))
+                                  (cond
+                                   ((eq (lookup-key keymap cycle) 'embark-cycle)
+                                    (lambda ()
+                                      (interactive)
+                                      (throw 'choice 'embark-cycle)))
+                                   ((null embark-cycle-key)
+                                    (lambda ()
+                                      (interactive)
+                                      (minibuffer-message
+                                       "No cycling possible; press `%s' again to act."
+                                       (key-description cycle))
+                                      (define-key map cycle #'embark-act))))))
                     (when embark-keymap-prompter-key
                       (keymap-set map embark-keymap-prompter-key
-                        (lambda ()
-                          (interactive)
-                          (message "Press key binding")
-                          (let ((cmd (embark-keymap-prompter keymap update)))
-                            (if (null cmd)
-                                (user-error "Unknown key")
-                              (throw 'choice cmd))))))
+                                  (lambda ()
+                                    (interactive)
+                                    (message "Press key binding")
+                                    (let ((cmd (embark-keymap-prompter keymap update)))
+                                      (if (null cmd)
+                                          (user-error "Unknown key")
+                                        (throw 'choice cmd))))))
                     (use-local-map
                      (make-composed-keymap map (current-local-map)))))
               (completing-read
