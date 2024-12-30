@@ -802,12 +802,20 @@ See `embark-act' for the meaning of the prefix ARG."
                         nil 'file-name-history)))
     (find-file file)))
 
-(setq-default sam-root-dir "~/")
-(defun sam-find-file (filename)
-  "Open a file from the \"root\" directory."
-  (interactive (list
-                (read-file-name "File: " sam-root-dir)))
-  (find-file (expand-file-name filename)))
+(setq-default sam-root-directory "~/")
+(setq-default sam-notes-directory "~/notes/")
+(setq sam-directory-variables
+      '(
+        default-directory
+        sam-root-directory
+        sam-notes-directory
+        ))
+;; SAMSAMSAM TODO!! create variable-based locations, like default-directory,
+;; and finders that jump to those locations
+(defun sam-find-file (dir-var)
+  "Look up the directory defined by DIR-VAR and jump to it."
+  (interactive (list (completing-read "Directory Symbol: " sam-directory-variables)))
+  (find-file (expand-file-name (symbol-value (intern dir-var)))))
 (defun sam-find-note (filename)
   (interactive (list
                 (let ((note-dir (expand-file-name (concat sam-root-dir "notes/"))))
@@ -1267,7 +1275,7 @@ PERSP-SET-IDO-BUFFERS)."
       (goto-char (+ end (length left)))
       (insert right))
     (if (= pos end) (forward-char 1))
-    (indent-region left (+ right 2))
+    (indent-region beg (+ end 2))
     (deactivate-mark)
     )
   (run-hooks 'wrap-region-after-wrap-hook))
@@ -1475,6 +1483,14 @@ UPDATE function is passed to it."
        (setq last-command-event (aref key (1- (length key))))
        cmd)
       ('nil (intern-soft choice)))))
+
+(defun daemons-user-start (name)
+  "Start the daemon NAME.  Show results in an output buffer."
+  (interactive (list
+                (let ((daemons-systemd-is-user t))
+                       (daemons--completing-read))))
+  (let ((daemons-systemd-is-user t))
+    (daemons--run-with-output-buffer 'start name)))
 
 (provide '+functions)
 ;;; +functions.el ends here

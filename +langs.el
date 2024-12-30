@@ -71,8 +71,10 @@
     (add-hook hook fun)))
 
 (dolist (hook '(bitbake-mode-hook))
-  (lambda ()
-    (setq-local tab-width 4)))
+  (add-hook hook
+   (lambda ()
+     (setq-local tab-width 4)))
+  )
 
 ;;; evim
 (dolist (hook '( diff-mode-hook text-mode-hook prog-mode-hook conf-mode-hook Info-mode-hook helpful-mode-hook bitbake-mode-hook extempore-mode-hook))

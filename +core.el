@@ -138,8 +138,12 @@
 
 (menu-bar-mode -1)
 
-(set-frame-parameter (selected-frame) 'alpha '(93 . 70))
+;; use what-cursor-position to determine font
+(setq sam-font
+      "-CTDB-FiraMono Nerd Font-bold-normal-normal-*-16-*-*-*-m-0-iso10646-1")
 (add-to-list 'default-frame-alist '(alpha . (93 . 70)))
+(add-to-list 'default-frame-alist `(font . ,sam-font))
+(set-frame-parameter (selected-frame) 'alpha '(93 . 70))
 
 (setq tags-add-tables nil)
 (setq large-file-warning-threshold nil)
@@ -149,6 +153,8 @@
 (turn-off-auto-fill)
 (auto-fill-mode -1)
 (setq overdr0ne-directory (concat user-emacs-directory "overdr0ne"))
+
+(global-auto-revert-mode +1)
 
 (setq browse-url-browser-function 'eww-browse-url)
 

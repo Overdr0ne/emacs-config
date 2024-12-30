@@ -77,8 +77,8 @@
    ("l" sam-find-note)
    ("C-l" sam-find-note)
    ("m" org-tags-view)
-   ("n" org-capture)
-   ("C-n" org-capture)
+   ("n" consult-notes)
+   ("C-n" consult-notes)
    ("v" org-search-view)
    ("C-t" org-todo-list)
    ))
@@ -339,7 +339,7 @@
 
    ("x"    +persp-pop-to-scratch)
 
-   ("y"    org-capture)
+   ("y"    consult-notes)
 
    ("zc" ((lambda () (interactive) (find-file "~/scratch/c/scratch.c")) :which-key "C"))
    ("zl" ((lambda () (interactive) (find-file "~/scratch/elisp/scratch.el")) :which-key "Elisp"))

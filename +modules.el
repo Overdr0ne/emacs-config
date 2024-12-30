@@ -53,7 +53,8 @@
 (when t
   (setf gumshoe-slot-schema '(time perspective buffer position line))
   (setf gumshoe-footprint-strategy 'delete-overlapping)
-  (setf gumshoe-backlog-type 'ring)
+  ;; (setf gumshoe-backlog-type 'ring)
+  (setf gumshoe-backlog-type 'tree)
   (add-to-list 'load-path "~/src/gumshoe")
   (load "~/src/gumshoe/gumshoe.el")
   (global-gumshoe-mode +1)
@@ -387,16 +388,27 @@
   ;; (setq consult-project-root-function #'projectile-project-root)
   (defalias #'consult-imenu-variables #'consult-imenu)
   (defalias #'consult-imenu-functions #'consult-imenu)
+  (defalias #'consult-imenu-commands #'consult-imenu)
   (defalias #'consult-imenu-macros #'consult-imenu)
   (defalias #'consult-imenu-packages #'consult-imenu)
   (defalias #'consult-imenu-types #'consult-imenu)
   ;; Configure initial narrowing per command
-  (defvar consult-initial-narrow-config
-    '((consult-imenu-functions . ?f)
-      (consult-imenu-variables . ?v)
-      (consult-imenu-packages . ?p)
-      (consult-imenu-types . ?t)
-      (consult-imenu-macros . ?m)))
+  (setq consult-imenu-config
+        '((emacs-lisp-mode :toplevel "Functions"
+                           :types ((?f "Functions" font-lock-function-name-face)
+                                   (?c "Commands"    font-lock-function-name-face)
+                                   (?m "Macros"    font-lock-function-name-face)
+                                   (?p "Packages"  font-lock-constant-face)
+                                   (?t "Types"     font-lock-type-face)
+                                   (?v "Variables" font-lock-variable-name-face))))
+        )
+  (setq consult-initial-narrow-config
+        '((consult-imenu-functions . ?f)
+          (consult-imenu-commands . ?c)
+          (consult-imenu-variables . ?v)
+          (consult-imenu-packages . ?p)
+          (consult-imenu-types . ?t)
+          (consult-imenu-macros . ?m)))
 
   ;; Add initial narrowing hook
   (defun consult-initial-narrow ()
@@ -435,12 +447,13 @@
 (use-package consult-dir)
 (use-package consult-notes
   :config
-  (setq consult-notes-file-dir-sources `(
-                                         ("big-bend" ?b "~/workspaces/big-bend/notes")
-                                         ("etc" ?e "~/workspaces/etc/notes")
-                                         ("overdr0ne" ?o "~/.emacs.d/overdr0ne/notes")
-                                         ("notes" ?n "~/notes")
-                                         )))
+  (setq-default consult-notes-file-dir-sources
+                `(
+                  ("big-bend" ?b "~/workspaces/big-bend/notes")
+                  ("etc" ?e "~/workspaces/etc/notes")
+                  ("overdr0ne" ?o "~/.emacs.d/overdr0ne/notes")
+                  ("notes" ?n "~/notes")
+                  )))
 
 (use-package marginalia
   :init
@@ -639,28 +652,28 @@ on the current line, if any."
 ;; (use-package bookmark+)
 
 (use-package system-packages
- :config
- (add-to-list 'system-packages-supported-package-managers
-              '(pacaur .
-                       ((default-sudo . nil)
-                        (install . "pacaur -S")
-                        (search . "pacaur -Ss")
-                        (uninstall . "pacaur -Rs")
-                        (update . "pacaur -Syu")
-                        (clean-cache . "pacaur -Sc")
-                        (log . "cat /var/log/pacman.log")
-                        (get-info . "pacaur -Qi")
-                        (get-info-remote . "pacaur -Si")
-                        (list-files-provided-by . "pacaur -Ql")
-                        (verify-all-packages . "pacaur -Qkk")
-                        (verify-all-dependencies . "pacaur -Dk")
-                        (remove-orphaned . "pacaur -Rns $(pacman -Qtdq)")
-                        (list-installed-packages . "pacaur -Qe")
-                        (list-installed-packages-all . "pacaur -Q")
-                        (list-dependencies-of . "pacaur -Qi")
-                        (noconfirm . "--noconfirm"))))
- (setq system-packages-use-sudo t)
- (setq system-packages-package-manager 'aptitude))
+  :config
+  (add-to-list 'system-packages-supported-package-managers
+               '(pacaur .
+                        ((default-sudo . nil)
+                         (install . "pacaur -S")
+                         (search . "pacaur -Ss")
+                         (uninstall . "pacaur -Rs")
+                         (update . "pacaur -Syu")
+                         (clean-cache . "pacaur -Sc")
+                         (log . "cat /var/log/pacman.log")
+                         (get-info . "pacaur -Qi")
+                         (get-info-remote . "pacaur -Si")
+                         (list-files-provided-by . "pacaur -Ql")
+                         (verify-all-packages . "pacaur -Qkk")
+                         (verify-all-dependencies . "pacaur -Dk")
+                         (remove-orphaned . "pacaur -Rns $(pacman -Qtdq)")
+                         (list-installed-packages . "pacaur -Qe")
+                         (list-installed-packages-all . "pacaur -Q")
+                         (list-dependencies-of . "pacaur -Qi")
+                         (noconfirm . "--noconfirm"))))
+  (setq system-packages-use-sudo t)
+  (setq system-packages-package-manager 'aptitude))
 
 ;; (use-package web-search)
 
@@ -729,7 +742,9 @@ on the current line, if any."
 
 ;; (use-package explain-pause-mode)
 
-;; (use-package daemons)
+(use-package daemons
+  :config
+  (setq daemons-systemd-color t))
 
 ;; (use-package pretty-mode
 ;;   :config
@@ -1092,11 +1107,11 @@ on the current line, if any."
   ;; (setf bitbake-build-directory "/home/sam/tmp/impinj/build")
   ;; (setf bitbake-poky-directory "/home/sam/workspaces/atlas/build/")
   ;; (setf bitbake-build-directory "/home/sam/workspaces/atlas/build")
-  )
+   )
 
-;; (use-package docker
-;;  :config
-;;  (setf docker-image-run-default-args '("-i" "-t" "--rm")))
+(use-package docker
+  :config
+  (setf docker-image-run-default-args '("-i" "-t" "--rm")))
 
 (use-package dockerfile-mode
   :config
@@ -1178,9 +1193,48 @@ on the current line, if any."
 
 ;; (use-package tempel
 ;;   :config
-;;   (add-to-list 'completion-at-point-functions #'tempel-expand)
+;;   ;; (add-to-list 'completion-at-point-functions #'tempel-expand)
 ;;   (setf tempel-path "~/.emacs.d/overdr0ne/template.el")
 ;;   )
+
+(use-package yasnippet
+  :config
+  (yas-global-mode +1)
+
+  (define-minor-mode sam/yas-insert-mode
+    "Transient mode for inserting yasnippets."
+    :keymap (let ((map (make-sparse-keymap)))
+              map))
+
+  (defun sam/yas-insert-snippet ()
+    (interactive)
+    (let* ((s)
+           (mm major-mode)
+           (action '((display-buffer-in-side-window)
+                     (preserve-size . t)
+                     (side . bottom)
+                     (slot . 0))))
+      (with-current-buffer (pop-to-buffer "yasnippet-term" action)
+        (funcall mm)
+        (sam/yas-insert-mode +1)
+        (call-interactively 'consult-yasnippet)
+        (recursive-edit)
+        (setq s (buffer-string)))
+      (term-send-raw-string s)
+      (kill-buffer "yasnippet-term")))
+
+  ;; TODO: define snippet creator
+
+  (skey-define-keys
+   '(sam/yas-insert-mode-map)
+   `(
+     ("<tab>" yas-next-field)
+     ("<backtab>" yas-prev-field)
+     ("<return>" exit-recursive-edit)
+     ))
+  )
+(use-package yasnippet-snippets)
+(use-package consult-yasnippet)
 
 (use-package cmake-mode)
 
@@ -1229,6 +1283,8 @@ on the current line, if any."
 ;;   (wrap-region-add-wrapper "~" "~" "~" '(org-mode))
 ;;   ;; (wrap-region-global-mode +1)
 ;;   )
+
+(use-package ggtags)
 
 (use-package eglot
   ;; :config
@@ -1284,7 +1340,7 @@ on the current line, if any."
 (use-package org-capture
   :straight (org-capture :type built-in)
   :config
-  (setf org-agenda-files '("~/notes/" "~/.notes"))
+  (setf org-agenda-files '("~/notes/"))
   (setq org-capture-templates
         '(("t" "todo" entry (file "~/notes/todo.org")
 	         "* TODO %?\n%u\n%a\n" :clock-in t :clock-resume t)
@@ -1292,7 +1348,7 @@ on the current line, if any."
 	         "* %?\n%U\n" :clock-in t :clock-resume t)
 	        ("i" "Idea" entry (file "~/notes/ideas.org")
 	         "* %?\n%t")
-	         )))
+	        )))
 
 ;; (use-package deft)
 
@@ -1336,6 +1392,16 @@ on the current line, if any."
           :stream t
           :key (f-read-text (expand-file-name (concat overdr0ne-directory "/keys/chatgpt.key")))
           ))
+  )
+
+(when t
+  (add-to-list 'load-path "~/src/aptitude")
+  (load "~/src/aptitude/aptitude.el")
+  )
+
+(when t
+  (add-to-list 'load-path "~/src/linux-commands-el/")
+  (load "~/src/linux-commands-el/linux-commands.el")
   )
 
 (provide '+modules)
