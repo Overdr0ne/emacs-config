@@ -28,6 +28,10 @@
 ;;(require 'straight)
 ;;(require 'emacs)
 
+(use-package startup
+  :straight (startup :type built-in)
+  )
+
 (use-package skey
   :straight (skey :type git
                   :host github
@@ -57,7 +61,6 @@
   (setf gumshoe-backlog-type 'tree)
   (add-to-list 'load-path "~/src/gumshoe")
   (load "~/src/gumshoe/gumshoe.el")
-  (global-gumshoe-mode +1)
   )
 
 ;; (use-package gumshoe
@@ -92,7 +95,7 @@
   :straight (subword :type built-in)
   :hook ((python-mode) . subword-mode))
 
-(use-package aggressive-indent-mode)
+;; (use-package aggressive-indent-mode)
 
 (use-package frame
   :straight (frame :type built-in)
@@ -103,7 +106,6 @@
   (set-face-attribute 'window-divider nil
                       :foreground nil
                       :inherit 'minibuffer-prompt)
-  (window-divider-mode +1)
   )
 
 (use-package window
@@ -224,8 +226,7 @@
 
 (use-package mb-depth
   :straight (mb-depth :type built-in)
-  :config
-  (minibuffer-depth-indicate-mode +1))
+  )
 
 (use-package select
   :straight (select :type built-in)
@@ -291,7 +292,6 @@
   ;;  (require 'projectile)
   (setq history-length 500)
   (setq savehist-file "~/.emacs.d/history")
-  (savehist-mode +1)
   ;; (setq savehist-additional-variables
   ;;       (append savehist-additional-variables
   ;;               '(kill-ring search-ring regexp-search-ring compile-history log-edit-comment-ring)))
@@ -314,9 +314,7 @@
 (use-package helpful)
 
 (use-package winner
-  :straight (winner :type built-in)
-  :init
-  (winner-mode +1))
+  :straight (winner :type built-in))
 
 ;; (use-package icomplete
 ;;   :init
@@ -334,11 +332,8 @@
   :init
   ;; (setf vertico-sort-function nil)
   (setf vertico-sort-function 'vertico-sort-history-length-alpha)
-  (vertico-mode +1)
-  (vertico-mouse-mode +1)
   (setf completion-ignored-extensions nil)
   ;; :config
-  (vertico-multiform-mode +1)
 
   ;; Configure the display per command.
   ;; Use a buffer with indices for imenu
@@ -455,9 +450,7 @@
                   ("notes" ?n "~/notes")
                   )))
 
-(use-package marginalia
-  :init
-  (marginalia-mode +1))
+(use-package marginalia)
 (use-package ctrlf)
 
 (use-package anzu
@@ -465,7 +458,6 @@
                   :host github
                   :repo "Overdr0ne/anzu")
   :config
-  (global-anzu-mode +1)
   (cl-defun anzu--query-replace-common (use-regexp
                                         &key at-cursor thing prefix-arg (query t) isearch-p)
     (anzu--cons-mode-line 'replace-query)
@@ -534,7 +526,6 @@
 (use-package doom-modeline
   :init
   (setq doom-modeline-height 1)
-  (doom-modeline-mode 1)
   (setq doom-modeline-minor-modes t))
 
 (use-package expand-region)
@@ -550,9 +541,7 @@
   (add-hook 'flycheck-error-list-mode-hook visual-line-mode)
   )
 
-(use-package diff-hl
-  :config
-  (global-diff-hl-mode +1))
+(use-package diff-hl)
 (use-package git-modes)
 
 (use-package magit
@@ -631,20 +620,17 @@ on the current line, if any."
 (use-package treemacs)
 ;; (use-package treemacs-perspective)
 
-(use-package vi-tilde-fringe
-  :config
-  (global-vi-tilde-fringe-mode +1))
+(use-package vi-tilde-fringe)
 
 ;;(use-package multiple-cursors)
 ;;
 ;;(use-package w3m)
 
 (use-package perspective
-  :init
+  :config
   (setq persp-suppress-no-prefix-key-warning t)
   (setq persp-show-modestring nil)
   (add-hook 'persp-mode-hook (lambda () (setq read-buffer-function nil)))
-  (persp-mode +1)
   )
 
 ;; (use-package find-file-in-project)
@@ -698,10 +684,7 @@ on the current line, if any."
   :straight (:type built-in)
   :config
   (setf dired-listing-switches "-alhF"))
-(use-package diredfl
-  ;;  :after (dired)
-  :config
-  (diredfl-global-mode))
+(use-package diredfl)
 (use-package all-the-icons-dired
   :config
   (add-hook 'dired-mode-hook 'all-the-icons-dired-mode)
@@ -714,13 +697,10 @@ on the current line, if any."
 ;;(use-package dired-filter)
 
 (use-package highlight)
-(use-package highlight-defined
-  :config
-  (highlight-defined-mode +1))
+(use-package highlight-defined)
 (use-package hl-line
   :straight (hl-line :type built-in)
-  :init
-  (global-hl-line-mode +1)
+  :config
   (defun enable-hl-line-mode ()
     (interactive)
     (hl-line-mode +1)))
@@ -767,12 +747,9 @@ on the current line, if any."
   (minions-mode-line-lighter "⚙")
   (minions-mode-line-delimiters nil)
   (minions-direct '(overwrite-mode parinfer-mode))
-  :config
-  (minions-mode))
+  )
 
-(use-package which-key
-  :config
-  (which-key-mode))
+(use-package which-key)
 
 ;; (use-package sfs
 ;;   :straight (sfs :type git
@@ -809,9 +786,7 @@ on the current line, if any."
 (use-package dracula-theme
   :straight (dracula-theme :type git
                            :host github
-                           :repo "Overdr0ne/emacs")
-  :config
-  (load-theme 'dracula t))
+                           :repo "Overdr0ne/emacs"))
 
 (use-package imenu
   :config
@@ -820,9 +795,7 @@ on the current line, if any."
 
 (use-package disk-usage)
 
-(use-package good-scroll
-  :config
-  (good-scroll-mode +1))
+(use-package good-scroll)
 
 ;; (use-package shelldon
 ;;   :straight (shelldon :type git
@@ -890,7 +863,6 @@ on the current line, if any."
     (setq corfu-mode-map-alist `((completion-in-region-mode . ,corfu-map)))
     (add-to-list 'emulation-mode-map-alists 'corfu-mode-map-alist))
   (setf corfu-quit-at-boundary nil)
-  (global-corfu-mode +1)
   ;; (defun corfu-enable-in-minibuffer ()
   ;;   "Enable Corfu in the minibuffer if `completion-at-point' is bound."
   ;;   (when (where-is-internal #'completion-at-point (list (current-local-map)))
@@ -973,7 +945,7 @@ on the current line, if any."
   (setq firmware-targets '(etc-power-golden etc-power-fdrive))
   )
 
-(progn
+(when t
   (add-to-list 'load-path "~/src/completionist")
   (load "~/src/completionist/completionist.el")
   (load "~/src/completionist/extensions/completionist-flat.el")
@@ -1031,9 +1003,10 @@ on the current line, if any."
   ;; (remove-hook 'persp-created-hook #'completionist-persp-switch-unfocused)
   )
 
-;; (use-package embark-consult
-;;   :hook
-;;   (embark-collect-mode . consult-preview-at-point-mode))
+(use-package embark-consult
+  ;; :hook
+  ;; (embark-collect-mode . consult-preview-at-point-mode)
+  )
 
 (use-package embark
   :config
@@ -1107,7 +1080,7 @@ on the current line, if any."
   ;; (setf bitbake-build-directory "/home/sam/tmp/impinj/build")
   ;; (setf bitbake-poky-directory "/home/sam/workspaces/atlas/build/")
   ;; (setf bitbake-build-directory "/home/sam/workspaces/atlas/build")
-   )
+  )
 
 (use-package docker
   :config
@@ -1143,7 +1116,8 @@ on the current line, if any."
     (set-window-configuration my-ediff-last-windows))
 
   (add-hook 'ediff-before-setup-hook #'my-store-pre-ediff-winconfig)
-  (add-hook 'ediff-quit-hook #'my-restore-pre-ediff-winconfig))
+  (add-hook 'ediff-quit-hook #'my-restore-pre-ediff-winconfig)
+  )
 
 ;; (use-package elgrep)
 
@@ -1168,7 +1142,6 @@ on the current line, if any."
 (use-package recentf
   :straight (recentf :type built-in)
   :init
-  (recentf-mode +1)
   (setq recentf-max-menu-items 500)
   (setq recentf-max-menu-items 600)
   (defconst recentf-used-hooks
@@ -1199,8 +1172,6 @@ on the current line, if any."
 
 (use-package yasnippet
   :config
-  (yas-global-mode +1)
-
   (define-minor-mode sam/yas-insert-mode
     "Transient mode for inserting yasnippets."
     :keymap (let ((map (make-sparse-keymap)))

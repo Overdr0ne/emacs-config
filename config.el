@@ -35,6 +35,7 @@
 (require '+bindings)
 (require '+langs)
 (load custom-file)
+(require '+modes)
 (require '+splash)
 
 (provide 'config)
