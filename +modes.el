@@ -1,3 +1,5 @@
+(global-auto-revert-mode +1)
+
 (global-gumshoe-mode +1)
 (window-divider-mode +1)
 (minibuffer-depth-indicate-mode +1)

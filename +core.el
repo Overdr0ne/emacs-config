@@ -150,17 +150,15 @@
 (set-face-attribute 'default nil :height 140)
 ;; (setq display-line-numbers-type nil)
 (setq user-mail-address "scmorris.dev@gmail.com")
-(turn-off-auto-fill)
-(auto-fill-mode -1)
 (setq overdr0ne-directory (concat user-emacs-directory "overdr0ne"))
+;; (turn-off-auto-fill)
+;; (auto-fill-mode -1)
 
-(global-auto-revert-mode +1)
+;; (global-auto-revert-mode +1)
 
-(setq browse-url-browser-function 'eww-browse-url)
+;; (setq browse-url-browser-function 'eww-browse-url)
 
 (setq load-prefer-newer t)
-
-(setq inhibit-startup-screen t)
 
 (setq debug-on-error t)
 
@@ -170,19 +168,12 @@
 
 (setq-default major-mode 'text-mode)
 
-(setf global-so-long-mode t)
-
 (setq-default tab-width 2)
-
-(setq-default indent-tabs-mode nil)
-
-(setq delete-pair-blink-delay .15)
 
 ;; (set-frame-font "-UKWN-Mononoki Nerd Font Mono-bold-normal-normal-*-15-*-*-*-m-0-iso10646-1")
 
 ;; (desktop-save-mode 1)
 
-(setq initial-scratch-message nil)
 
 (provide '+core)
 ;;; +core.el ends here

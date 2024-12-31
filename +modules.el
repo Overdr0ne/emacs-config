@@ -28,8 +28,32 @@
 ;;(require 'straight)
 ;;(require 'emacs)
 
-(use-package startup
-  :straight (startup :type built-in)
+(use-package loaddefs
+  :straight (loaddefs :type built-in)
+  :config
+  (setf global-so-long-mode t)
+  )
+
+(when t ;; startup.el does not provide startup
+  (setq initial-scratch-message nil)
+  (setq inhibit-startup-screen t)
+  (turn-off-auto-fill)
+  (auto-fill-mode -1)
+  )
+
+(use-package browse-url
+  :straight (browse-url :type built-in)
+  :config
+  (setq browse-url-browser-function 'eww-browse-url)
+  )
+
+(use-package autorevert
+  :straight (autorevert :type built-in)
+  :config
+  )
+
+(when t ;; lisp.el does not provide lisp
+  (setq delete-pair-blink-delay .15)
   )
 
 (use-package skey
@@ -241,6 +265,7 @@
 (use-package simple
   :straight (simple :type built-in)
   :config
+  (setq-default indent-tabs-mode nil)
   (setf kill-ring-max 1000)
   ;; :config
   (add-to-list 'auto-mode-alist '("*Shell Command Output*\\'" . text-mode))
