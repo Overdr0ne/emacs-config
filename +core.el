@@ -110,9 +110,10 @@
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
 ;; (setq default-buffer-file-coding-system 'utf-8)
-(setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
+;; (setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
 
-(setf shell-file-name "/bin/zsh")
+;; (setf shell-file-name "/home/sam/.guix-profile/bin/zsh")
+(setf shell-file-name "/home/sam/.guix-home/profile/bin/bash")
 
 (setq custom-file "~/.emacs.d/overdr0ne/customize.el")
 ;; (general-add-hook 'kill-emacs-hook
@@ -126,29 +127,30 @@
       kept-old-versions 2
       version-control t)
 
-(save-place-mode +1)
-
-(blink-cursor-mode -1)
-
-(tool-bar-mode -1)
-
-(scroll-bar-mode -1)
-
-(column-number-mode)
-
-(menu-bar-mode -1)
-
 ;; use what-cursor-position to determine font
-(setq sam-font
-      "-CTDB-FiraMono Nerd Font-bold-normal-normal-*-16-*-*-*-m-0-iso10646-1")
-(add-to-list 'default-frame-alist '(alpha . (93 . 70)))
+;; (setq sam-font
+;;       "-CTDB-FiraMono Nerd Font-bold-normal-normal-*-16-*-*-*-m-0-iso10646-1")
+;(x-list-fonts "MaterialIcons")
+(setq sam-font "FiraCode")
+;; (setq sam-font "-pyrs-FontAwesome-regular-normal-normal-*-*-*-*-*-*-0-iso10646-1")
+(defun font-exists-p (font) (if (null (x-list-fonts font)) nil t))
+;; (when (window-system)
+;;  (cond 
+;;        ((font-exists-p "MaterialIcons") (set-frame-font "MaterialIcons:spacing=100:size=18" nil t))))
+;; (setq sam-font "FreeMono")
+;; (setq sam-font "FreeSans")
+;; (setq sam-font "MaterialIcons")
+;; (add-to-list 'default-frame-alist '(alpha . (93 . 70)))
+(add-to-list 'default-frame-alist '(alpha . (97 . 93)))
 (add-to-list 'default-frame-alist `(font . ,sam-font))
-(set-frame-parameter (selected-frame) 'alpha '(93 . 70))
+;; (set-frame-parameter (selected-frame) 'alpha '(93 . 70))
+(set-frame-parameter (selected-frame) 'alpha '(97 . 93))
 
 (setq tags-add-tables nil)
 (setq large-file-warning-threshold nil)
 (set-face-attribute 'default nil :height 140)
-;; (setq display-line-numbers-type nil)
+;; (setq display-line-numbers 'relative)
+(setq display-line-numbers nil)
 (setq user-mail-address "scmorris.dev@gmail.com")
 (setq overdr0ne-directory (concat user-emacs-directory "overdr0ne"))
 ;; (turn-off-auto-fill)
@@ -170,10 +172,15 @@
 
 (setq-default tab-width 2)
 
+(setq-default sam-root-dir (expand-file-name "~/"))
+
+(setq message-log-max 10000)
+
 ;; (set-frame-font "-UKWN-Mononoki Nerd Font Mono-bold-normal-normal-*-15-*-*-*-m-0-iso10646-1")
 
 ;; (desktop-save-mode 1)
 
+;; (setf initial-buffer-choice (buffer-name (find-file-noselect "/home/sam/notes/todo.md")))
 
 (provide '+core)
 ;;; +core.el ends here
