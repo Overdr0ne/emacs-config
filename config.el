@@ -37,6 +37,8 @@
 (load custom-file)
 (require '+modes)
 (require '+splash)
+(require '+late)
+
 
 (provide 'config)
 ;;; config.el ends here

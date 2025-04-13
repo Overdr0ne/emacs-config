@@ -1311,16 +1311,16 @@ minibuffer history list `bookmark-history'."
 
 (defun sam-consult-read-file ()
   (consult--read
-    (or
-     (mapcar #'consult--fast-abbreviate-file-name (bound-and-true-p recentf-list))
-     (user-error "No recent files, `recentf-mode' is %s"
-                 (if recentf-mode "enabled" "disabled")))
-    :prompt "Find recent file: "
-    :sort nil
-    :require-match t
-    :category 'file
-    :state (consult--file-preview)
-    :history 'file-name-history))
+   (or
+    (mapcar #'consult--fast-abbreviate-file-name (bound-and-true-p recentf-list))
+    (user-error "No recent files, `recentf-mode' is %s"
+                (if recentf-mode "enabled" "disabled")))
+   :prompt "Find recent file: "
+   :sort nil
+   :require-match t
+   :category 'file
+   :state (consult--file-preview)
+   :history 'file-name-history))
 
 (defun sam-insert-file-path (path)
   "Insert the path to an active DIR-BUFFER."
@@ -1353,11 +1353,23 @@ minibuffer history list `bookmark-history'."
             (nth 1 (split-string str ";")))
           (split-string (+slurp "~/.zsh_history") "\n")))
 
+(defun sam-bash-history-to-list ()
+  (seq-filter (lambda (str)
+                (string-match-p "[A-z].*" str))
+              (split-string (+slurp "~/.bash_history") "\n")))
+
 (defun sam-insert-zsh-command (cmd)
   "Insert the path to an active DIR-BUFFER."
   (interactive (list
                 (completing-read "Command: "
                                  (sam-zsh-history-to-list))))
+  (insert cmd))
+
+(defun sam-insert-bash-command (cmd)
+  "Insert the path to an active DIR-BUFFER."
+  (interactive (list
+                (completing-read "Command: "
+                                 (sam-bash-history-to-list))))
   (insert cmd))
 
 (defun sam-replace-line-open-dir-path (dir-path)
@@ -1488,7 +1500,7 @@ UPDATE function is passed to it."
   "Start the daemon NAME.  Show results in an output buffer."
   (interactive (list
                 (let ((daemons-systemd-is-user t))
-                       (daemons--completing-read))))
+                  (daemons--completing-read))))
   (let ((daemons-systemd-is-user t))
     (daemons--run-with-output-buffer 'start name)))
 

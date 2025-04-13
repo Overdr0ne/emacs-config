@@ -111,6 +111,7 @@
 (set-keyboard-coding-system 'utf-8)
 ;; (setq default-buffer-file-coding-system 'utf-8)
 ;; (setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
+(setq x-select-request-type nil)
 
 ;; (setf shell-file-name "/home/sam/.guix-profile/bin/zsh")
 (setf shell-file-name "/home/sam/.guix-home/profile/bin/bash")
@@ -135,7 +136,7 @@
 ;; (setq sam-font "-pyrs-FontAwesome-regular-normal-normal-*-*-*-*-*-*-0-iso10646-1")
 (defun font-exists-p (font) (if (null (x-list-fonts font)) nil t))
 ;; (when (window-system)
-;;  (cond 
+;;  (cond
 ;;        ((font-exists-p "MaterialIcons") (set-frame-font "MaterialIcons:spacing=100:size=18" nil t))))
 ;; (setq sam-font "FreeMono")
 ;; (setq sam-font "FreeSans")
@@ -181,6 +182,11 @@
 ;; (desktop-save-mode 1)
 
 ;; (setf initial-buffer-choice (buffer-name (find-file-noselect "/home/sam/notes/todo.md")))
+
+(setq user-mail-address "scmorris.dev@gmail.com"
+      user-full-name "Samuel Morris")
+(setq copyright-names-regexp
+      (format "%s <%s>" user-full-name user-mail-address))
 
 (provide '+core)
 ;;; +core.el ends here

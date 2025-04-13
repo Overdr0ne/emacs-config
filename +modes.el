@@ -1,6 +1,13 @@
+(save-place-mode +1)
+(blink-cursor-mode -1)
+(tool-bar-mode -1)
+(scroll-bar-mode -1)
+(column-number-mode)
+(menu-bar-mode -1)
 (global-auto-revert-mode +1)
 
-(global-gumshoe-mode +1)
+;; (with-eval-after-load 'gumshoe
+;;     (global-gumshoe-mode +1))
 (window-divider-mode +1)
 (minibuffer-depth-indicate-mode +1)
 (savehist-mode +1)
@@ -21,9 +28,12 @@
 (which-key-mode)
 
 (load-theme 'dracula t)
-(good-scroll-mode +1)
+;; (pixel-scroll-mode +1)
+;; (ultra-scroll-mode +1)
 (global-corfu-mode +1)
 (recentf-mode +1)
 (yas-global-mode +1)
+(global-evim-mode +1)
+(clean-kill-ring-mode +1) ;; removes empty kills
 
 (provide '+modes)

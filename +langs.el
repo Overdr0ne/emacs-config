@@ -72,13 +72,8 @@
 
 (dolist (hook '(bitbake-mode-hook))
   (add-hook hook
-   (lambda ()
-     (setq-local tab-width 4)))
-  )
-
-;;; evim
-(dolist (hook '( diff-mode-hook text-mode-hook prog-mode-hook conf-mode-hook Info-mode-hook helpful-mode-hook bitbake-mode-hook extempore-mode-hook))
-  (add-hook hook #'evim-normal-mode))
+            (lambda ()
+              (setq-local tab-width 4))))
 
 ;;; sexps
 (dolist (hook '(closure-mode-hook elisp-mode-hook emacs-lisp-mode-hook lisp-mode-hook racket-mode-hook sexpy-mode-hook))
@@ -91,7 +86,8 @@
 
 ;;; shells
 (dolist (hook '(shell-mode-hook))
-  (dolist (fun '(ansi-color-for-comint-mode-on evim-insert-term-mode))
+  ;; (dolist (fun '(ansi-color-for-comint-mode-on evim-insert-term-mode))
+  (dolist (fun '(ansi-color-for-comint-mode-on))
     (add-hook hook fun)))
 (add-to-list 'comint-output-filter-functions 'ansi-color-process-output)
 
@@ -117,29 +113,29 @@
 (defun linux-kernel-coding-style/c-lineup-arglist-tabs-only (ignored)
   "Line up argument lists by tabs, not spaces"
   (let* ((anchor (c-langelem-pos c-syntactic-element))
-	 (column (c-langelem-2nd-pos c-syntactic-element))
-	 (offset (- (1+ column) anchor))
-	 (steps (floor offset c-basic-offset)))
+	       (column (c-langelem-2nd-pos c-syntactic-element))
+	       (offset (- (1+ column) anchor))
+	       (steps (floor offset c-basic-offset)))
     (* (max steps 1)
        c-basic-offset)))
 
 ;; Add Linux kernel style
 (add-hook 'c-mode-common-hook
-	  (lambda ()
-	    (c-add-style "linux-kernel"
-			 '("linux" (c-offsets-alist
-				    (arglist-cont-nonempty
-				     c-lineup-gcc-asm-reg
-				     linux-kernel-coding-style/c-lineup-arglist-tabs-only))))))
+	        (lambda ()
+	          (c-add-style "linux-kernel"
+			                   '("linux" (c-offsets-alist
+				                            (arglist-cont-nonempty
+				                             c-lineup-gcc-asm-reg
+				                             linux-kernel-coding-style/c-lineup-arglist-tabs-only))))))
 
 (defun linux-kernel-coding-style/setup ()
   (let ((filename (buffer-file-name)))
     ;; Enable kernel mode for the appropriate files
     (when (and filename
-	       (or (locate-dominating-file filename "Kbuild")
-		   (locate-dominating-file filename "Kconfig")
-		   (save-excursion (goto-char 0)
-				   (search-forward-regexp "^#include <linux/\\(module\\|kernel\\)\\.h>$" nil t))))
+	             (or (locate-dominating-file filename "Kbuild")
+		               (locate-dominating-file filename "Kconfig")
+		               (save-excursion (goto-char 0)
+				                           (search-forward-regexp "^#include <linux/\\(module\\|kernel\\)\\.h>$" nil t))))
       (setq indent-tabs-mode t)
       (setq tab-width 8)
       (setq c-basic-offset 8)

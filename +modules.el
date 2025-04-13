@@ -34,7 +34,7 @@
   (setf global-so-long-mode t)
   )
 
-(when t ;; startup.el does not provide startup
+(progn ;; startup.el does not provide startup
   (setq initial-scratch-message nil)
   (setq inhibit-startup-screen t)
   (turn-off-auto-fill)
@@ -47,12 +47,18 @@
   (setq browse-url-browser-function 'eww-browse-url)
   )
 
+;; (use-package pixel-mode
+;;   :straight (pixel-mode :type built-in)
+;;   :config
+;;   (setq pixel-scroll-precision-use-momentum t)
+;;   )
+
 (use-package autorevert
   :straight (autorevert :type built-in)
   :config
   )
 
-(when t ;; lisp.el does not provide lisp
+(progn ;; lisp.el does not provide lisp
   (setq delete-pair-blink-delay .15)
   )
 
@@ -78,42 +84,23 @@
                       ;;                       :build (:not compile)
                       ))
 
-(when t
-  (setf gumshoe-slot-schema '(time perspective buffer position line))
-  (setf gumshoe-footprint-strategy 'delete-overlapping)
-  ;; (setf gumshoe-backlog-type 'ring)
-  (setf gumshoe-backlog-type 'tree)
-  (add-to-list 'load-path "~/src/gumshoe")
-  (load "~/src/gumshoe/gumshoe.el")
+(use-package tramp
+  :straight (tramp :type built-in)
+  ;; :config
+  ;; (setq tramp-remote-path
+  ;;       (append '("~/.guix-home/profile/bin"
+  ;;                 "~/.guix-home/profile/sbin"
+  ;;                 "~/.guix-profile/bin"
+  ;;                 "~/.guix-profile/sbin")
+  ;;             tramp-remote-path))
   )
 
-;; (use-package gumshoe
-;;   :straight (gumshoe :type git
-;;                      :host github
-;;                      :repo "Overdr0ne/gumshoe"
-;;                      :branch "master"
-;;                      ;; :branch "feature/footprint-strategy"
-;;                      )
-;;   :init
-;;   (setf gumshoe-slot-schema '(time perspective buffer position line))
-;;   ;; (add-to-list 'load-path "~/src/gumshoe")
-;;   ;; (load "~/src/gumshoe/gumshoe.el")
-;;   (global-gumshoe-mode +1)
-;;   ;;  (global-gumshoe-persp-mode 1)
-;;   ;; (setf gumshoe-slot-schema '(time perspective buffer position line))
-;;   ;; (advice-add #'gumshoe-peruse-globally :around
-;;   ;;              (lambda (old-fn)
-;;   ;;                (let ((selectrum-should-sort nil))
-;;   ;;                  (funcall old-fn))))
-;;   ;; (advice-add #'gumshoe-peruse-in-persp :around
-;;   ;;              (lambda (old-fn)
-;;   ;;                (let ((selectrum-should-sort nil))
-;;   ;;                  (funcall old-fn))))
-;;   ;; (advice-add #'gumshoe-peruse-in-buffer :around
-;;   ;;              (lambda (old-fn)
-;;   ;;                (let ((selectrum-should-sort nil))
-;;   ;;                  (funcall old-fn))))
-;;   )
+(use-package lsp-scheme
+  :config
+  ;; (add-hook 'scheme-mode-hook #'lsp-scheme)
+
+  ;; (setq lsp-scheme-implementation "guile")
+)
 
 (use-package subword
   :straight (subword :type built-in)
@@ -262,6 +249,16 @@
   :config
   (add-to-list 'auto-mode-alist '("\\.env\\'" . sh-mode)))
 
+(use-package typescript-ts-mode
+  :straight (typescript-ts-mode :type built-in)
+  :init
+  (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode)))
+
+;; (use-package c-ts-mode
+;;   :straight (c-ts-mode :type built-in)
+;;   :init
+;;   (add-to-list 'auto-mode-alist '("\\.c\\'" . c-ts-mode)))
+
 (use-package simple
   :straight (simple :type built-in)
   :config
@@ -279,7 +276,11 @@
   ;; (add-to-list 'auto-mode-alist '("\\.Async Shell Command\\'" . view-mode))
   )
 
-(use-package logview)
+(use-package logview
+  :config
+  (add-to-list 'auto-mode-alist '("\\.log\\'" . logview-mode))
+  (add-to-list 'auto-mode-alist '(".*/var/log.*" . logview-mode))
+  )
 
 (use-package term
   :straight (term :type built-in)
@@ -394,7 +395,18 @@
         completion-category-defaults nil
         completion-category-overrides '((file (styles partial-completion)))))
 
-(use-package all-the-icons)
+(use-package all-the-icons
+  :init
+  ;; first time setup only
+  ;; (all-the-icons-install-fonts)
+  )
+(use-package nerd-icons
+  :init
+  ;; first time setup only
+  ;; (nerd-icons-install-fonts)
+  )
+(use-package fontawesome)
+(use-package unicode-fonts)
 
 (use-package consult
   :straight (consult
@@ -404,6 +416,7 @@
   ;; (setq xref-show-xrefs-function #'consult-xref
   ;;       xref-show-definitions-function #'consult-xref)
   :config
+  (setf consult-ripgrep-args (concat consult-ripgrep-args " -L"))
   ;;  (autoload 'projectile-project-root "projectile")
   ;; (setq consult-project-root-function #'projectile-project-root)
   (defalias #'consult-imenu-variables #'consult-imenu)
@@ -602,12 +615,15 @@ on the current line, if any."
 
 (use-package format-all)
 
-(use-package dts-mode
-  :config
-  (add-to-list 'auto-mode-alist '("defconfig\\'" . dts-mode))
-  (add-to-list 'auto-mode-alist '("defconfig\\'" . dts-mode))
-  (setq auto-mode-alist (append auto-mode-alist '(("defconfig\\'" . dts-mode)
-                                                  ("\\.its" . dts-mode)))))
+;; (use-package dts-mode
+;;   :config
+;;   (add-to-list 'auto-mode-alist '("defconfig\\'" . dts-mode))
+;;   (add-to-list 'auto-mode-alist '("defconfig\\'" . dts-mode))
+;;   (setq auto-mode-alist (append auto-mode-alist '(("defconfig\\'" . dts-mode)
+;;                                                   ("\\.its" . dts-mode)))))
+;; (use-package devicetree-ts-mode
+;;   )
+
 (use-package kconfig-mode)
 (use-package yaml-mode
   :config
@@ -820,7 +836,60 @@ on the current line, if any."
 
 (use-package disk-usage)
 
-(use-package good-scroll)
+;; (use-package good-scroll)
+(use-package ultra-scroll
+  :straight (ultra-scroll :type git
+                          :host github
+                          :repo "jdtsmith/ultra-scroll"
+                          :branch "main"
+                          :files ("*.el"))
+  )
+
+(use-package perspective
+  :config
+  (setq persp-suppress-no-prefix-key-warning t)
+  (setq persp-show-modestring nil)
+  (add-hook 'persp-mode-hook (lambda () (setq read-buffer-function nil)))
+  )
+
+(add-hook 'persp-mode-hook
+          (lambda ()
+            (setf gumshoe-slot-schema '(time perspective buffer position line))
+            (setf gumshoe-footprint-strategy 'delete-overlapping)
+            ;; (setf gumshoe-footprint-strategy 'nil)
+            (setf gumshoe-backlog-type 'ring)
+            ;; (setf gumshoe-backlog-type 'tree)
+            (add-to-list 'load-path "~/src/gumshoe")
+            (load "~/src/gumshoe/gumshoe.el")
+            ))
+
+;; (use-package gumshoe
+;;   :straight (gumshoe :type git
+;;                      :host github
+;;                      :repo "Overdr0ne/gumshoe"
+;;                      :branch "master"
+;;                      ;; :branch "feature/footprint-strategy"
+;;                      )
+;;   :init
+;;   (setf gumshoe-slot-schema '(time perspective buffer position line))
+;;   ;; (add-to-list 'load-path "~/src/gumshoe")
+;;   ;; (load "~/src/gumshoe/gumshoe.el")
+;;   (global-gumshoe-mode +1)
+;;   ;;  (global-gumshoe-persp-mode 1)
+;;   ;; (setf gumshoe-slot-schema '(time perspective buffer position line))
+;;   ;; (advice-add #'gumshoe-peruse-globally :around
+;;   ;;              (lambda (old-fn)
+;;   ;;                (let ((selectrum-should-sort nil))
+;;   ;;                  (funcall old-fn))))
+;;   ;; (advice-add #'gumshoe-peruse-in-persp :around
+;;   ;;              (lambda (old-fn)
+;;   ;;                (let ((selectrum-should-sort nil))
+;;   ;;                  (funcall old-fn))))
+;;   ;; (advice-add #'gumshoe-peruse-in-buffer :around
+;;   ;;              (lambda (old-fn)
+;;   ;;                (let ((selectrum-should-sort nil))
+;;   ;;                  (funcall old-fn))))
+;;   )
 
 ;; (use-package shelldon
 ;;   :straight (shelldon :type git
@@ -840,16 +909,35 @@ on the current line, if any."
 ;;                (lambda (old-fn)
 ;;                  (let ((selectrum-should-sort nil))
 ;;                    (funcall old-fn)))))
+(use-package exec-path-from-shell
+  :config
+  (exec-path-from-shell-initialize)
+  (exec-path-from-shell-copy-env "HISTFILE")
+  (defun turn-on-comint-history (history-file)
+    (setq comint-input-ring-file-name history-file)
+    (comint-read-input-ring 'silent))
+  ;; (setq shell-command-history '())
+
+  (add-hook 'shell-mode-hook
+            (lambda ()
+              (turn-on-comint-history (getenv "HISTFILE"))))
+  (add-hook 'kill-buffer-hook #'comint-write-input-ring)
+  (add-hook 'kill-emacs-hook
+            (lambda ()
+              (--each (buffer-list)
+                (with-current-buffer it (comint-write-input-ring))))))
 (progn
+  (start-file-process-shell-command "ls" "test" "ls -l ~")
   (load "~/src/shelldon/shelldon.el")
-                                        ; tell bash this shell is interactive
+  ;; tell bash this shell is interactive
   (setf shell-command-switch "-ic")
-                                        ; recursive minibuffers for nested autocompletion from minibuffer commands,
-                                        ; to e.g. interactively select from the kill-ring
+  (setf shell-command-switch "-c")
+  ;; recursive minibuffers for nested autocompletion from minibuffer commands,
+  ;; to e.g. interactively select from the kill-ring
   (setf enable-recursive-minibuffers t)
-                                        ; comint output may contain SGR control sequences that may be translated into
-                                        ; text properties if emacs has something equivalent. This requires special
-                                        ; processing.
+  ;; comint output may contain SGR control sequences that may be translated into
+  ;; text properties if emacs has something equivalent. This requires special
+  ;; processing.
   (add-hook 'shelldon-mode-hook 'ansi-color-for-comint-mode-on)
   (add-to-list 'comint-output-filter-functions 'ansi-color-process-output)
   (autoload 'ansi-color-for-comint-mode-on "ansi-color" nil t)
@@ -874,11 +962,6 @@ on the current line, if any."
                  (window-height . fit-window-to-buffer)
                  ))
   )
-
-(use-package bash-completion
-  :config
-  (add-hook 'shell-dynamic-complete-functions
-            'bash-completion-dynamic-complete))
 
 ;; completion at point overlay
 (use-package corfu
@@ -1109,6 +1192,8 @@ on the current line, if any."
 
 (use-package docker
   :config
+  (setf docker-command "podman")
+  ;; (setf docker-run-as-root t)
   (setf docker-image-run-default-args '("-i" "-t" "--rm")))
 
 (use-package dockerfile-mode
@@ -1155,7 +1240,8 @@ on the current line, if any."
                    :branch "main"))
 
 (use-package geiser)
-(use-package geiser-guile)
+(use-package geiser-guile
+  )
 (use-package bui)
 (use-package edit-indirect)
 (use-package build-farm)
@@ -1228,7 +1314,8 @@ on the current line, if any."
      ("<backtab>" yas-prev-field)
      ("<return>" exit-recursive-edit)
      ))
-  )
+
+  (add-to-list 'yas-snippet-dirs "~/src/guix/etc/snippets/yas"))
 (use-package yasnippet-snippets)
 (use-package consult-yasnippet)
 
@@ -1287,7 +1374,11 @@ on the current line, if any."
   ;; (setq eglot-withhold-process-id "1")
   ;; (with-eval-after-load 'eglot
   ;; (add-to-list 'eglot-server-programs `(c-mode .     ("~sam/workspaces/legend/hepafilter700/Docker/" "metio/devcontainers-nodejs" "c-language-server --stdio"))))
-  :straight (eglot :type built-in))
+  :straight (eglot :type built-in)
+  :config
+  )
+
+(use-package lsp-scheme)
 
 ;; (use-package scel)
 
@@ -1399,6 +1490,12 @@ on the current line, if any."
   (add-to-list 'load-path "~/src/linux-commands-el/")
   (load "~/src/linux-commands-el/linux-commands.el")
   )
+
+(use-package itail)
+
+(use-package clean-kill-ring)
+
+(use-package launch)
 
 (provide '+modules)
 ;;; +modules.el ends here
