@@ -160,6 +160,7 @@
 ;; (global-auto-revert-mode +1)
 
 ;; (setq browse-url-browser-function 'eww-browse-url)
+(setq-default require-final-newline nil)
 
 (setq load-prefer-newer t)
 
