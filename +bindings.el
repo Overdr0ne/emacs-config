@@ -514,7 +514,7 @@
   (skey-define-keys
    '(evim-insert-mode-map)
    `(
-     ("<space>" self-insert-command)))
+     ("SPC" self-insert-command)))
 
   ;; (keymap-set evim-insert-mode-map "C-M-k" 'holymotion-previous-visual-line)
   (skey-define-keys
@@ -784,6 +784,7 @@
 (skey-define-keys
  '(dired-mode-map)
  `(
+   ("<return>" dired-find-file)
    (";"   execute-extended-command)
    ("/" dired-narrow)
    ("C-b" ,+buffer-keymap)
@@ -874,7 +875,7 @@
   (skey-define-keys
    '(evim-normal-magit-blame-mode-map magit-blame-mode-map magit-blame-read-only-mode-map)
    `(("<return>" magit-show-commit)
-     ("<space>" ,+command-mode-map)))
+     ("SPC" ,+command-mode-map)))
   ;; (skey-define-keys
   ;;  '(magit-diff-mode-map)
   ;;  `(("J" evil-scroll-page-down
@@ -1047,24 +1048,23 @@
 (skey-define-keys
  '(+llm-keymap)
  `(
-   ("C-<space>" nil)
-   ("C-<space>" repllm-display)
+   ("C-SPC" nil)
+   ("C-SPC" repllm-display)
    ("C-v" repllm-insert)
    ))
 
-(keymap-set dired-mode-map "<space>" +command-mode-map)
 (with-eval-after-load 'evim
   (skey-define-keys
    (cl-set-difference +all-maps (append +repl-maps +minibuffer-maps '(evim-insert-mode-map)))
    `(
      ("?" which-key-show-top-level)
      (";" execute-extended-command)
-     ;; ("C-<space>" ,+controller-keymap)
-     ("C-<space>" ,+llm-keymap)
-     ("M-<space>" ,+metallic-keymap)
-     ("S-<space>" ,+shifty-keymap)
-     ("A-<space>" ,+alter-keymap)
-     ("<space>" ,+command-mode-map)
+     ;; ("C-SPC" ,+controller-keymap)
+     ("C-SPC" ,+llm-keymap)
+     ("M-SPC" ,+metallic-keymap)
+     ("S-SPC" ,+shifty-keymap)
+     ("A-SPC" ,+alter-keymap)
+     ("SPC" ,+command-mode-map)
      )))
 
 (provide '+bindings)
