@@ -694,52 +694,7 @@
      ))
 
   )
-;; ;;; insert bindings
-;; (general-define-key
-;;  :states 'insert
-;;  ;; Smarter newlines
-;;  [remap newline] #'newline-and-indent  ; auto-indent on newline
-;;  "C-v" 'yank
-;;  "<mouse-2>" 'evil-paste-after)
-
-;; (general-define-key :states '(normal) "C-=" #'sam-indent-all)
-;; (general-define-key :states '(visual) "=" #'indent-region)
-;; (general-define-key
-;;  :states 'normal
-;;  :prefix "="
-;;  ""  nil
-;;  "=" #'evil-indent-line
-;;  "s" #'indent-sexp
-;;  "a" #'sam-indent-all
-;;  "g" #'indent-rigidly)
-
-;; ;; ported from vim-unimpaired
-;; (general-define-key
-;;  :states 'normal
-;;  "[p"  #'evim-paste-above
-;;  "]p"  #'evim-paste-below
-;;  "]b"    #'next-buffer
-;;  "[b"    #'previous-buffer)
-
-;; ;; evil surround
-;; (general-define-key
-;;  :states 'visual
-;;  :keymaps root-modes
-;;  "o" #'evil-surround-region)
-
-;; (general-define-key
-;;  :states 'operator
-;;  "s" #'evil-surround-edit
-;;  "S" #'evil-Surround-edit)
-
-;; ;;; evil override keybindings
-;; ;; (evil-define-key 'normal magit-mode-map (kbd "C-d") 'dired-jump)
-
 (setq-default ediff-mode-map (make-sparse-keymap))
-
-;; (general-define-key
-;;  :states '(normal insert visual)
-;;  "<home>" help-map)
 
 ;; ;;; module keybinds
 ;; (general-define-key
@@ -755,61 +710,6 @@
    ;; ("C-<return>" #'xref-find-definitions)
    ("C-<return>" embark-find-definition)
    ))
-
-;; (with-eval-after-load 'debug
-;;   (general-define-key
-;;    :states 'normal
-;;    :keymaps 'debugger-mode-map
-;;    "SPC" +command-mode-map))
-;; (general-define-key
-;;  :states 'normal
-;;  :keymaps 'markdown-mode-map
-;;  "C-d" #'dired-jump)
-;; (general-define-key
-;;  :keymaps 'treemacs-mode-map
-;;  :states 'normal
-;;  "-" #'treemacs-quit)
-;; (general-define-key
-;;  :states 'normal
-;;  :keymaps 'view-mode-map
-;;  "e" #'view-mode)
-
-;; (general-define-key
-;;  :states 'normal
-;;  :keymaps 'outline-mode-map
-;;  "C-;" #'eval-expression)
-
-;; ;;; lang bindings
-;; ;;(require 'evil-easymotion)
-;; (evilem-make-motion
-;; evilem-motion-next-sexp #'sp-next-sexp)
-;; (evilem-make-motion
-;; evilem-motion-backward-sexp #'sp-backward-sexp)
-;; (general-define-key
-;;  :states 'normal
-;;  :keymaps '(lisp-mode-map lisp-interaction-mode-map emacs-lisp-mode-map)
-;;  :prefix "C-e"
-;;  ""   nil
-;;  "C-e" #'sam-eval-this-sexp
-;;  "C-b" #'eval-buffer
-;;  "A-M-w" #'evilem-motion-next-sexp
-;;  "s M-w" #'evilem-motion-next-sexp
-;;  "A-M-b" #'evilem-motion-backward-sexp
-;;  "s M-b" #'evilem-motion-backward-sexp
-;;  )
-;; (general-define-key
-;;  :states 'visual
-;;  :keymaps '(lisp-mode-map lisp-interaction-mode-map emacs-lisp-mode-map)
-;;  "C-e" #'eval-region)
-
-;; (general-define-key
-;;  :states '(normal insert)
-;;  :keymaps 'sh-mode-map
-;;  "<C-return>" #'shelldon-send-line-at-point)
-;; (general-define-key
-;;  :states 'visual
-;;  :keymaps 'sh-mode-map
-;;  "C-e" #'shelldon-send-region)
 
 (skey-define-keys
  '(ctl-x-map)
@@ -830,12 +730,6 @@
    ("C-l" completion-at-point)
    ("M-l" completion-at-point))
  )
-;; (general-define-key
-;;  :keymaps 'shelldon-minibuffer-local-command-map
-;;  "<home>" help-map
-;;  "M-SPC" +command-mode-map
-;;  "C-l" #'completion-at-point)
-
 (with-eval-after-load 'evim-clojure
   (skey-define-keys
    '(evim-normal-clojure-mode-map)
@@ -849,21 +743,6 @@
  `(
    ("C-w" ,+window-map)
    ))
-
-;;; completion
-;; (general-define-key
-;;  :keymaps 'prog-mode-map
-;;  "<tab>" #'completion-at-point)
-;; (general-define-key
-;;  :keymaps root-modes
-;;  :states 'insert
-;;  "C-l" #'completion-at-point
-;;  "M-l" #'tempel-expand)
-;; (general-define-key
-;;  :keymaps '(prog-mode-map org-mode-map markdown-mode-map)
-;;  :states 'insert
-;;  "`" (lambda () (interactive) (insert "`")))
-
 
 (add-hook
  'global-gumshoe-mode-hook
@@ -890,6 +769,7 @@
       ))
    ))
 
+;;; completion
 (skey-define-keys
  '(corfu-map)
  '(("SPC" corfu-insert-separator)
@@ -961,33 +841,7 @@
    )
  )
 
-;; (general-define-key
-;;  :keymaps '(smerge-mode-map)
-;;  :states  '(normal)
-;;  "<return>" #'smerge-keep-current)
-
-;; ;;(evil-define-key 'normal
-;; ;;  sclang-mode-map
-;; ;;  "\C-e" #'+sclang-eval-this-expression)
-
-
-;; ;;(defhydra evil-window-hydra (:color yellow :hint nil)
-;; ;;  "
-;; ;; _h_: window-left  _j_: window-down _k_: window-up _l_: window-right "
-;; ;;  ("h"   evil-window-left)
-;; ;;  ("j"   evil-window-down)
-;; ;;  ("k"   evil-window-up)
-;; ;;  ("l"   evil-window-right)
-;; ;;  ("q"   nil "quit" :color blue))
-;; ;;
-;; ;;(general-define-key
-;; ;; :keymaps 'evil-window-map
-;; ;; "h" #'evil-window-hydra/evil-window-left
-;; ;; "k" #'evil-window-hydra/evil-window-up
-;; ;; "j" #'evil-window-hydra/evil-window-down
-;; ;; "l" #'evil-window-hydra/evil-window-right)
-
-;; ;;; tools
+;;; tools
 (skey-define-keys
  '(compilation-minor-mode-map)
  `(
@@ -996,21 +850,6 @@
  '(compilation-mode-map)
  `(
    ("<return>" compilation-display-error)))
-;; (general-define-key
-;;  :keymaps 'compilation-mode-map
-;;  :states 'normal
-;;  "<return>" #'compilation-display-error
-;;  "M-j" #'#'compilation-next-error
-;;  "M-k" compilation-previous-error)
-;; (general-define-key
-;;  :keymaps 'evil-magit
-;;  ;; fix conflicts with private bindings
-;;  :map '(gnus-summary-mode gnus-article-mode)
-;;  "SPC" nil)
-
-;; (general-define-key
-;;  :keymaps '(gnus-mode-map gnus-topic-mode-map gnus-group-mode-map gnus-browse-mode-map gnus-summary-mode-map gnus-article-mode-map)
-;;  "SPC" +command-mode-map)
 
 (defun +evim-define-keys ()
   (evim-define-default-derived-modes 'magit-blame)
@@ -1109,35 +948,11 @@
 (add-hook 'global-evim-mode-on-hook
           #'+evim-define-keys)
 
-;; (general-define-key
-;;  :states 'normal
-;;  :keymaps 'python-mode-map
-;;  "C-e C-b" #'python-shell-send-buffer
-;;  "C-e C-e" #'python-shell-send-statement
-;;  "C-e C-f" #'python-shell-send-defun
-;;  "<return>" #'lsp-describe-thing-at-point)
-;; (general-define-key
-;;  :states 'visual
-;;  :keymaps 'python-mode-map
-;;  "C-e" #'python-shell-send-region)
-
-;; (general-define-key
-;;  :states 'normal
-;;  :keymaps 'conf-mode-map
-;;  "J" #'evil-scroll-page-down
-;;  "K" #'evil-scroll-page-up
-;;  )
-
 (require 'org)
 (skey-define-keys
  '(org-mode-map)
  `(("<tab>"   org-do-demote)
    ("<backtab>" org-do-promote)))
-
-;; (general-define-key
-;;  :keymaps 'global
-;;  :states 'insert
-;;  "M-SPC" metallic-keymap)
 
 ;;; Language-specific keymaps
 
