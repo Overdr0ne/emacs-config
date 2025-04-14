@@ -77,8 +77,12 @@
          (side . right)
          (slot . 0)
          (window-width . 80))
-        ;; Display *BBDB* buffer on the bottom frame
-        ("\\*BBDB"
+        ;; ("\\*Async"
+        ;;  (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-in-side-window display-buffer-pop-up-window)
+        ;;  (side . left)
+        ;;  (slot . 0)
+        ;;  (window-width . 80))
+        ("\\*\\(remember\\|Async\\)"
          (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-in-side-window display-buffer-pop-up-window)
          (side . bottom)
          (slot . 0)
@@ -144,6 +148,7 @@
 (setq user-mail-address "scmorris.dev@gmail.com")
 (turn-off-auto-fill)
 (auto-fill-mode -1)
+(setq overdr0ne-directory (concat user-emacs-directory "overdr0ne"))
 
 (setq browse-url-browser-function 'eww-browse-url)
 

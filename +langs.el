@@ -70,7 +70,6 @@
   (dolist (hook '(c-mode-hook c++-mode-hook dts-mode-hook))
     (add-hook hook fun)))
 
-;;; evim
 (dolist (hook '(bitbake-mode-hook))
   (lambda ()
     (setq-local tab-width 4)))
@@ -87,13 +86,6 @@
                                  #'elisp-completion-at-point)
                     (setq-local tab-width 2))))
     (add-hook hook fun)))
-;; (general-add-hook '(closure-mode-hook elisp-mode-hook emacs-lisp-mode-hook lisp-mode-hook racket-mode-hook sexpy-mode-hook)
-;;                  '(show-paren-mode visual-line-mode  electric-pair-mode electric-quote-mode electric-layout-mode
-;;            (lambda () (add-to-list 'completion-at-point-functions
-;;                  #'elisp-completion-at-point))))
-;;; lisps
-;; (dolist ('(closure-mode-hook elisp-mode-hook emacs-lisp-mode-hook lisp-mode-hook racket-mode-hook))
-;;                   '(highlight-defined-mode))
 
 ;;; shells
 (dolist (hook '(shell-mode-hook))

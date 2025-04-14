@@ -28,6 +28,12 @@
 ;;(require 'straight)
 ;;(require 'emacs)
 
+(use-package skey
+  :straight (skey :type git
+                  :host github
+                  :repo "Overdr0ne/skey"
+                  :branch "main"))
+
 (use-package seq)
 (use-package let-alist)
 ;; (use-package pkg-info)
@@ -47,6 +53,7 @@
 (when t
   (setf gumshoe-slot-schema '(time perspective buffer position line))
   (setf gumshoe-footprint-strategy 'delete-overlapping)
+  (setf gumshoe-backlog-type 'ring)
   (add-to-list 'load-path "~/src/gumshoe")
   (load "~/src/gumshoe/gumshoe.el")
   (global-gumshoe-mode +1)
@@ -234,7 +241,7 @@
   :config
   (setf kill-ring-max 1000)
   ;; :config
-  ;; (add-to-list 'auto-mode-alist '("\\.Shell Command\\'" . text-mode))
+  (add-to-list 'auto-mode-alist '("*Shell Command Output*\\'" . text-mode))
   ;; (add-to-list 'auto-mode-alist '("\\.Async Shell Command\\'" . text-mode))
   )
 
@@ -269,9 +276,7 @@
 
 (use-package wid-edit
   :straight (wid-edit :type built-in
-                      ;;:build (:not compile)
-                      )
-  )
+                      ))
 
 (use-package tab-bar
   :straight (tab-bar :type built-in
@@ -286,13 +291,11 @@
   (setq history-length 500)
   (setq savehist-file "~/.emacs.d/history")
   (savehist-mode +1)
-  ;; (add-to-list 'savehist-additional-variables
-  ;;              'projectile-relevant-known-projects)
   ;; (setq savehist-additional-variables
   ;;       (append savehist-additional-variables
   ;;               '(kill-ring search-ring regexp-search-ring compile-history log-edit-comment-ring)))
   (setq savehist-additional-variables
-        '(search-ring regexp-search-ring compile-history log-edit-comment-ring))
+        '(kill-ring search-ring regexp-search-ring compile-history log-edit-comment-ring))
   )
 
 (use-package cl-lib
@@ -334,13 +337,13 @@
   (vertico-mouse-mode +1)
   (setf completion-ignored-extensions nil)
   ;; :config
-  ;; (vertico-multiform-mode +1)
+  (vertico-multiform-mode +1)
 
   ;; Configure the display per command.
   ;; Use a buffer with indices for imenu
   ;; and a flat (Ido-like) menu for M-x.
-  ;; (setq vertico-multiform-commands
-  ;;       '((shelldon-output-history (vertico-sort-function . nil))
+  (setq vertico-multiform-commands
+        '((sam-insert-zsh-command (vertico-sort-function . nil))))
   ;;         ;; (gumshoe-peruse-globally (vertico-sort-function . nil))
   ;;         ;; (gumshoe-peruse-in-buffer (vertico-sort-function . nil))
   ;;         ;; (gumshoe-peruse-in-window (vertico-sort-function . nil))
@@ -363,6 +366,7 @@
   ;;   (nconc (seq-filter (lambda (x) (string-suffix-p "/" x)) files)
   ;;          (seq-remove (lambda (x) (string-suffix-p "/" x)) files)))
   )
+(use-package vertico-posframe)
 (use-package orderless
   :config
   (setq completion-styles '(orderless basic)
@@ -429,6 +433,14 @@
     "Project buffer candidate source for `consult-buffer'.")
   )
 (use-package consult-dir)
+(use-package consult-notes
+  :config
+  (setq consult-notes-file-dir-sources `(
+                                         ("big-bend" ?b "~/workspaces/big-bend/notes")
+                                         ("etc" ?e "~/workspaces/etc/notes")
+                                         ("overdr0ne" ?o "~/.emacs.d/overdr0ne/notes")
+                                         ("notes" ?n "~/notes")
+                                         )))
 
 (use-package marginalia
   :init
@@ -539,7 +551,7 @@
     '("x" "Absorb changes" magit-commit-absorb))
   (setq-default magit-buffer-log-args '("-n256" "--color" "--decorate" "--graph"))
   (put 'magit-log-mode 'magit-log-default-arguments
-     magit-buffer-log-args)
+       magit-buffer-log-args)
   (defun dm/change-commit-author (arg)
     "Change the commit author during an interactive rebase in Magit.
 With a prefix argument, insert a new change commit author command
@@ -603,7 +615,7 @@ on the current line, if any."
 
 ;; (use-package request)
 
-;; (use-package treemacs)
+(use-package treemacs)
 ;; (use-package treemacs-perspective)
 
 (use-package vi-tilde-fringe
@@ -626,30 +638,29 @@ on the current line, if any."
 
 ;; (use-package bookmark+)
 
-;; (use-package system-packages
-;;  :config
-;;  (add-to-list 'system-packages-supported-package-managers
-;;               '(pacaur .
-;;                        ((default-sudo . nil)
-;;                         (install . "pacaur -S")
-;;                         (search . "pacaur -Ss")
-;;                         (uninstall . "pacaur -Rs")
-;;                         (update . "pacaur -Syu")
-;;                         (clean-cache . "pacaur -Sc")
-;;                         (log . "cat /var/log/pacman.log")
-;;                         (get-info . "pacaur -Qi")
-;;                         (get-info-remote . "pacaur -Si")
-;;                         (list-files-provided-by . "pacaur -Ql")
-;;                         (verify-all-packages . "pacaur -Qkk")
-;;                         (verify-all-dependencies . "pacaur -Dk")
-;;                         (remove-orphaned . "pacaur -Rns $(pacman -Qtdq)")
-;;                         (list-installed-packages . "pacaur -Qe")
-;;                         (list-installed-packages-all . "pacaur -Q")
-;;                         (list-dependencies-of . "pacaur -Qi")
-;;                         (noconfirm . "--noconfirm"))))
-;;  (setq system-packages-use-sudo nil)
-;;  (setq system-packages-package-manager 'pacaur))
-;; (use-package arch-packer)
+(use-package system-packages
+ :config
+ (add-to-list 'system-packages-supported-package-managers
+              '(pacaur .
+                       ((default-sudo . nil)
+                        (install . "pacaur -S")
+                        (search . "pacaur -Ss")
+                        (uninstall . "pacaur -Rs")
+                        (update . "pacaur -Syu")
+                        (clean-cache . "pacaur -Sc")
+                        (log . "cat /var/log/pacman.log")
+                        (get-info . "pacaur -Qi")
+                        (get-info-remote . "pacaur -Si")
+                        (list-files-provided-by . "pacaur -Ql")
+                        (verify-all-packages . "pacaur -Qkk")
+                        (verify-all-dependencies . "pacaur -Dk")
+                        (remove-orphaned . "pacaur -Rns $(pacman -Qtdq)")
+                        (list-installed-packages . "pacaur -Qe")
+                        (list-installed-packages-all . "pacaur -Q")
+                        (list-dependencies-of . "pacaur -Qi")
+                        (noconfirm . "--noconfirm"))))
+ (setq system-packages-use-sudo t)
+ (setq system-packages-package-manager 'aptitude))
 
 ;; (use-package web-search)
 
@@ -840,7 +851,7 @@ on the current line, if any."
     (message "sam")
     (set-window-point win 0)
     (fit-window-to-buffer win 20))
- 
+  
   (add-to-list 'display-buffer-alist
                '("*shelldon:"
                  (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-in-side-window display-buffer-pop-up-window)
@@ -904,6 +915,7 @@ on the current line, if any."
   (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-silent)
   (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify))
 
+(use-package dtrt-indent)
 (use-package highlight-indentation
   :straight (highlight-indentation :type git
                                    :host github
@@ -934,6 +946,18 @@ on the current line, if any."
 
 (use-package treepy)
 
+(when t
+  (add-to-list 'load-path "~/src/emacs-kde")
+  (load "~/src/emacs-kde/kactivities.el"))
+
+(when t
+  (add-to-list 'load-path "~/src/firmware-el")
+  (load "~/src/firmware-el/firmware.el")
+  (setq etc-power-golden (firmware-target :name "golden" :power-ip "10.102.3.11" :power-port "Outlet1"))
+  (setq etc-power-fdrive (firmware-target :name "fdrive" :power-ip "10.102.3.11" :power-port "Outlet2"))
+  (setq firmware-targets '(etc-power-golden etc-power-fdrive))
+  )
+
 (progn
   (add-to-list 'load-path "~/src/completionist")
   (load "~/src/completionist/completionist.el")
@@ -950,16 +974,20 @@ on the current line, if any."
                     (preserve-size . t)
                     (side . top)
                     (slot . 0))))
-      (completionist--complete "persp:" #'persp-names #'persp-switch " *persps*" action)))
+      (completionist--complete "persp:" #'persp-names #'persp-switch " *persps*" action)
+      ;; (completionist--exhibit (get-buffer " *persps*"))
+      ))
   (defun completionist-persp-switch-unfocused ()
     (interactive)
-    (let ((window-sides-slots '(2 2 2 2))
-          (action '((display-buffer-in-side-window)
-                    (window-height . 1)
-                    (preserve-size . t)
-                    (side . top)
-                    (slot . 0))))
-      (completionist--complete "persp:" #'persp-names #'persp-switch " *persps*" action t)))
+    (unless (minibufferp (current-buffer))
+      (let ((window-sides-slots '(2 2 2 2))
+            (action '((display-buffer-in-side-window)
+                      (window-height . 1)
+                      (preserve-size . t)
+                      (side . top)
+                      (slot . 0))))
+        (completionist--complete "persp:" #'persp-names #'persp-switch " *persps*" action t)
+        (completionist--exhibit (get-buffer " *persps*")))))
   (defun process-names ()
     (mapcar #'process-name
             (process-list)))
@@ -984,7 +1012,9 @@ on the current line, if any."
                                "*comp-procs*"
                                action))
     )
-  (add-hook 'persp-created-hook #'completionist-persp-switch-unfocused))
+  (add-hook 'persp-created-hook #'completionist-persp-switch-unfocused)
+  ;; (remove-hook 'persp-created-hook #'completionist-persp-switch-unfocused)
+  )
 
 ;; (use-package embark-consult
 ;;   :hook
@@ -1045,6 +1075,12 @@ on the current line, if any."
                      :branch "master"
                      :build (:not compile))
   :config
+  (defun sam-bitbake ()
+    "Read command with bitbake as prefix."
+    (interactive)
+    (let ((cmd (intern-soft (sam-read-extended-command "bitbake- "))))
+      (command-execute cmd 'record)))
+
   (setf bitbake-flash-device "/dev/mmcblk0")
   ;; (setf bitbake-poky-directory "/home/sam/workspaces/dtech/layers")
   ;; (setf bitbake-build-directory "/home/sam/workspaces/dtech/build")
@@ -1104,12 +1140,6 @@ on the current line, if any."
                    :repo "Overdr0ne/slink"
                    :branch "main"))
 
-(use-package skey
-  :straight (skey :type git
-                  :host github
-                  :repo "Overdr0ne/skey"
-                  :branch "main"))
-
 (use-package geiser)
 (use-package geiser-guile)
 (use-package bui)
@@ -1123,7 +1153,28 @@ on the current line, if any."
 (use-package recentf
   :straight (recentf :type built-in)
   :init
-  (recentf-mode +1))
+  (recentf-mode +1)
+  (setq recentf-max-menu-items 500)
+  (setq recentf-max-menu-items 600)
+  (defconst recentf-used-hooks
+    '(
+      (find-file-hook       recentf-track-opened-file)
+      (dired-mode-hook       recentf-track-opened-file)
+      (write-file-functions recentf-track-opened-file)
+      (kill-buffer-hook     recentf-track-closed-file)
+      (kill-emacs-hook      recentf-save-list)
+      )
+    "Hooks used by recentf.")
+
+  (defun recentf-track-opened-file ()
+    "Insert the name of the file just opened or written into the recent list."
+    (if buffer-file-name
+        (progn (recentf-push buffer-file-name))
+      (when default-directory
+        (recentf-push default-directory)))
+    ;; Must return nil because it is run from `write-file-functions'.
+    nil)
+  )
 
 ;; (use-package tempel
 ;;   :config
@@ -1159,9 +1210,13 @@ on the current line, if any."
                         :files ("*.el"))
   :config
   (holymotion-make-motion
-   holymotion-forward-sexp #'sp-forward-sexp)
+   holymotion-forward-beginning-of-defun #'forward-beginning-of-defun)
   (holymotion-make-motion
-   holymotion-backward-sexp #'sp-backward-sexp))
+   holymotion-forward-sexp #'backward-up-list)
+  (holymotion-make-motion
+   holymotion-forward-sexp #'evim-forward-to-sexp)
+  (holymotion-make-motion
+   holymotion-backward-sexp #'backward-sexp))
 (use-package all-the-icons-completion
   :after (all-the-icons)
   :init
@@ -1180,8 +1235,7 @@ on the current line, if any."
   ;; (setq eglot-withhold-process-id "1")
   ;; (with-eval-after-load 'eglot
   ;; (add-to-list 'eglot-server-programs `(c-mode .     ("~sam/workspaces/legend/hepafilter700/Docker/" "metio/devcontainers-nodejs" "c-language-server --stdio"))))
-  :straight (eglot :type built-in
-                   ))
+  :straight (eglot :type built-in))
 
 ;; (use-package scel)
 
@@ -1195,11 +1249,94 @@ on the current line, if any."
 
 (use-package swift-mode)
 
+(use-package remember
+  :straight (remember :type built-in)
+  :config
+  (defun sam-format-remember-text (text)
+    (concat remember-leader-text
+            (format-time-string remember-time-format)
+            "\n" text))
+  (setq remember-data-file "~/notes/mem.md")
+  (setq remember-data-directory "~/notes/")
+  (setq remember-notes-initial-major-mode 'text-mode)
+  ;; (skey-define-keys
+  ;;  '(remember-mode-map)
+  ;;  `(("C-g" remember-destroy)))
+  )
+
 (use-package kotlin-mode)
 ;; (use-package kotlin-ts-mode)
 
 (use-package hierarchy
   :straight (hierarchy :type built-in))
+
+(use-package org
+  :straight (org :type built-in)
+  :config
+  (setf org-default-notes-file "~/notes/global.org")
+  )
+
+(use-package org-agenda
+  :straight (org-agenda :type built-in)
+  :config
+  (setf org-agenda-files '("~/notes/")))
+
+(use-package org-capture
+  :straight (org-capture :type built-in)
+  :config
+  (setf org-agenda-files '("~/notes/" "~/.notes"))
+  (setq org-capture-templates
+        '(("t" "todo" entry (file "~/notes/todo.org")
+	         "* TODO %?\n%u\n%a\n" :clock-in t :clock-resume t)
+	        ("d" "Diary" entry (file+datetree "~/notes/diary.org")
+	         "* %?\n%U\n" :clock-in t :clock-resume t)
+	        ("i" "Idea" entry (file "~/notes/ideas.org")
+	         "* %?\n%t")
+	         )))
+
+;; (use-package deft)
+
+;; (use-package helm)
+
+(use-package neotree)
+
+;; (use-package gptel
+;;   :config
+;;   (setq gptel-gpt-backend
+;;         (gptel-make-anthropic "GPT"
+;;           :stream t
+;;           :key (f-read-text (expand-file-name (concat overdr0ne-directory "/keys/chatgpt.key")))
+;;           ))
+;;   (setq gptel-openai-backend
+;;         (gptel-make-openai
+;;             "ChatGPT"
+;;           :key (f-read-text (concat overdr0ne-directory "/keys/chatgpt.key"))
+;;           :stream t
+;;           :models '("gpt-3.5-turbo" "gpt-3.5-turbo-16k" "gpt-4o-mini"
+;;                     "gpt-4" "gpt-4o" "gpt-4-turbo" "gpt-4-turbo-preview"
+;;                     "gpt-4-32k" "gpt-4-1106-preview" "gpt-4-0125-preview")))
+;;   (setq gptel-claude-backend
+;;         (gptel-make-anthropic "Claude"       ;Any name you want
+;;           :stream t                          ;Streaming responses
+;;           :key (f-read-text (expand-file-name (concat overdr0ne-directory "/keys/anthropic.key")))
+;;           ))
+
+;;   (setq gptel-model "gpt-4o-mini")
+;;   (setq gptel-backend gptel--openai))
+
+(when t
+  (add-to-list 'load-path "~/src/repllm")
+  (load "~/src/repllm/repllm.el")
+  (load "~/src/repllm/repllm-curl.el")
+  (load "~/src/repllm/repllm-openai.el")
+  (setq repllm-model "gpt-4o-mini")
+  (setq repllm-api-key (f-read-text (expand-file-name (concat overdr0ne-directory "/keys/chatgpt.key"))))
+  (setq repllm-openai-backend
+        (repllm-make-openai "GPT"
+          :stream t
+          :key (f-read-text (expand-file-name (concat overdr0ne-directory "/keys/chatgpt.key")))
+          ))
+  )
 
 (provide '+modules)
 ;;; +modules.el ends here
