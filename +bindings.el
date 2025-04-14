@@ -882,7 +882,8 @@
   ;;     "K" evil-scroll-page-up)))
   (skey-define-keys
    '(magit-status-mode-map)
-   `(("M-;" shelldon)))
+   `(("M-;" shelldon)
+     ("C-n" ,+note-keymap)))
 
   (skey-define-keys
    '(evim-normal-mode-map evim-visual-mode-map)
