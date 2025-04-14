@@ -67,6 +67,11 @@
                   :host github
                   :repo "Overdr0ne/skey"
                   :branch "main"))
+;; (when t
+;;   (add-to-list 'load-path "~/src/skey/")
+;;   (load "~/src/skey/skey.el")
+;;   )
+
 
 (use-package seq)
 (use-package let-alist)

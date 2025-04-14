@@ -81,7 +81,8 @@
    ("n" consult-notes)
    ("C-n" consult-notes)
    ("v" org-search-view)
-   ("C-t" org-todo-list)
+   ("C-t" sam-find-todo)
+   ("t" org-todo-list)
    ))
 
 
@@ -185,7 +186,7 @@
    ("M-l" windmove-display-right)
    ("M-c" windmove-display-same-window)
 
-   ("<C-m>" sam-ace-move-window)
+   ("C-m" sam-ace-move-window)
    ("C-u"   winner-undo)
    ("C-r"   winner-redo)
    ))
@@ -256,7 +257,7 @@
    (":"    eval-expression)
    (","    switch-to-buffer)
    ("."    find-file)
-   ("RET" bookmark-jump)
+   ("<return>" bookmark-jump)
    ("SPC" persp-switch)
    ("<tab>" mode-line-other-buffer)
 
@@ -268,14 +269,14 @@
    ("["   previous-buffer)
    ("]"   next-buffer)
 
-   ("dd"   gdb)
-   ("dm"   gdb-many-windows)
-   ("ds"   sam-serial-term)
+   ("d d"   gdb)
+   ("d m"   gdb-many-windows)
+   ("d s"   sam-serial-term)
 
-   ("eb"   (lambda () (interactive) (find-file "~/.bashrc")))
-   ("ez"   (lambda () (interactive) (find-file "~/.zshrc")))
-   ("eh"   (lambda () (interactive) (find-file "/etc/httpd/conf/httpd.conf")))
-   ("ei"   (lambda () (interactive) (find-file "~/.config/i3/config")))
+   ("e b"   (lambda () (interactive) (find-file "~/.bashrc")))
+   ("e z"   (lambda () (interactive) (find-file "~/.zshrc")))
+   ("e h"   (lambda () (interactive) (find-file "/etc/httpd/conf/httpd.conf")))
+   ("e i"   (lambda () (interactive) (find-file "~/.config/i3/config")))
 
    ("f" ,+file-keymap)
    ("F"    sam-sudo-find-file)
@@ -284,12 +285,12 @@
 
    ("h" ,+help-map)
 
-   ("ii"   consult-imenu)
-   ("if"   consult-imenu-functions)
-   ("im"   consult-imenu-macros)
-   ("ip"   consult-imenu-packages)
-   ("it"   consult-imenu-types)
-   ("iv"   consult-imenu-variables)
+   ("i i"   consult-imenu)
+   ("i f"   consult-imenu-functions)
+   ("i m"   consult-imenu-macros)
+   ("i p"   consult-imenu-packages)
+   ("i t"   consult-imenu-types)
+   ("i v"   consult-imenu-variables)
 
    ("j"    avy-goto-word-or-subword-1)
 
@@ -297,45 +298,45 @@
 
    ("l" ,+lookup-keymap)
 
-   ("mf" flycheck-mode)
-   ("mF" toggle-frame-fullscreen)
-   ("mg" evil-goggles-mode)
-   ("mh" hl-line-mode)
-   ("mm" menu-bar-mode)
-   ("ms" flyspell-mode)
-   ("mv" visual-line-mode)
-   ("mz" writeroom-mode)
+   ("m f" flycheck-mode)
+   ("m F" toggle-frame-fullscreen)
+   ("m g" evil-goggles-mode)
+   ("m h" hl-line-mode)
+   ("m m" menu-bar-mode)
+   ("m s" flyspell-mode)
+   ("m v" visual-line-mode)
+   ("m z" writeroom-mode)
 
    ("n" ,+note-keymap)
 
-   ("oc" calc)
-   ("ob" browse-url-of-file)
-   ("od" docker)
-   ("oD" cfw:open-calendar-buffer)
-   ("oe" eww)
-   ("og" gnus)
+   ("o c" calc)
+   ("o b" browse-url-of-file)
+   ("o d" docker)
+   ("o D" cfw:open-calendar-buffer)
+   ("o e" eww)
+   ("o g" gnus)
 
    ("p" ,project-prefix-map)
 
-   ("Pl" list-packages)
-   ("Ps" helm-system-packages)
+   ("P l" list-packages)
+   ("P s" helm-system-packages)
 
-   ("qq" save-buffers-kill-terminal)
+   ("q q" save-buffers-kill-terminal)
 
-   ("si" yas-insert-snippet)
-   ("sr" yas-reload-all)
-   ("ss" aya-create)
-   ("se" aya-expand)
+   ("s i" yas-insert-snippet)
+   ("s r" yas-reload-all)
+   ("s s" aya-create)
+   ("s e" aya-expand)
 
    ("t"   evim-term)
    ("T"   evim-term-side)
 
-   ("uc" sfs-recollect)
-   ("ud" disk-usage)
-   ("uk" browse-kill-ring)
-   ("ur" replace-string)
-   ("us" sfs-research)
-   ("uw" wordnut-search)
+   ("u c" sfs-recollect)
+   ("u d" disk-usage)
+   ("u k" browse-kill-ring)
+   ("u r" replace-string)
+   ("u s" sfs-research)
+   ("u w" wordnut-search)
 
    ("v" magit-status)
 
@@ -343,11 +344,11 @@
 
    ("y"    consult-notes)
 
-   ("zc" ((lambda () (interactive) (find-file "~/scratch/c/scratch.c")) :which-key "C"))
-   ("zl" ((lambda () (interactive) (find-file "~/scratch/elisp/scratch.el")) :which-key "Elisp"))
-   ("zp" ((lambda () (interactive) (find-file "~/scratch/py/scratch.py")) :which-key "Python"))
-   ("zt" ((lambda () (interactive) (find-file "~/scratch/text/generic.txt")) :which-key "text"))
-   ("zz" ((lambda () (interactive) (find-file "~/scratch/generic")) :which-key "generic"))))
+   ("z c" ((lambda () (interactive) (find-file "~/scratch/c/scratch.c")) :which-key "C"))
+   ("z l" ((lambda () (interactive) (find-file "~/scratch/elisp/scratch.el")) :which-key "Elisp"))
+   ("z p" ((lambda () (interactive) (find-file "~/scratch/py/scratch.py")) :which-key "Python"))
+   ("z t" ((lambda () (interactive) (find-file "~/scratch/text/generic.txt")) :which-key "text"))
+   ("z z" ((lambda () (interactive) (find-file "~/scratch/generic")) :which-key "generic"))))
 
 (defvar +alter-keymap (make-sparse-keymap))
 (skey-define-keys
@@ -367,7 +368,7 @@
    ;; ("C-f"  sfs-research)
    ;; ("C-g" consult-bookmark)
    ("C-k" kill-buffer-and-window)
-   ("<C-m>" bookmark-set)
+   ("C-m" bookmark-set)
    ("C-t" sam-toggle-theme)))
 
 (skey-define-keys
@@ -380,7 +381,7 @@
    ("C-g" bookmark-jump)
    ("C-j" bookmark-jump)
    ("C-l" bookmark-load)
-   ("<C-m>" bookmark-set)
+   ("C-m" bookmark-set)
    ("C-o" bookmark-jump-other-window)
    ("C-r" bookmark-set)
    ("C-s" bookmark-save)
@@ -392,7 +393,7 @@
 (skey-define-keys
  '(slink-keymap)
  `(
-   ("<C-return>" slink-load)
+   ("C-<return>" slink-load)
    ("C-d" slink-delete)
    ("C-f" slink-save-file)
    ("C-g" slink-get-url-at-point)
@@ -489,7 +490,7 @@
 (skey-define-keys
  '(+holymotion-keymap)
  `(
-   ("(" holymotion-backward-up-list)
+   ;; ("(" holymotion-backward-up-list)
    ("[" holymotion-backward-beginning-of-defun)
    ("]" holymotion-forward-beginning-of-defun)
    ("M-b" holymotion-backward-sexp)
@@ -510,8 +511,9 @@
   (skey-define-keys
    '(evim-insert-mode-map)
    `(
-     ("SPC" self-insert-command)))
+     ("<space>" self-insert-command)))
 
+  ;; (keymap-set evim-insert-mode-map "C-M-k" 'holymotion-previous-visual-line)
   (skey-define-keys
    '(evim-insert-mode-map)
    `(
@@ -529,7 +531,7 @@
      ("`" (lambda () (interactive) (insert "`")))
      ("M-h" sp-backward-delete-symbol)
      ("C-M-h" sam-kill-backward-line)
-     ("<C-m>" sam-match)
+     ("C-m" sam-match)
      ("C-v" ,+paste-keymap)))
 
   (skey-define-keys
@@ -539,7 +541,7 @@
      ("{" ,(sam-make-region-wrapper "{" "}"))
      ("[" ,(sam-make-region-wrapper "[" "]"))
      ("<return>" sam-pushb-or-embark)
-     ("<C-m>" sam-match)
+     ("C-m" sam-match)
      ("s" nil)
      ("s f" ctrlf-forward-default)
      ("s b" ctrlf-backward-default)
@@ -555,16 +557,16 @@
      ;;  "<mouse-2>" #'sam-helpful-click
 
      ("<backspace>" switch-to-prev-buffer)
-     ("<S-backspace>" switch-to-next-buffer)
+     ("S-<backspace>" switch-to-next-buffer)
 
      ("<return>" sam-pushb-or-embark)
-     ("<C-return>" ,slink-keymap)
+     ("C-<return>" ,slink-keymap)
 
      ;;  "<tab>" #'hs-toggle-block
 
      ("] SPC" sam-insert-line-below)
      ("C-]" xref-find-definitions)
-     ("<M-]>" xref-find-references)
+     ("M-]" xref-find-references)
 
      ("[ SPC" sam-insert-line-above)
 
@@ -627,7 +629,7 @@
 
      ("m" point-to-register)
 
-     ("<C-m>" gumshoe-drop-marker)
+     ("C-m" gumshoe-drop-marker)
      ("M-m" bookmark-map)
 
      ("C-n" ,+note-keymap)
@@ -692,17 +694,6 @@
      ))
 
   )
-;; (general-define-key
-;;  :states 'normal
-;;  :keymaps '(custom-mode-map Custom-mode-map)
-;;  "<return>" #'sam-pushw-or-embark)
-
-;; ;;; media keys
-;; (general-define-key
-;;  :states '(normal insert visual)
-;;  :keymaps '(global)
-;;  "<XF86Explorer>" #'sam-take-screenshot)
-
 ;; ;;; insert bindings
 ;; (general-define-key
 ;;  :states 'insert
@@ -761,7 +752,7 @@
 (skey-define-keys
  '(embark-symbol-map)
  `(("<return>" helpful-at-point)
-   ;; ("<C-return>" #'xref-find-definitions)
+   ;; ("C-<return>" #'xref-find-definitions)
    ("C-<return>" embark-find-definition)
    ))
 
@@ -915,7 +906,7 @@
    ("f" find-file)
    ("C-f" consult-line)
    ("C-l" dired-do-symlink)
-   ("<C-m>" bookmark-map)
+   ("C-m" bookmark-map)
    ("C-;" eval-expression)
    ("M-f" find-file)
    ("h"   sam-dired-up-directory)
@@ -1000,7 +991,7 @@
 (skey-define-keys
  '(compilation-minor-mode-map)
  `(
-   ("<M-return>" compilation-display-error)))
+   ("M-<return>" compilation-display-error)))
 (skey-define-keys
  '(compilation-mode-map)
  `(
@@ -1029,7 +1020,7 @@
    '(evim-normal-magit-blame-mode-map magit-mode-map magit-diff-mode-map magit-status-mode-map magit-revision-mode-map)
    ;; "<return>" #'magit-visit-thing
    `(
-     ("<C-return>" ,slink-keymap)
+     ("C-<return>" ,slink-keymap)
      ("<tab>" magit-section-toggle)
      ("SPC" ,+command-mode-map)
      ("C-b" ,+buffer-keymap)
@@ -1040,7 +1031,7 @@
   (skey-define-keys
    '(evim-normal-magit-blame-mode-map magit-blame-mode-map magit-blame-read-only-mode-map)
    `(("<return>" magit-show-commit)
-     ("SPC" ,+command-mode-map)))
+     ("<space>" ,+command-mode-map)))
   ;; (skey-define-keys
   ;;  '(magit-diff-mode-map)
   ;;  `(("J" evil-scroll-page-down
@@ -1067,7 +1058,6 @@
      (")"   sp-up-sexp)
      ("C-h" sp-backward-slurp-sexp)
      ("C-l" sp-forward-slurp-sexp)
-     ("M-d" kill-sexp)
      ("M-h" back-to-indentation)
      ("M-j" scroll-up-line)
      ("M-k" scroll-down-line)
@@ -1238,8 +1228,8 @@
 (skey-define-keys
  '(+llm-keymap)
  `(
-   ("C-SPC" nil)
-   ("C-SPC" repllm-display)
+   ("C-<space>" nil)
+   ("C-<space>" repllm-display)
    ("C-v" repllm-insert)
    ))
 
@@ -1249,12 +1239,12 @@
    `(
      ("?" which-key-show-top-level)
      (";" execute-extended-command)
-     ;; ("C-SPC" ,+controller-keymap)
-     ("C-SPC" ,+llm-keymap)
-     ("M-SPC" ,+metallic-keymap)
-     ("S-SPC" ,+shifty-keymap)
-     ("A-SPC" ,+alter-keymap)
-     ("SPC" ,+command-mode-map)
+     ;; ("C-<space>" ,+controller-keymap)
+     ("C-<space>" ,+llm-keymap)
+     ("M-<space>" ,+metallic-keymap)
+     ("S-<space>" ,+shifty-keymap)
+     ("A-<space>" ,+alter-keymap)
+     ("<space>" ,+command-mode-map)
      )))
 
 (provide '+bindings)

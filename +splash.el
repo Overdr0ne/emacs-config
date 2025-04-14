@@ -29,9 +29,9 @@
 
 (add-hook 'after-make-frame-functions
           (lambda (frame)
-            (run-with-idle-timer 0.5 nil
+            (run-with-idle-timer 1 nil
                      (lambda ()
-                       ;; (require '+disambiguate-keys)
+                       (require '+disambiguate-keys)
                        ;; (call-interactively #'sam-project-persp-switch-project)
                        ))
             ))

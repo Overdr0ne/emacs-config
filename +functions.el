@@ -784,6 +784,17 @@ See `embark-act' for the meaning of the prefix ARG."
                        nil 'file-name-history)))
     (dired dir)))
 
+(defun sam-find-todo ()
+  (interactive)
+  (let ((action '((display-buffer-in-side-window)
+                  (side . bottom)
+                  (slot . 2))))
+    (pop-to-buffer (find-file-noselect (expand-file-name "~/notes/todo.md"))
+                   action)
+    )
+  ;; (with-current-buffer (find-file (expand-file-name "~/notes/todo.md")))
+  )
+
 (defun sam-project-find-file ()
   "Start Dired in a directory inside the current project."
   (interactive)
