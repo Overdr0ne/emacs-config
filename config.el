@@ -27,7 +27,7 @@
 ;; (setq straight-disable-byte-compilation t)
 ;; (setq straight-disable-native-compilation t)
 
-;; (require 'keyword-hack)
+(require '+disambiguate-keys)
 (require '+macros)
 (require '+core)
 (require '+modules)

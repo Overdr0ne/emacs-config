@@ -27,10 +27,21 @@
 
 ;;; Code:
 
-(define-key input-decode-map [?\C-\[] (kbd "<C-[>"))
-;; (define-key input-decode-map [?\C-m] (kbd "<C-m>"))
-;; (define-key input-decode-map [? ] (kbd "SPC"))
-;; (define-key input-decode-map [?\C-j] (kbd "C-j"))
+(defun setup-input-decode-map ()
+  (keymap-set input-decode-map
+              "C-["
+              (kbd "<C-[>"))
+  ;; (define-key input-decode-map [?\C-m] (kbd "<C-m>"))
+  ;; (define-key input-decode-map [? ] (kbd "SPC"))
+  ;; (define-key input-decode-map [?\C-j] (kbd "C-j"))
+  )
+(add-hook 'after-make-frame-functions (lambda (_) (setup-input-decode-map)))
+(add-hook 'server-after-make-frame-hook #'setup-input-decode-map)
+(setup-input-decode-map)
+
+;; (define-key input-decode-map [?\C-\[] (kbd "<C-[>"))
+;; (global-set-key [control-bracketleft] (lambda()(interactive)(message "Ctrl + [")))
+
 
 (provide '+disambiguate-keys)
 ;;; disambiguate-keys.el ends here

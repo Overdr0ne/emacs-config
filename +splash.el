@@ -27,14 +27,13 @@
 (require '+modules)
 (require 'server)
 
-(add-hook 'after-make-frame-functions
-          (lambda (frame)
-            (run-with-idle-timer 1 nil
-                     (lambda ()
-                       (require '+disambiguate-keys)
-                       ;; (call-interactively #'sam-project-persp-switch-project)
-                       ))
-            ))
+;; (add-hook 'after-make-frame-functions
+;;           (lambda (frame)
+;;             (run-with-idle-timer 1 nil
+;;                      (lambda ()
+;;                        ;; (call-interactively #'sam-project-persp-switch-project)
+;;                        ))
+;;             ))
 
 ;; (set-frame-font sam-font nil t)
 ;;(windmove-display-same-window)

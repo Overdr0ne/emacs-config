@@ -62,15 +62,15 @@
   (setq delete-pair-blink-delay .15)
   )
 
-(use-package skey
-  :straight (skey :type git
-                  :host github
-                  :repo "Overdr0ne/skey"
-                  :branch "main"))
-;; (when t
-;;   (add-to-list 'load-path "~/src/skey/")
-;;   (load "~/src/skey/skey.el")
-;;   )
+;; (use-package skey
+;;   :straight (skey :type git
+;;                   :host github
+;;                   :repo "Overdr0ne/skey"
+;;                   :branch "main"))
+(when t
+  (add-to-list 'load-path "~/src/skey/")
+  (load "~/src/skey/skey.el")
+  )
 
 
 (use-package seq)

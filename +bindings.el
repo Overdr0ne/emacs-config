@@ -27,6 +27,7 @@
 (require '+modules)
 (require '+sets)
 (require 'kde-activities)
+(require '+disambiguate-keys)
 
 ;; Fix Ascii character conflation
 ;;(setq function-key-map (delq '(kp-tab . [9]) function-key-map))
@@ -355,11 +356,12 @@
  '(+alter-keymap)
  `(("A-b" ibuffer)))
 
+
 (defvar +controller-keymap (make-sparse-keymap))
+(define-key +controller-keymap "<C-[>" #'persp-prev)
 (skey-define-keys
  '(+controller-keymap)
  `(
-   ("<C-[>"  persp-prev)
    ("C-]"  persp-next)
    ("C-;"  consult-complex-command)
    ("C-SPC" tmm-menubar)
@@ -508,6 +510,7 @@
    `(("SPC" ,+command-mode-map)
      ("-" evim-join)))
 
+  (define-key evim-insert-mode-map (kbd "<C-[>") #'evim-escape)
   (skey-define-keys
    '(evim-insert-mode-map)
    `(
@@ -534,6 +537,7 @@
      ("C-m" sam-match)
      ("C-v" ,+paste-keymap)))
 
+  (define-key evim-visual-mode-map (kbd "<C-[>") #'keyboard-quit)
   (skey-define-keys
    '(evim-visual-mode-map)
    `(
@@ -1048,6 +1052,7 @@
    ("C-v" repllm-insert)
    ))
 
+(keymap-set dired-mode-map "<space>" +command-mode-map)
 (with-eval-after-load 'evim
   (skey-define-keys
    (cl-set-difference +all-maps (append +repl-maps +minibuffer-maps '(evim-insert-mode-map)))
