@@ -39,6 +39,5 @@
 (require '+splash)
 (require '+late)
 
-
 (provide 'config)
 ;;; config.el ends here

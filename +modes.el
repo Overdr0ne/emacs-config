@@ -5,7 +5,6 @@
 (column-number-mode)
 (menu-bar-mode -1)
 (global-auto-revert-mode +1)
-
 ;; (with-eval-after-load 'gumshoe
 ;;     (global-gumshoe-mode +1))
 (window-divider-mode +1)

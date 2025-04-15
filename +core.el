@@ -71,7 +71,7 @@
                (split-window window nil (if winblows--split-window-right
                                             'left
                                           'right)))))))
-(setq display-buffer-alist
+(setopt display-buffer-alist
       `(("\\(*\\(info\\|ansi-term\\|bitbake\\|docker\\|grep*\\|.*systemctl.*\\|Help\\|messages\\|help\\|helpful\\|trace-\\|Backtrace\\|Org\\|RefTeX.*\\)\\)"
          (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-in-side-window display-buffer-pop-up-window)
          (side . right)
@@ -109,84 +109,84 @@
 (set-default-coding-systems 'utf-8)
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
-;; (setq default-buffer-file-coding-system 'utf-8)
-;; (setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
-(setq x-select-request-type nil)
+;; (setopt default-buffer-file-coding-system 'utf-8)
+;; (setopt x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
+(setopt x-select-request-type nil)
 
-;; (setf shell-file-name "/home/sam/.guix-profile/bin/zsh")
-(setf shell-file-name "/home/sam/.guix-home/profile/bin/bash")
+;; (setopt shell-file-name "/home/sam/.guix-profile/bin/zsh")
+(setopt shell-file-name "/home/sam/.guix-home/profile/bin/bash")
 
-(setq custom-file "~/.emacs.d/overdr0ne/customize.el")
-;; (general-add-hook 'kill-emacs-hook
-;;                   '(customize-save-customized))
+(setopt custom-file "~/.emacs.d/overdr0ne/customize.el")
 
 (add-to-list 'backup-directory-alist
              (cons "." "~/.emacs.d/backups/"))
-(setq backup-by-copying t
-      delete-old-versions t
-      kept-new-versions 6
-      kept-old-versions 2
-      version-control t)
+(setopt backup-by-copying t
+        delete-old-versions t
+        kept-new-versions 6
+        kept-old-versions 2
+        version-control t)
 
 ;; use what-cursor-position to determine font
 ;; (setq sam-font
 ;;       "-CTDB-FiraMono Nerd Font-bold-normal-normal-*-16-*-*-*-m-0-iso10646-1")
-;(x-list-fonts "MaterialIcons")
-(setq sam-font "FiraCode")
-;; (setq sam-font "-pyrs-FontAwesome-regular-normal-normal-*-*-*-*-*-*-0-iso10646-1")
+                                        ;(x-list-fonts "MaterialIcons")
+(setopt sam-font "FiraCode")
+;; (setopt sam-font "-pyrs-FontAwesome-regular-normal-normal-*-*-*-*-*-*-0-iso10646-1")
 (defun font-exists-p (font) (if (null (x-list-fonts font)) nil t))
 ;; (when (window-system)
 ;;  (cond
 ;;        ((font-exists-p "MaterialIcons") (set-frame-font "MaterialIcons:spacing=100:size=18" nil t))))
-;; (setq sam-font "FreeMono")
-;; (setq sam-font "FreeSans")
-;; (setq sam-font "MaterialIcons")
+;; (setopt sam-font "FreeMono")
+;; (setopt sam-font "FreeSans")
+;; (setopt sam-font "MaterialIcons")
 ;; (add-to-list 'default-frame-alist '(alpha . (93 . 70)))
 (add-to-list 'default-frame-alist '(alpha . (97 . 93)))
 (add-to-list 'default-frame-alist `(font . ,sam-font))
 ;; (set-frame-parameter (selected-frame) 'alpha '(93 . 70))
 (set-frame-parameter (selected-frame) 'alpha '(97 . 93))
 
-(setq tags-add-tables nil)
-(setq large-file-warning-threshold nil)
+(setopt tags-add-tables nil)
+(setopt large-file-warning-threshold nil)
 (set-face-attribute 'default nil :height 140)
-;; (setq display-line-numbers 'relative)
-(setq display-line-numbers nil)
-(setq user-mail-address "scmorris.dev@gmail.com")
-(setq overdr0ne-directory (concat user-emacs-directory "overdr0ne"))
+;; (setopt display-line-numbers 'relative)
+(setopt display-line-numbers nil)
+(setopt user-mail-address "scmorris.dev@gmail.com")
+(setopt overdr0ne-directory (concat user-emacs-directory "overdr0ne"))
 ;; (turn-off-auto-fill)
 ;; (auto-fill-mode -1)
 
 ;; (global-auto-revert-mode +1)
 
-;; (setq browse-url-browser-function 'eww-browse-url)
-(setq-default require-final-newline nil)
+;; (setopt browse-url-browser-function 'eww-browse-url)
+(setopt require-final-newline nil)
 
-(setq load-prefer-newer t)
+(setopt load-prefer-newer t)
 
-(setq debug-on-error t)
+(setopt debug-on-error t)
 
-(setf scroll-step 1)
+(setopt scroll-step 1)
 
-(setf ring-bell-function 'ignore)
+(setopt ring-bell-function 'ignore)
 
-(setq-default major-mode 'text-mode)
+(setopt major-mode 'text-mode)
 
-(setq-default tab-width 2)
+(setopt tab-width 2)
 
-(setq-default sam-root-dir (expand-file-name "~/"))
+(setopt sam-root-dir (expand-file-name "~/"))
 
-(setq message-log-max 10000)
+(setopt message-log-max 10000)
+
+(setopt history-length 500)
 
 ;; (set-frame-font "-UKWN-Mononoki Nerd Font Mono-bold-normal-normal-*-15-*-*-*-m-0-iso10646-1")
 
 ;; (desktop-save-mode 1)
 
-;; (setf initial-buffer-choice (buffer-name (find-file-noselect "/home/sam/notes/todo.md")))
+;; (setopt initial-buffer-choice (buffer-name (find-file-noselect "/home/sam/notes/todo.md")))
 
-(setq user-mail-address "scmorris.dev@gmail.com"
+(setopt user-mail-address "scmorris.dev@gmail.com"
       user-full-name "Samuel Morris")
-(setq copyright-names-regexp
+(setopt copyright-names-regexp
       (format "%s <%s>" user-full-name user-mail-address))
 
 (provide '+core)

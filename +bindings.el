@@ -698,7 +698,7 @@
      ))
 
   )
-(setq-default ediff-mode-map (make-sparse-keymap))
+(setopt ediff-mode-map (make-sparse-keymap))
 
 ;; ;;; module keybinds
 ;; (general-define-key

@@ -31,12 +31,12 @@
 (use-package loaddefs
   :straight (loaddefs :type built-in)
   :config
-  (setf global-so-long-mode t)
+  (setopt global-so-long-mode t)
   )
 
 (progn ;; startup.el does not provide startup
-  (setq initial-scratch-message nil)
-  (setq inhibit-startup-screen t)
+  (setopt initial-scratch-message nil)
+  (setopt inhibit-startup-screen t)
   (turn-off-auto-fill)
   (auto-fill-mode -1)
   )
@@ -44,13 +44,13 @@
 (use-package browse-url
   :straight (browse-url :type built-in)
   :config
-  (setq browse-url-browser-function 'eww-browse-url)
+  (setopt browse-url-browser-function 'eww-browse-url)
   )
 
 ;; (use-package pixel-mode
 ;;   :straight (pixel-mode :type built-in)
 ;;   :config
-;;   (setq pixel-scroll-precision-use-momentum t)
+;;   (setopt pixel-scroll-precision-use-momentum t)
 ;;   )
 
 (use-package autorevert
@@ -59,7 +59,7 @@
   )
 
 (progn ;; lisp.el does not provide lisp
-  (setq delete-pair-blink-delay .15)
+  (setopt delete-pair-blink-delay .15)
   )
 
 ;; (use-package skey
@@ -92,7 +92,7 @@
 (use-package tramp
   :straight (tramp :type built-in)
   ;; :config
-  ;; (setq tramp-remote-path
+  ;; (setopt tramp-remote-path
   ;;       (append '("~/.guix-home/profile/bin"
   ;;                 "~/.guix-home/profile/sbin"
   ;;                 "~/.guix-profile/bin"
@@ -104,8 +104,8 @@
   :config
   ;; (add-hook 'scheme-mode-hook #'lsp-scheme)
 
-  ;; (setq lsp-scheme-implementation "guile")
-)
+  ;; (setopt lsp-scheme-implementation "guile")
+  )
 
 (use-package subword
   :straight (subword :type built-in)
@@ -116,9 +116,9 @@
 (use-package frame
   :straight (frame :type built-in)
   :init
-  (setq window-divider-default-right-width 2)
-  (setq window-divider-default-bottom-width 2)
-  (setq window-divider-default-places t)
+  (setopt window-divider-default-right-width 2)
+  (setopt window-divider-default-bottom-width 2)
+  (setopt window-divider-default-places t)
   (set-face-attribute 'window-divider nil
                       :foreground nil
                       :inherit 'minibuffer-prompt)
@@ -127,9 +127,9 @@
 (use-package window
   :straight (window :type built-in)
   :config
-  (setq window-min-height 1)
+  (setopt window-min-height 1)
   ;; Maximum number of side-windows to create on (left top right bottom)
-  (setq window-sides-slots '(1 1 1 1))
+  (setopt window-sides-slots '(1 1 1 1))
 
   ;; redefine min-size func to not factor in window-divider into
   ;; min window size.
@@ -226,8 +226,7 @@
                 (max (ceiling pixel-height char-size)
                      (if (window--min-size-ignore-p window ignore)
                          0
-                       window-min-height))))))))))
-  )
+                       window-min-height)))))))))))
 
 (use-package text-property-search
   :straight (text-property-search :type built-in)
@@ -235,7 +234,7 @@
 
 ;; (use-package hyperbole
 ;;   :init
-;;   (setf hkey-init nil))
+;;   (setopt hkey-init nil))
 
 (use-package rx
   :straight (rx :type built-in))
@@ -247,7 +246,7 @@
 (use-package select
   :straight (select :type built-in)
   :config
-  (setq select-enable-primary t))
+  (setopt select-enable-primary t))
 
 (use-package sh-script
   :straight (sh-script :type built-in)
@@ -267,8 +266,8 @@
 (use-package simple
   :straight (simple :type built-in)
   :config
-  (setq-default indent-tabs-mode nil)
-  (setf kill-ring-max 1000)
+  (setopt indent-tabs-mode nil)
+  (setopt kill-ring-max 1000)
   ;; :config
   (add-to-list 'auto-mode-alist '("*Shell Command Output*\\'" . text-mode))
   ;; (add-to-list 'auto-mode-alist '("\\.Async Shell Command\\'" . text-mode))
@@ -291,21 +290,21 @@
   :straight (term :type built-in)
   :config
   (defmacro term-pager-enabled () nil)
-  (setq term-pager-count nil)
-  ;; (setq term-suppress-hard-newline t)
+  (setopt term-pager-count nil)
+  ;; (setopt term-suppress-hard-newline t)
   ;; (defun term--unwrap-visible-long-lines (width) nil)
   )
 
 (use-package project
   :straight (project :type built-in)
   :config
-  (setq project-vc-merge-submodules nil)
-  (setq project-switch-commands
-        '((find-file "Find file" ?f)
-          (project-find-regexp "Find regexp")
-          (project-find-dir "Find directory")
-          (magit-status "Magit")
-          (project-eshell "Eshell"))))
+  (setopt project-vc-merge-submodules nil)
+  (setopt project-switch-commands
+          '((find-file "Find file" ?f)
+            (project-find-regexp "Find regexp")
+            (project-find-dir "Find directory")
+            (magit-status "Magit")
+            (project-eshell "Eshell"))))
 
 (use-package wid-edit
   :straight (wid-edit :type built-in
@@ -315,19 +314,15 @@
   :straight (tab-bar :type built-in
                      )
   :config
-  (setq tab-bar-separator "|")
+  (setopt tab-bar-separator "|")
   )
 (use-package savehist
   :straight (savehist :type built-in)
-  :init
-  ;;  (require 'projectile)
-  (setq history-length 500)
-  (setq savehist-file "~/.emacs.d/history")
-  ;; (setq savehist-additional-variables
-  ;;       (append savehist-additional-variables
-  ;;               '(kill-ring search-ring regexp-search-ring compile-history log-edit-comment-ring)))
-  (setq savehist-additional-variables
-        '(kill-ring search-ring regexp-search-ring compile-history log-edit-comment-ring))
+  :config
+  (setopt savehist-additional-variables
+          (append savehist-additional-variables
+                  '(kill-ring search-ring regexp-search-ring compile-history log-edit-comment-ring)))
+  ;; (add-to-list 'savehist-additional-variables '(kill-ring search-ring regexp-search-ring compile-history log-edit-comment-ring))
   )
 
 (use-package cl-lib
@@ -349,28 +344,28 @@
 
 ;; (use-package icomplete
 ;;   :init
-;;   (setf icomplete-show-matches-on-no-input t)
-;;   (setf icomplete-vertical-mode +1))
+;;   (setopt icomplete-show-matches-on-no-input t)
+;;   (setopt icomplete-vertical-mode +1))
 
 (use-package minibuffer
   :straight (minibuffer :type built-in)
   :config
-  (setq completions-sort 'historical)
+  ;; (setopt completions-sort 'historical)
   )
 (use-package vertico
   :straight (vertico
              :files ("*.el" "extensions/*.el"))
   :init
-  ;; (setf vertico-sort-function nil)
-  (setf vertico-sort-function 'vertico-sort-history-length-alpha)
-  (setf completion-ignored-extensions nil)
+  ;; (setopt vertico-sort-function nil)
+  (setopt vertico-sort-function 'vertico-sort-history-length-alpha)
+  (setopt completion-ignored-extensions nil)
   ;; :config
 
   ;; Configure the display per command.
   ;; Use a buffer with indices for imenu
   ;; and a flat (Ido-like) menu for M-x.
-  (setq vertico-multiform-commands
-        '((sam-insert-zsh-command (vertico-sort-function . nil))))
+  (setopt vertico-multiform-commands
+          '((sam-insert-zsh-command (vertico-sort-function . nil))))
   ;;         ;; (gumshoe-peruse-globally (vertico-sort-function . nil))
   ;;         ;; (gumshoe-peruse-in-buffer (vertico-sort-function . nil))
   ;;         ;; (gumshoe-peruse-in-window (vertico-sort-function . nil))
@@ -380,7 +375,7 @@
 
   ;; (advice-add #'vertico--sort-function :before-until #'completion-category-sort-function)
 
-  ;; (setq vertico-multiform-categories
+  ;; (setopt vertico-multiform-categories
   ;;       '(
   ;;         ;; (file grid)
   ;;         ;; (symbol (vertico-sort-function . vertico-sort-alpha))
@@ -389,16 +384,16 @@
 
   ;; Sort directories before files
   ;; (defun sort-directories-first (files)
-  ;;   (setq files (vertico-sort-history-length-alpha files))
+  ;;   (setopt files (vertico-sort-history-length-alpha files))
   ;;   (nconc (seq-filter (lambda (x) (string-suffix-p "/" x)) files)
   ;;          (seq-remove (lambda (x) (string-suffix-p "/" x)) files)))
   )
 (use-package vertico-posframe)
 (use-package orderless
   :config
-  (setq completion-styles '(orderless basic)
-        completion-category-defaults nil
-        completion-category-overrides '((file (styles partial-completion)))))
+  (setopt completion-styles '(orderless basic)
+          completion-category-defaults nil
+          completion-category-overrides '((file (styles partial-completion)))))
 
 (use-package all-the-icons
   :init
@@ -418,12 +413,12 @@
              :files ("*.el"))
   ;; :init
   ;; (advice-add #'register-preview :override #'consult-register-window)
-  ;; (setq xref-show-xrefs-function #'consult-xref
+  ;; (setopt xref-show-xrefs-function #'consult-xref
   ;;       xref-show-definitions-function #'consult-xref)
   :config
-  (setf consult-ripgrep-args (concat consult-ripgrep-args " -L"))
+  (setopt consult-ripgrep-args (concat consult-ripgrep-args " -L"))
   ;;  (autoload 'projectile-project-root "projectile")
-  ;; (setq consult-project-root-function #'projectile-project-root)
+  ;; (setopt consult-project-root-function #'projectile-project-root)
   (defalias #'consult-imenu-variables #'consult-imenu)
   (defalias #'consult-imenu-functions #'consult-imenu)
   (defalias #'consult-imenu-commands #'consult-imenu)
@@ -431,39 +426,39 @@
   (defalias #'consult-imenu-packages #'consult-imenu)
   (defalias #'consult-imenu-types #'consult-imenu)
   ;; Configure initial narrowing per command
-  (setq consult-imenu-config
-        '((emacs-lisp-mode :toplevel "Functions"
-                           :types ((?f "Functions" font-lock-function-name-face)
-                                   (?c "Commands"    font-lock-function-name-face)
-                                   (?m "Macros"    font-lock-function-name-face)
-                                   (?p "Packages"  font-lock-constant-face)
-                                   (?t "Types"     font-lock-type-face)
-                                   (?v "Variables" font-lock-variable-name-face))))
-        )
-  (setq consult-initial-narrow-config
-        '((consult-imenu-functions . ?f)
-          (consult-imenu-commands . ?c)
-          (consult-imenu-variables . ?v)
-          (consult-imenu-packages . ?p)
-          (consult-imenu-types . ?t)
-          (consult-imenu-macros . ?m)))
+  (setopt consult-imenu-config
+          '((emacs-lisp-mode :toplevel "Functions"
+                             :types ((?f "Functions" font-lock-function-name-face)
+                                     (?c "Commands"    font-lock-function-name-face)
+                                     (?m "Macros"    font-lock-function-name-face)
+                                     (?p "Packages"  font-lock-constant-face)
+                                     (?t "Types"     font-lock-type-face)
+                                     (?v "Variables" font-lock-variable-name-face))))
+          )
+  (setopt consult-initial-narrow-config
+          '((consult-imenu-functions . ?f)
+            (consult-imenu-commands . ?c)
+            (consult-imenu-variables . ?v)
+            (consult-imenu-packages . ?p)
+            (consult-imenu-types . ?t)
+            (consult-imenu-macros . ?m)))
 
   ;; Add initial narrowing hook
   (defun consult-initial-narrow ()
     (when-let (key (alist-get this-command consult-initial-narrow-config))
-      (setq unread-command-events (append unread-command-events (list key 32)))))
+      (setopt unread-command-events (append unread-command-events (list key 32)))))
   (add-hook 'minibuffer-setup-hook #'consult-initial-narrow)
 
-  (setq xref-show-xrefs-function #'consult-xref
-        xref-show-definitions-function #'consult-xref)
+  (setopt xref-show-xrefs-function #'consult-xref
+          xref-show-definitions-function #'consult-xref)
 
   ;; use vertico for minibuffer completion
-  (setq completion-in-region-function
-        (lambda (&rest args)
-          (apply (if vertico-mode
-                     #'consult-completion-in-region
-                   #'completion--in-region)
-                 args)))
+  (setopt completion-in-region-function
+          (lambda (&rest args)
+            (apply (if vertico-mode
+                       #'consult-completion-in-region
+                     #'completion--in-region)
+                   args)))
 
 
   (defvar consult--source-perspective-buffer
@@ -485,13 +480,13 @@
 (use-package consult-dir)
 (use-package consult-notes
   :config
-  (setq-default consult-notes-file-dir-sources
-                `(
-                  ("big-bend" ?b "~/workspaces/big-bend/notes")
-                  ("etc" ?e "~/workspaces/etc/notes")
-                  ("overdr0ne" ?o "~/.emacs.d/overdr0ne/notes")
-                  ("notes" ?n "~/notes")
-                  )))
+  (setopt consult-notes-file-dir-sources
+          `(
+            ("big-bend" ?b "~/workspaces/big-bend/notes")
+            ("etc" ?e "~/workspaces/etc/notes")
+            ("overdr0ne" ?o "~/.emacs.d/overdr0ne/notes")
+            ("notes" ?n "~/notes")
+            )))
 
 (use-package marginalia)
 (use-package ctrlf)
@@ -505,7 +500,7 @@
                                         &key at-cursor thing prefix-arg (query t) isearch-p)
     (anzu--cons-mode-line 'replace-query)
     (when (and (use-region-p) (region-noncontiguous-p))
-      (setq anzu--region-noncontiguous (funcall region-extract-function 'bounds)))
+      (setopt anzu--region-noncontiguous (funcall region-extract-function 'bounds)))
     (let* ((use-region (use-region-p))
            (orig-point (point))
            (backward (anzu--replace-backward-p prefix-arg))
@@ -525,7 +520,7 @@
         (deactivate-mark t))
       (unwind-protect
           (let* ((from (cond ((and at-cursor beg)
-                              (setq delimited nil)
+                              (setopt delimited nil)
                               (anzu--query-from-at-cursor curbuf beg end overlay-limit))
                              (isearch-p
                               (anzu--query-from-isearch-string
@@ -534,11 +529,11 @@
                                  prompt beg end use-regexp overlay-limit))))
                  (to (cond ((consp from)
                             (prog1 (cdr from)
-                              (setq from (car from)
-                                    anzu--total-matched anzu--last-replaced-count)))
+                              (setopt from (car from)
+                                      anzu--total-matched anzu--last-replaced-count)))
                            ((string-match "\0" from)
                             (let ((replaced (substring-no-properties from (match-end 0))))
-                              (setq from (substring-no-properties from 0 (match-beginning 0)))
+                              (setopt from (substring-no-properties from 0 (match-beginning 0)))
                               (if use-regexp
                                   (anzu--compile-replace-text replaced)
                                 replaced)))
@@ -547,9 +542,9 @@
                              from prompt beg end use-regexp overlay-limit)))))
             (anzu--clear-overlays curbuf (min beg end) (max beg end))
             (anzu--set-replaced-markers from beg end use-regexp)
-            (setq anzu--state 'replace anzu--current-position 0
-                  anzu--replaced-markers (reverse anzu--replaced-markers)
-                  clear-overlay t)
+            (setopt anzu--state 'replace anzu--current-position 0
+                    anzu--replaced-markers (reverse anzu--replaced-markers)
+                    clear-overlay t)
             (let ((case-fold-search (and case-fold-search (not at-cursor))))
               (if use-regexp
                   (apply #'perform-replace (anzu--construct-perform-replace-arguments
@@ -568,8 +563,8 @@
 (use-package nerd-icons)
 (use-package doom-modeline
   :init
-  (setq doom-modeline-height 1)
-  (setq doom-modeline-minor-modes t))
+  (setopt doom-modeline-height 1)
+  (setopt doom-modeline-minor-modes t))
 
 (use-package expand-region)
 
@@ -578,9 +573,9 @@
 (use-package flycheck
   ;;  :after (dash pkg-info let-alist seq)
   :config
-  (setq flycheck-emacs-lisp-load-path 'inherit)
-  (setq flycheck-indication-mode 'right-fringe)
-  (setq flycheck-check-syntax-automatically '(idle-change new-line mode-enabled))
+  (setopt flycheck-emacs-lisp-load-path 'inherit)
+  (setopt flycheck-indication-mode 'right-fringe)
+  (setopt flycheck-check-syntax-automatically '(idle-change new-line mode-enabled))
   (add-hook 'flycheck-error-list-mode-hook visual-line-mode)
   )
 
@@ -594,7 +589,7 @@
   (add-to-list 'exec-path "/usr/lib/git-core")
   (transient-replace-suffix 'magit-commit 'magit-commit-autofixup
     '("x" "Absorb changes" magit-commit-absorb))
-  (setq-default magit-buffer-log-args '("-n256" "--color" "--decorate" "--graph"))
+  (setopt magit-buffer-log-args '("-n256" "--color" "--decorate" "--graph"))
   (put 'magit-log-mode 'magit-log-default-arguments
        magit-buffer-log-args)
   (defun dm/change-commit-author (arg)
@@ -624,7 +619,7 @@ on the current line, if any."
 ;;   :config
 ;;   (add-to-list 'auto-mode-alist '("defconfig\\'" . dts-mode))
 ;;   (add-to-list 'auto-mode-alist '("defconfig\\'" . dts-mode))
-;;   (setq auto-mode-alist (append auto-mode-alist '(("defconfig\\'" . dts-mode)
+;;   (setopt auto-mode-alist (append auto-mode-alist '(("defconfig\\'" . dts-mode)
 ;;                                                   ("\\.its" . dts-mode)))))
 ;; (use-package devicetree-ts-mode
 ;;   )
@@ -672,13 +667,6 @@ on the current line, if any."
 ;;
 ;;(use-package w3m)
 
-(use-package perspective
-  :config
-  (setq persp-suppress-no-prefix-key-warning t)
-  (setq persp-show-modestring nil)
-  (add-hook 'persp-mode-hook (lambda () (setq read-buffer-function nil)))
-  )
-
 ;; (use-package find-file-in-project)
 
 ;; (use-package bookmark+)
@@ -704,8 +692,8 @@ on the current line, if any."
                          (list-installed-packages-all . "pacaur -Q")
                          (list-dependencies-of . "pacaur -Qi")
                          (noconfirm . "--noconfirm"))))
-  (setq system-packages-use-sudo t)
-  (setq system-packages-package-manager 'aptitude))
+  (setopt system-packages-use-sudo t)
+  (setopt system-packages-package-manager 'aptitude))
 
 ;; (use-package web-search)
 
@@ -729,17 +717,17 @@ on the current line, if any."
 (use-package dired
   :straight (:type built-in)
   :config
-  (setf dired-listing-switches "-alhF"))
+  (setopt dired-listing-switches "-alhF"))
 (use-package diredfl)
 (use-package all-the-icons-dired
   :config
   (add-hook 'dired-mode-hook 'all-the-icons-dired-mode)
-  (setq all-the-icons-dired-monochrome nil))
+  (setopt all-the-icons-dired-monochrome nil))
 (use-package dired-narrow)
 ;;(use-package dired-du)
 ;;(use-package dired-subtree
 ;;  :config
-;;  (setf dired-subtree-use-backgrounds nil))
+;;  (setopt dired-subtree-use-backgrounds nil))
 ;;(use-package dired-filter)
 
 (use-package highlight)
@@ -758,19 +746,19 @@ on the current line, if any."
 ;;                                (flyspell-mode 1)
 ;;                                (rcirc-omit-mode)))
 
-;;   (setq rcirc-server-alist
+;;   (setopt rcirc-server-alist
 ;;         '(("irc.libera.chat" :channels ("#emacs"))))
 ;;   (evil-set-initial-state 'rcirc-mode 'insert)
-;;   (setq rcirc-buffer-maximum-lines 1000)
-;;   (setq rcirc-default-nick "Overdr0ne")
-;;   (setq rcirc-default-user-name "Overdr0ne")
-;;   (setq rcirc-log-flag t))
+;;   (setopt rcirc-buffer-maximum-lines 1000)
+;;   (setopt rcirc-default-nick "Overdr0ne")
+;;   (setopt rcirc-default-user-name "Overdr0ne")
+;;   (setopt rcirc-log-flag t))
 
 ;; (use-package explain-pause-mode)
 
 (use-package daemons
   :config
-  (setq daemons-systemd-color t))
+  (setopt daemons-systemd-color t))
 
 ;; (use-package pretty-mode
 ;;   :config
@@ -836,8 +824,8 @@ on the current line, if any."
 
 (use-package imenu
   :config
-  (setq imenu-generic-expression '(("Section"
-                                    "^;;;"))))
+  (setopt imenu-generic-expression '(("Section"
+                                      "^;;;"))))
 
 (use-package disk-usage)
 
@@ -847,26 +835,25 @@ on the current line, if any."
                           :host github
                           :repo "jdtsmith/ultra-scroll"
                           :branch "main"
-                          :files ("*.el"))
-  )
+                          :files ("*.el")))
 
 (use-package perspective
   :config
-  (setq persp-suppress-no-prefix-key-warning t)
-  (setq persp-show-modestring nil)
-  (add-hook 'persp-mode-hook (lambda () (setq read-buffer-function nil)))
-  )
+  (setopt persp-suppress-no-prefix-key-warning t)
+  (setopt persp-show-modestring nil)
+  ;; (add-hook 'persp-mode-hook (lambda () (setopt read-buffer-function nil)))
 
-(add-hook 'persp-mode-hook
-          (lambda ()
-            (setf gumshoe-slot-schema '(time perspective buffer position line))
-            (setf gumshoe-footprint-strategy 'delete-overlapping)
-            ;; (setf gumshoe-footprint-strategy 'nil)
-            (setf gumshoe-backlog-type 'ring)
-            ;; (setf gumshoe-backlog-type 'tree)
-            (add-to-list 'load-path "~/src/gumshoe")
-            (load "~/src/gumshoe/gumshoe.el")
-            ))
+  ;; (add-hook 'persp-mode-hook
+  ;;           (lambda ()
+  ;;             (setopt gumshoe-slot-schema '(time perspective buffer position line))
+  ;;             (setopt gumshoe-footprint-strategy 'delete-overlapping)
+  ;;             ;; (setopt gumshoe-footprint-strategy 'nil)
+  ;;             (setopt gumshoe-backlog-type 'ring)
+  ;;             ;; (setopt gumshoe-backlog-type 'tree)
+  ;;             (add-to-list 'load-path "~/src/gumshoe")
+  ;;             (load "~/src/gumshoe/gumshoe.el")
+  ;;             ))
+  )
 
 ;; (use-package gumshoe
 ;;   :straight (gumshoe :type git
@@ -876,12 +863,12 @@ on the current line, if any."
 ;;                      ;; :branch "feature/footprint-strategy"
 ;;                      )
 ;;   :init
-;;   (setf gumshoe-slot-schema '(time perspective buffer position line))
+;;   (setopt gumshoe-slot-schema '(time perspective buffer position line))
 ;;   ;; (add-to-list 'load-path "~/src/gumshoe")
 ;;   ;; (load "~/src/gumshoe/gumshoe.el")
 ;;   (global-gumshoe-mode +1)
 ;;   ;;  (global-gumshoe-persp-mode 1)
-;;   ;; (setf gumshoe-slot-schema '(time perspective buffer position line))
+;;   ;; (setopt gumshoe-slot-schema '(time perspective buffer position line))
 ;;   ;; (advice-add #'gumshoe-peruse-globally :around
 ;;   ;;              (lambda (old-fn)
 ;;   ;;                (let ((selectrum-should-sort nil))
@@ -903,8 +890,8 @@ on the current line, if any."
 ;;                       :branch "master"
 ;;                       :files ("shelldon.el"))
 ;;   :config
-;;   (setf shell-command-switch "-ic")
-;;   (setf enable-recursive-minibuffers t)
+;;   (setopt shell-command-switch "-ic")
+;;   (setopt enable-recursive-minibuffers t)
 ;;   ;; (add-to-list 'evil-normal-state-modes 'shelldon-mode)
 ;;   ;; (setenv "TERM" "eterm-color")
 ;;   (add-hook 'shelldon-mode-hook 'ansi-color-for-comint-mode-on)
@@ -919,9 +906,9 @@ on the current line, if any."
   (exec-path-from-shell-initialize)
   (exec-path-from-shell-copy-env "HISTFILE")
   (defun turn-on-comint-history (history-file)
-    (setq comint-input-ring-file-name history-file)
+    (setopt comint-input-ring-file-name history-file)
     (comint-read-input-ring 'silent))
-  ;; (setq shell-command-history '())
+  ;; (setopt shell-command-history '())
 
   (add-hook 'shell-mode-hook
             (lambda ()
@@ -935,11 +922,11 @@ on the current line, if any."
   (start-file-process-shell-command "ls" "test" "ls -l ~")
   (load "~/src/shelldon/shelldon.el")
   ;; tell bash this shell is interactive
-  (setf shell-command-switch "-ic")
-  (setf shell-command-switch "-c")
+  (setopt shell-command-switch "-ic")
+  (setopt shell-command-switch "-c")
   ;; recursive minibuffers for nested autocompletion from minibuffer commands,
   ;; to e.g. interactively select from the kill-ring
-  (setf enable-recursive-minibuffers t)
+  (setopt enable-recursive-minibuffers t)
   ;; comint output may contain SGR control sequences that may be translated into
   ;; text properties if emacs has something equivalent. This requires special
   ;; processing.
@@ -973,14 +960,14 @@ on the current line, if any."
   :init
   (defun corfu-setup-advice ()
     (defvar corfu-mode-map-alist)
-    (setq corfu-mode-map-alist `((completion-in-region-mode . ,corfu-map)))
+    (setopt corfu-mode-map-alist `((completion-in-region-mode . ,corfu-map)))
     (add-to-list 'emulation-mode-map-alists 'corfu-mode-map-alist))
-  (setf corfu-quit-at-boundary nil)
+  (setopt corfu-quit-at-boundary nil)
   ;; (defun corfu-enable-in-minibuffer ()
   ;;   "Enable Corfu in the minibuffer if `completion-at-point' is bound."
   ;;   (when (where-is-internal #'completion-at-point (list (current-local-map)))
-  ;;     ;; (setq-local corfu-auto nil) ;; Enable/disable auto completion
-  ;;     (setq-local corfu-echo-delay nil ;; Disable automatic echo and popup
+  ;;     ;; (setopt-local corfu-auto nil) ;; Enable/disable auto completion
+  ;;     (setopt-local corfu-echo-delay nil ;; Disable automatic echo and popup
   ;;                 corfu-popupinfo-delay nil)
   ;;     (corfu-mode 1)))
   ;; (add-hook 'minibuffer-setup-hook #'corfu-enable-in-minibuffer)
@@ -1038,7 +1025,7 @@ on the current line, if any."
 ;;                     :repo "Overdr0ne/scel"
 ;;                     :branch "main"))
 ;; (use-package sclang)
-;; (setq sclang-help-path '("/home/sam/.local/share/SuperCollider/Help"))
+;; (setopt sclang-help-path '("/home/sam/.local/share/SuperCollider/Help"))
 ;; (use-package sclang-extensions)
 ;; (use-package sclang-snippets)
 
@@ -1053,9 +1040,9 @@ on the current line, if any."
 (when t
   (add-to-list 'load-path "~/src/firmware-el")
   (load "~/src/firmware-el/firmware.el")
-  (setq etc-power-golden (firmware-target :name "golden" :power-ip "10.102.3.11" :power-port "Outlet1"))
-  (setq etc-power-fdrive (firmware-target :name "fdrive" :power-ip "10.102.3.11" :power-port "Outlet2"))
-  (setq firmware-targets '(etc-power-golden etc-power-fdrive))
+  (setopt etc-power-golden (firmware-target :name "golden" :power-ip "10.102.3.11" :power-port "Outlet1"))
+  (setopt etc-power-fdrive (firmware-target :name "fdrive" :power-ip "10.102.3.11" :power-port "Outlet2"))
+  (setopt firmware-targets '(etc-power-golden etc-power-fdrive))
   )
 
 (when t
@@ -1123,17 +1110,17 @@ on the current line, if any."
 
 (use-package embark
   :config
-  ;; (setq embark-prompter 'embark-completing-read-prompter)
-  (setq embark-prompter 'embark-keymap-prompter)
-  (setq embark-verbose-indicator-display-action
-        '((display-buffer-in-side-window)
-          (side . bottom)))
+  ;; (setopt embark-prompter 'embark-completing-read-prompter)
+  (setopt embark-prompter 'embark-keymap-prompter)
+  (setopt embark-verbose-indicator-display-action
+          '((display-buffer-in-side-window)
+            (side . bottom)))
   (add-hook 'embark-collect-mode-hook #'consult-preview-at-point-mode)
   (add-to-list 'display-buffer-alist
                '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
                  nil
                  (window-parameters (mode-line-format . none))))
-  ;; (setq embark-action-indicator
+  ;; (setopt embark-action-indicator
   ;;       (lambda (map _target)
   ;;         (which-key--show-keymap "Embark" map nil nil 'no-paging)
   ;;         #'which-key--hide-popup-ignore-command)
@@ -1153,7 +1140,7 @@ on the current line, if any."
 ;;                    :branch "master"
 ;;                    :repo "Overdr0ne/prism.el")
 ;;   :config
-;;   (setf prism-num-faces 30
+;;   (setopt prism-num-faces 30
 ;;          prism-color-attribute :background
 ;;          prism-colors (list "maroon" "violet" "blue violet" "blue" "light sea green" "green" "yellow green" "yellow" "orange" "red")
 ;;          prism-desaturations (list 0 0 0)
@@ -1182,24 +1169,24 @@ on the current line, if any."
     (let ((cmd (intern-soft (sam-read-extended-command "bitbake- "))))
       (command-execute cmd 'record)))
 
-  (setf bitbake-flash-device "/dev/mmcblk0")
-  ;; (setf bitbake-poky-directory "/home/sam/workspaces/dtech/layers")
-  ;; (setf bitbake-build-directory "/home/sam/workspaces/dtech/build")
-  ;; (setf bitbake-poky-directory "/home/sam/workspaces/impinj")
-  ;; (setf bitbake-build-directory "/home/sam/workspaces/impinj/build")
-  (setf bitbake-poky-directory "/home/sam/workspaces/impinj/container/build")
-  (setf bitbake-build-directory "/home/sam/workspaces/impinj/container/build/build")
-  ;; (setf bitbake-poky-directory "/home/sam/tmp/impinj")
-  ;; (setf bitbake-build-directory "/home/sam/tmp/impinj/build")
-  ;; (setf bitbake-poky-directory "/home/sam/workspaces/atlas/build/")
-  ;; (setf bitbake-build-directory "/home/sam/workspaces/atlas/build")
+  (setopt bitbake-flash-device "/dev/mmcblk0")
+  ;; (setopt bitbake-poky-directory "/home/sam/workspaces/dtech/layers")
+  ;; (setopt bitbake-build-directory "/home/sam/workspaces/dtech/build")
+  ;; (setopt bitbake-poky-directory "/home/sam/workspaces/impinj")
+  ;; (setopt bitbake-build-directory "/home/sam/workspaces/impinj/build")
+  (setopt bitbake-poky-directory "/home/sam/workspaces/impinj/container/build")
+  (setopt bitbake-build-directory "/home/sam/workspaces/impinj/container/build/build")
+  ;; (setopt bitbake-poky-directory "/home/sam/tmp/impinj")
+  ;; (setopt bitbake-build-directory "/home/sam/tmp/impinj/build")
+  ;; (setopt bitbake-poky-directory "/home/sam/workspaces/atlas/build/")
+  ;; (setopt bitbake-build-directory "/home/sam/workspaces/atlas/build")
   )
 
 (use-package docker
   :config
-  (setf docker-command "podman")
-  ;; (setf docker-run-as-root t)
-  (setf docker-image-run-default-args '("-i" "-t" "--rm")))
+  (setopt docker-command "podman")
+  ;; (setopt docker-run-as-root t)
+  (setopt docker-image-run-default-args '("-i" "-t" "--rm")))
 
 (use-package dockerfile-mode
   :config
@@ -1220,12 +1207,12 @@ on the current line, if any."
 (use-package ediff
   :straight (:type built-in)
   :init
-  (setq ediff-window-setup-function #'ediff-setup-windows-plain)
+  (setopt ediff-window-setup-function #'ediff-setup-windows-plain)
   (add-hook 'ediff-mode-hook #'ediff-reload-keymap)
   (defvar my-ediff-last-windows nil)
 
   (defun my-store-pre-ediff-winconfig ()
-    (setq my-ediff-last-windows (current-window-configuration)))
+    (setopt my-ediff-last-windows (current-window-configuration)))
 
   (defun my-restore-pre-ediff-winconfig ()
     (set-window-configuration my-ediff-last-windows))
@@ -1253,13 +1240,13 @@ on the current line, if any."
 (use-package magit-popup)
 (use-package guix
   :config
-  (setq guix-home-profile "/home/sam/.guix-profile"))
+  (setopt guix-home-profile "/home/sam/.guix-profile"))
 
 (use-package recentf
   :straight (recentf :type built-in)
   :init
-  (setq recentf-max-menu-items 500)
-  (setq recentf-max-menu-items 600)
+  (setopt recentf-max-menu-items 500)
+  (setopt recentf-max-menu-items 600)
   (defconst recentf-used-hooks
     '(
       (find-file-hook       recentf-track-opened-file)
@@ -1283,7 +1270,7 @@ on the current line, if any."
 ;; (use-package tempel
 ;;   :config
 ;;   ;; (add-to-list 'completion-at-point-functions #'tempel-expand)
-;;   (setf tempel-path "~/.emacs.d/overdr0ne/template.el")
+;;   (setopt tempel-path "~/.emacs.d/overdr0ne/template.el")
 ;;   )
 
 (use-package yasnippet
@@ -1306,7 +1293,7 @@ on the current line, if any."
         (sam/yas-insert-mode +1)
         (call-interactively 'consult-yasnippet)
         (recursive-edit)
-        (setq s (buffer-string)))
+        (setopt s (buffer-string)))
       (term-send-raw-string s)
       (kill-buffer "yasnippet-term")))
 
@@ -1362,7 +1349,7 @@ on the current line, if any."
 (use-package all-the-icons-completion
   :after (all-the-icons)
   :init
-  (setq all-the-icons-scale-factor 0.9)
+  (setopt all-the-icons-scale-factor 0.9)
   (all-the-icons-completion-mode +1))
 
 (load "~/src/evim/evim.el")
@@ -1376,7 +1363,7 @@ on the current line, if any."
 
 (use-package eglot
   ;; :config
-  ;; (setq eglot-withhold-process-id "1")
+  ;; (setopt eglot-withhold-process-id "1")
   ;; (with-eval-after-load 'eglot
   ;; (add-to-list 'eglot-server-programs `(c-mode .     ("~sam/workspaces/legend/hepafilter700/Docker/" "metio/devcontainers-nodejs" "c-language-server --stdio"))))
   :straight (eglot :type built-in)
@@ -1404,9 +1391,9 @@ on the current line, if any."
     (concat remember-leader-text
             (format-time-string remember-time-format)
             "\n" text))
-  (setq remember-data-file "~/notes/mem.md")
-  (setq remember-data-directory "~/notes/")
-  (setq remember-notes-initial-major-mode 'text-mode)
+  (setopt remember-data-file "~/notes/mem.md")
+  (setopt remember-data-directory "~/notes/")
+  (setopt remember-notes-initial-major-mode 'text-mode)
   ;; (skey-define-keys
   ;;  '(remember-mode-map)
   ;;  `(("C-g" remember-destroy)))
@@ -1421,26 +1408,33 @@ on the current line, if any."
 (use-package org
   :straight (org :type built-in)
   :config
-  (setf org-default-notes-file "~/notes/global.org")
+  (setopt org-default-notes-file "~/notes/global.org")
   )
 
 (use-package org-agenda
   :straight (org-agenda :type built-in)
   :config
-  (setf org-agenda-files '("~/notes/")))
+  (setopt org-agenda-files '("~/notes/")))
+
+(use-package org-agenda
+  :straight (org-agenda :type built-in)
+  :config
+  (setopt org-agenda-files '("~/notes/"))
+  )
 
 (use-package org-capture
   :straight (org-capture :type built-in)
   :config
-  (setf org-agenda-files '("~/notes/"))
-  (setq org-capture-templates
-        '(("t" "todo" entry (file "~/notes/todo.org")
-	         "* TODO %?\n%u\n%a\n" :clock-in t :clock-resume t)
-	        ("d" "Diary" entry (file+datetree "~/notes/diary.org")
-	         "* %?\n%U\n" :clock-in t :clock-resume t)
-	        ("i" "Idea" entry (file "~/notes/ideas.org")
-	         "* %?\n%t")
-	        )))
+  (add-to-list 'org-capture-templates
+               '("t" "todo" entry (file "~/notes/todo.org")
+	               "* TODO %?\n%u\n%a\n" :clock-in t :clock-resume t))
+  (add-to-list 'org-capture-templates
+               '("d" "Diary" entry (file+datetree "~/notes/diary.org")
+	               "* %?\n%U\n" :clock-in t :clock-resume t))
+  (add-to-list 'org-capture-templates
+               '("i" "Idea" entry (file "~/notes/ideas.org")
+	               "* %?\n%t"))
+  )
 
 ;; (use-package deft)
 
@@ -1450,12 +1444,12 @@ on the current line, if any."
 
 ;; (use-package gptel
 ;;   :config
-;;   (setq gptel-gpt-backend
+;;   (setopt gptel-gpt-backend
 ;;         (gptel-make-anthropic "GPT"
 ;;           :stream t
 ;;           :key (f-read-text (expand-file-name (concat overdr0ne-directory "/keys/chatgpt.key")))
 ;;           ))
-;;   (setq gptel-openai-backend
+;;   (setopt gptel-openai-backend
 ;;         (gptel-make-openai
 ;;             "ChatGPT"
 ;;           :key (f-read-text (concat overdr0ne-directory "/keys/chatgpt.key"))
@@ -1463,27 +1457,27 @@ on the current line, if any."
 ;;           :models '("gpt-3.5-turbo" "gpt-3.5-turbo-16k" "gpt-4o-mini"
 ;;                     "gpt-4" "gpt-4o" "gpt-4-turbo" "gpt-4-turbo-preview"
 ;;                     "gpt-4-32k" "gpt-4-1106-preview" "gpt-4-0125-preview")))
-;;   (setq gptel-claude-backend
+;;   (setopt gptel-claude-backend
 ;;         (gptel-make-anthropic "Claude"       ;Any name you want
 ;;           :stream t                          ;Streaming responses
 ;;           :key (f-read-text (expand-file-name (concat overdr0ne-directory "/keys/anthropic.key")))
 ;;           ))
 
-;;   (setq gptel-model "gpt-4o-mini")
-;;   (setq gptel-backend gptel--openai))
+;;   (setopt gptel-model "gpt-4o-mini")
+;;   (setopt gptel-backend gptel--openai))
 
 (when t
   (add-to-list 'load-path "~/src/repllm")
   (load "~/src/repllm/repllm.el")
   (load "~/src/repllm/repllm-curl.el")
   (load "~/src/repllm/repllm-openai.el")
-  (setq repllm-model "gpt-4o-mini")
-  (setq repllm-api-key (f-read-text (expand-file-name (concat overdr0ne-directory "/keys/chatgpt.key"))))
-  (setq repllm-openai-backend
-        (repllm-make-openai "GPT"
-          :stream t
-          :key (f-read-text (expand-file-name (concat overdr0ne-directory "/keys/chatgpt.key")))
-          ))
+  (setopt repllm-model "gpt-4o-mini")
+  (setopt repllm-api-key (f-read-text (expand-file-name (concat overdr0ne-directory "/keys/chatgpt.key"))))
+  (setopt repllm-openai-backend
+          (repllm-make-openai "GPT"
+            :stream t
+            :key (f-read-text (expand-file-name (concat overdr0ne-directory "/keys/chatgpt.key")))
+            ))
   )
 
 (when t
