@@ -26,7 +26,7 @@
 
 (require '+modules)
 (require '+sets)
-(require 'kde-activities)
+(require 'kactivities)
 (require '+disambiguate-keys)
 
 ;; Fix Ascii character conflation
@@ -760,9 +760,7 @@
 
       ("C-o" gumshoe-marker-backtrack)
       ("M-o" gumshoe-buf-backtrack)
-      ("C-M-o" gumshoe-backtrack)
-
-      ))
+      ("C-M-o" gumshoe-backtrack)))
    (skey-define-keys
     '(global-gumshoe-backtracking-mode-map)
     `(
@@ -884,6 +882,14 @@
    '(magit-status-mode-map)
    `(("M-;" shelldon)
      ("C-n" ,+note-keymap)))
+
+  (evim-define-default-derived-modes 'markdown)
+  (add-hook 'magit-blame-mode-hook #'evim-normal-markdown-mode)
+  (skey-define-keys
+   '(evim-normal-markdown-mode-map evim-visual-markdown-mode-map)
+   `(
+     ("C-;" eval-expression)
+     ))
 
   (skey-define-keys
    '(evim-normal-mode-map evim-visual-mode-map)

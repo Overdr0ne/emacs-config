@@ -62,14 +62,12 @@
   (setopt delete-pair-blink-delay .15)
   )
 
-;; (use-package skey
-;;   :straight (skey :type git
-;;                   :host github
-;;                   :repo "Overdr0ne/skey"
-;;                   :branch "main"))
-(when t
-  (add-to-list 'load-path "~/src/skey/")
-  (load "~/src/skey/skey.el")
+(use-package skey
+  :straight (skey :local-repo "~/src/skey")
+  ;;   :straight (skey :type git
+  ;;                   :host github
+  ;;                   :repo "Overdr0ne/skey"
+  ;;                   :branch "main"))
   )
 
 
@@ -232,9 +230,9 @@
   :straight (text-property-search :type built-in)
   )
 
-;; (use-package hyperbole
-;;   :init
-;;   (setopt hkey-init nil))
+(use-package hyperbole
+  :init
+  (setopt hkey-init nil))
 
 (use-package rx
   :straight (rx :type built-in))
@@ -786,19 +784,19 @@ on the current line, if any."
 (use-package which-key)
 
 ;; (use-package sfs
-;;   :straight (sfs :type git
-;;                  :host github
-;;                  :repo "Overdr0ne/sfs"
-;;                  :branch "master"
+;;   ;; :straight (sfs :type git
+;;   ;;                :host github
+;;   ;;                :repo "Overdr0ne/sfs"
+;;   ;;                :branch "master"
+;;   :straight (sfs :local-repo "~/src/sfs"
 ;;                  :files ("sfs.el"
 ;;                          "sfs-recoll.el"
 ;;                          "sfs-tui.el"
 ;;                          "sfs-tag.el"
 ;;                          "sfs-reindex.el"
-;;                          "service.py"
-;;                          "evil-collection-sfs.el"))
+;;                          "service.py"))
 ;;   :config
-;;   (add-to-list 'evil-insert-state-modes 'sfs-research-mode)
+;;   ;; (add-to-list 'evil-insert-state-modes 'sfs-research-mode)
 ;;   (global-sfs-mode 1))
 
 ;; themes
@@ -855,52 +853,36 @@ on the current line, if any."
   ;;             ))
   )
 
-;; (use-package gumshoe
-;;   :straight (gumshoe :type git
-;;                      :host github
-;;                      :repo "Overdr0ne/gumshoe"
-;;                      :branch "master"
-;;                      ;; :branch "feature/footprint-strategy"
-;;                      )
-;;   :init
-;;   (setopt gumshoe-slot-schema '(time perspective buffer position line))
-;;   ;; (add-to-list 'load-path "~/src/gumshoe")
-;;   ;; (load "~/src/gumshoe/gumshoe.el")
-;;   (global-gumshoe-mode +1)
-;;   ;;  (global-gumshoe-persp-mode 1)
-;;   ;; (setopt gumshoe-slot-schema '(time perspective buffer position line))
-;;   ;; (advice-add #'gumshoe-peruse-globally :around
-;;   ;;              (lambda (old-fn)
-;;   ;;                (let ((selectrum-should-sort nil))
-;;   ;;                  (funcall old-fn))))
-;;   ;; (advice-add #'gumshoe-peruse-in-persp :around
-;;   ;;              (lambda (old-fn)
-;;   ;;                (let ((selectrum-should-sort nil))
-;;   ;;                  (funcall old-fn))))
-;;   ;; (advice-add #'gumshoe-peruse-in-buffer :around
-;;   ;;              (lambda (old-fn)
-;;   ;;                (let ((selectrum-should-sort nil))
-;;   ;;                  (funcall old-fn))))
-;;   )
+(use-package gumshoe
+  ;; :straight (gumshoe :type git
+  ;;                    :host github
+  ;;                    :repo "Overdr0ne/gumshoe"
+  ;;                    :branch "master"
+  ;;                    ;; :branch "feature/footprint-strategy"
+  ;;                    )
+  :straight (gumshoe :local-repo "~/src/gumshoe")
+  :init
+  ;; (setopt gumshoe-slot-schema '(time perspective buffer position line))
+  ;; (setopt gumshoe-footprint-strategy 'delete-overlapping)
+  (setopt gumshoe-slot-schema '(time buffer position line))
+  (setopt gumshoe-backlog-type 'ring)
+  
+  ;;  (global-gumshoe-persp-mode 1)
+  ;; (setopt gumshoe-slot-schema '(time perspective buffer position line))
+  ;; (advice-add #'gumshoe-peruse-globally :around
+  ;;              (lambda (old-fn)
+  ;;                (let ((selectrum-should-sort nil))
+  ;;                  (funcall old-fn))))
+  ;; (advice-add #'gumshoe-peruse-in-persp :around
+  ;;              (lambda (old-fn)
+  ;;                (let ((selectrum-should-sort nil))
+  ;;                  (funcall old-fn))))
+  ;; (advice-add #'gumshoe-peruse-in-buffer :around
+  ;;              (lambda (old-fn)
+  ;;                (let ((selectrum-should-sort nil))
+  ;;                  (funcall old-fn))))
+  )
 
-;; (use-package shelldon
-;;   :straight (shelldon :type git
-;;                       :host github
-;;                       :repo "Overdr0ne/shelldon"
-;;                       :branch "master"
-;;                       :files ("shelldon.el"))
-;;   :config
-;;   (setopt shell-command-switch "-ic")
-;;   (setopt enable-recursive-minibuffers t)
-;;   ;; (add-to-list 'evil-normal-state-modes 'shelldon-mode)
-;;   ;; (setenv "TERM" "eterm-color")
-;;   (add-hook 'shelldon-mode-hook 'ansi-color-for-comint-mode-on)
-;;   (add-to-list 'comint-output-filter-functions 'ansi-color-process-output)
-;;   (autoload 'ansi-color-for-comint-mode-on "ansi-color" nil t)
-;;   (advice-add #'shelldon-output-history :around
-;;                (lambda (old-fn)
-;;                  (let ((selectrum-should-sort nil))
-;;                    (funcall old-fn)))))
 (use-package exec-path-from-shell
   :config
   (exec-path-from-shell-initialize)
@@ -918,11 +900,19 @@ on the current line, if any."
             (lambda ()
               (--each (buffer-list)
                 (with-current-buffer it (comint-write-input-ring))))))
-(progn
+
+(use-package shelldon
+  ;;   :straight (shelldon :type git
+  ;;                       :host github
+  ;;                       :repo "Overdr0ne/shelldon"
+  ;;                       :branch "master"
+  ;;                       :files ("shelldon.el"))
+  :straight (shelldon :local-repo "~/src/shelldon")
+  :init
   (start-file-process-shell-command "ls" "test" "ls -l ~")
-  (load "~/src/shelldon/shelldon.el")
+  ;; (load "~/src/shelldon/shelldon.el")
   ;; tell bash this shell is interactive
-  (setopt shell-command-switch "-ic")
+  ;; (setopt shell-command-switch "-ic")
   (setopt shell-command-switch "-c")
   ;; recursive minibuffers for nested autocompletion from minibuffer commands,
   ;; to e.g. interactively select from the kill-ring
@@ -944,16 +934,14 @@ on the current line, if any."
     (message "sam")
     (set-window-point win 0)
     (fit-window-to-buffer win 20))
-  
+
   (add-to-list 'display-buffer-alist
                '("*shelldon:"
                  (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-in-side-window display-buffer-pop-up-window)
                  (side . bottom)
                  (slot . 0)
                  (window-width . 80)
-                 (window-height . fit-window-to-buffer)
-                 ))
-  )
+                 (window-height . fit-window-to-buffer))))
 
 ;; completion at point overlay
 (use-package corfu
@@ -1033,26 +1021,28 @@ on the current line, if any."
 
 (use-package treepy)
 
-(when t
-  (add-to-list 'load-path "~/src/emacs-kde")
-  (load "~/src/emacs-kde/kactivities.el"))
+(use-package kactivities
+  :straight (kactivities :local-repo "~/src/emacs-kde")
+  )
 
-(when t
-  (add-to-list 'load-path "~/src/firmware-el")
-  (load "~/src/firmware-el/firmware.el")
+(use-package firmware
+  :straight (firmware :local-repo "~/src/firmware-el")
+  :config
   (setopt etc-power-golden (firmware-target :name "golden" :power-ip "10.102.3.11" :power-port "Outlet1"))
   (setopt etc-power-fdrive (firmware-target :name "fdrive" :power-ip "10.102.3.11" :power-port "Outlet2"))
   (setopt firmware-targets '(etc-power-golden etc-power-fdrive))
   )
 
-(when t
-  (add-to-list 'load-path "~/src/completionist")
-  (load "~/src/completionist/completionist.el")
-  (load "~/src/completionist/extensions/completionist-flat.el")
-  (load "~/src/completionist/extensions/completionist-mouse.el")
-  (completionist-mode +1)
-  (completionist-flat-mode +1)
-  (completionist-mouse-mode +1)
+(use-package completionist
+  :straight (completionist :local-repo "~/src/completionist"
+                           :files ("*.el" "extensions/*.el"))
+  :after (perspective)
+  ;; (when t
+  ;;   (add-to-list 'load-path "~/src/completionist")
+  ;;   (load "~/src/completionist/completionist.el")
+  ;;   (load "~/src/completionist/extensions/completionist-flat.el")
+  ;;   (load "~/src/completionist/extensions/completionist-mouse.el")
+  :init
   (defun completionist-persp-switch ()
     (interactive)
     (let ((window-sides-slots '(2 2 2 2))
@@ -1097,8 +1087,7 @@ on the current line, if any."
       (completionist--complete "processes:" #'process-names
                                (lambda (process) (switch-to-buffer (process-buffer process)))
                                "*comp-procs*"
-                               action))
-    )
+                               action)))
   (add-hook 'persp-created-hook #'completionist-persp-switch-unfocused)
   ;; (remove-hook 'persp-created-hook #'completionist-persp-switch-unfocused)
   )
@@ -1324,19 +1313,22 @@ on the current line, if any."
 
 (use-package avy)
 
-(eval-after-load 'avy
-  (progn
-    (load "~/src/holymotion/holymotion.el")
-    ;;(holymotion-make-motion
-    ;; holymotion-backward-whitespace #'sp-backward-whitespace
-    ;; :scope 'line))
-    ))
+;; (eval-after-load 'avy
+;;   (progn
+;;     (load "~/src/holymotion/holymotion.el")
+;;     ;;(holymotion-make-motion
+;;     ;; holymotion-backward-whitespace #'sp-backward-whitespace
+;;     ;; :scope 'line))
+;;     ))
 (use-package holymotion
-  :straight (holymotion :type git
-                        :host github
-                        :repo "Overdr0ne/holymotion"
-                        :branch "dev"
-                        :files ("*.el"))
+  :straight (holymotion :local-repo "~/src/holymotion")
+  ;; :straight (holymotion :type git
+  ;;                       :host github
+  ;;                       :repo "Overdr0ne/holymotion"
+  ;;                       :branch "main"
+  ;;                       ;; :files ("*.el")
+  ;;                       )
+  :after (avy)
   :config
   (holymotion-make-motion
    holymotion-forward-beginning-of-defun #'forward-beginning-of-defun)
@@ -1352,7 +1344,9 @@ on the current line, if any."
   (setopt all-the-icons-scale-factor 0.9)
   (all-the-icons-completion-mode +1))
 
-(load "~/src/evim/evim.el")
+(use-package evim
+  :straight (evim
+             :local-repo "~/src/evim"))
 ;; (use-package wrap-region
 ;;   :config
 ;;   (wrap-region-add-wrapper "~" "~" "~" '(org-mode))
@@ -1480,15 +1474,13 @@ on the current line, if any."
             ))
   )
 
-(when t
-  (add-to-list 'load-path "~/src/aptitude")
-  (load "~/src/aptitude/aptitude.el")
-  )
+(use-package aptitude
+  :straight (:local-repo "~/src/aptitude"))
 
-(when t
-  (add-to-list 'load-path "~/src/linux-commands-el/")
-  (load "~/src/linux-commands-el/linux-commands.el")
-  )
+(use-package linux-commands
+  :straight (linux-commands
+             :local-repo "~/src/linux-commands-el"
+             :type nil))
 
 (use-package itail)
 

@@ -7,6 +7,7 @@
 (global-auto-revert-mode +1)
 ;; (with-eval-after-load 'gumshoe
 ;;     (global-gumshoe-mode +1))
+(global-gumshoe-mode +1)
 (window-divider-mode +1)
 (minibuffer-depth-indicate-mode +1)
 (savehist-mode +1)
@@ -20,6 +21,9 @@
 (global-diff-hl-mode +1)
 (global-vi-tilde-fringe-mode +1)
 (persp-mode +1)
+(completionist-mode +1)
+(completionist-flat-mode +1)
+(completionist-mouse-mode +1)
 (diredfl-global-mode)
 (highlight-defined-mode +1)
 (global-hl-line-mode +1)
