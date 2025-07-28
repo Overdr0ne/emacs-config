@@ -72,30 +72,30 @@
                                             'left
                                           'right)))))))
 (setopt display-buffer-alist
-      `(("\\(*\\(info\\|ansi-term\\|bitbake\\|docker\\|grep*\\|.*systemctl.*\\|Help\\|messages\\|help\\|helpful\\|trace-\\|Backtrace\\|Org\\|RefTeX.*\\)\\)"
-         (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-in-side-window display-buffer-pop-up-window)
-         (side . right)
-         (slot . 0)
-         (window-width . 80))
-        ;; ("\\*Async"
-        ;;  (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-in-side-window display-buffer-pop-up-window)
-        ;;  (side . left)
-        ;;  (slot . 0)
-        ;;  (window-width . 80))
-        ("\\*\\(remember\\|Async\\)"
-         (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-in-side-window display-buffer-pop-up-window)
-         (side . bottom)
-         (slot . 0)
-         (window-height . 10))
-        ;; Split shells at the bottom
-        ("^\\*e?shell"
-         (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-below-selected)
-         (window-min-height . 20))
-        ("\\(magit:\\|pydoc\\)"
-         (display-buffer-reuse-window display-buffer-same-window))
-        ;; ("\\*"
-        ;;  (display-buffer-reuse-window display-buffer-pop-up-window))
-        ))
+        `(("\\(*\\(info\\|ansi-term\\|bitbake\\|docker\\|grep*\\|.*systemctl.*\\|Help\\|messages\\|help\\|helpful\\|trace-\\|Backtrace\\|Org\\|RefTeX.*\\)\\)"
+           (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-in-side-window display-buffer-pop-up-window)
+           (side . right)
+           (slot . 0)
+           (window-width . 80))
+          ;; ("\\*Async"
+          ;;  (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-in-side-window display-buffer-pop-up-window)
+          ;;  (side . left)
+          ;;  (slot . 0)
+          ;;  (window-width . 80))
+          ("\\*\\(Warnings\\|Compile\\|remember\\|Async\\)"
+           (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-in-side-window display-buffer-pop-up-window)
+           (side . bottom)
+           (slot . 0)
+           (window-height . 10))
+          ;; Split shells at the bottom
+          ("^\\*e?shell"
+           (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-below-selected)
+           (window-min-height . 20))
+          ("\\(magit:\\|pydoc\\)"
+           (display-buffer-reuse-window display-buffer-same-window))
+          ;; ("\\*"
+          ;;  (display-buffer-reuse-window display-buffer-pop-up-window))
+          ))
 (add-to-list 'display-buffer-alist
              '("*scratch"
                (display-buffer-in-side-window)
@@ -114,7 +114,7 @@
 (setopt x-select-request-type nil)
 
 ;; (setopt shell-file-name "/home/sam/.guix-profile/bin/zsh")
-(setopt shell-file-name "/home/sam/.guix-home/profile/bin/bash")
+(setopt shell-file-name "/usr/bin/zsh")
 
 (setopt custom-file "~/.emacs.d/overdr0ne/customize.el")
 
@@ -130,7 +130,21 @@
 ;; (setq sam-font
 ;;       "-CTDB-FiraMono Nerd Font-bold-normal-normal-*-16-*-*-*-m-0-iso10646-1")
                                         ;(x-list-fonts "MaterialIcons")
-(setopt sam-font "FiraCode")
+(setopt sam-font "FiraCode Nerd Font")
+;; (setopt sam-font "ANDROID ROBOT")
+;; (setopt sam-font "Mystery Quest")
+;; (setopt sam-font "Syne")
+;; (setopt sam-font "Abril Fatface")
+;; (setopt sam-font "Lobster Two")
+;; (setopt sam-font "Philosopher")
+;; (setopt sam-font "Macondo")
+;; (setopt sam-font "HennyPenny")
+;; (setopt sam-font "Mountains Of Christmas")
+;; (setopt sam-font "El Messiri")
+;; (setopt sam-font "Princess Sofia")
+;; (setopt sam-font "Monofur Nerd Font")
+;; (setopt sam-font "Glass Antiqua")
+;; (setopt sam-font "DM Mono")
 ;; (setopt sam-font "-pyrs-FontAwesome-regular-normal-normal-*-*-*-*-*-*-0-iso10646-1")
 (defun font-exists-p (font) (if (null (x-list-fonts font)) nil t))
 ;; (when (window-system)
@@ -157,7 +171,6 @@
 
 ;; (global-auto-revert-mode +1)
 
-;; (setopt browse-url-browser-function 'eww-browse-url)
 (setopt require-final-newline nil)
 
 (setopt load-prefer-newer t)
@@ -185,9 +198,9 @@
 ;; (setopt initial-buffer-choice (buffer-name (find-file-noselect "/home/sam/notes/todo.md")))
 
 (setopt user-mail-address "scmorris.dev@gmail.com"
-      user-full-name "Samuel Morris")
+        user-full-name "Samuel Morris")
 (setopt copyright-names-regexp
-      (format "%s <%s>" user-full-name user-mail-address))
+        (format "%s <%s>" user-full-name user-mail-address))
 
 (provide '+core)
 ;;; +core.el ends here
