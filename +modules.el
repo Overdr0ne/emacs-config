@@ -44,7 +44,9 @@
 (use-package browse-url
   :straight (browse-url :type built-in)
   :config
-  (setopt browse-url-browser-function 'eww-browse-url)
+  ;; (setopt browse-url-browser-function 'eww-browse-url)
+  (setopt browse-url-firefox-program "firefox")
+  (setopt browse-url-browser-function 'browse-url-firefox)
   )
 
 ;; (use-package pixel-mode
@@ -89,6 +91,16 @@
 
 (use-package tramp
   :straight (tramp :type built-in)
+  :config
+  (setopt tramp-verbose 6)
+  ;; (defun add-ssh-agent-to-tramp ()
+  ;;   (cl-pushnew '("-A")
+  ;;               (cadr (assoc 'tramp-login-args
+  ;;                                       ; if on Windows using Putty with Pageant,
+  ;;                                       ; replace "ssh" with "plink"
+  ;;                            (assoc "ssh" tramp-methods)))
+  ;;               :test #'equal))
+  ;; (add-ssh-agent-to-tramp)
   ;; :config
   ;; (setopt tramp-remote-path
   ;;       (append '("~/.guix-home/profile/bin"
@@ -96,6 +108,18 @@
   ;;                 "~/.guix-profile/bin"
   ;;                 "~/.guix-profile/sbin")
   ;;             tramp-remote-path))
+  )
+
+(use-package lsp-mode
+  ;; :hook
+  ;; ((python-mode
+  ;;   js-mode
+  ;;   typescript-mode
+  ;;   java-mode
+  ;;   c-mode
+  ;;   c++-mode
+  ;;   go-mode) . lsp-deferred) ; lsp-deferred starts the server only when needed
+  ;; :commands (lsp lsp-deferred)
   )
 
 (use-package lsp-scheme
@@ -119,8 +143,7 @@
   (setopt window-divider-default-places t)
   (set-face-attribute 'window-divider nil
                       :foreground nil
-                      :inherit 'minibuffer-prompt)
-  )
+                      :inherit 'minibuffer-prompt))
 
 (use-package window
   :straight (window :type built-in)
@@ -230,9 +253,10 @@
   :straight (text-property-search :type built-in)
   )
 
-(use-package hyperbole
-  :init
-  (setopt hkey-init nil))
+;; Affecting performance
+;; (use-package hyperbole
+;;   :init
+;;   (setopt hkey-init nil))
 
 (use-package rx
   :straight (rx :type built-in))
@@ -613,12 +637,12 @@ on the current line, if any."
 
 (use-package format-all)
 
-;; (use-package dts-mode
-;;   :config
-;;   (add-to-list 'auto-mode-alist '("defconfig\\'" . dts-mode))
-;;   (add-to-list 'auto-mode-alist '("defconfig\\'" . dts-mode))
-;;   (setopt auto-mode-alist (append auto-mode-alist '(("defconfig\\'" . dts-mode)
-;;                                                   ("\\.its" . dts-mode)))))
+(use-package dts-mode
+  :config
+  (add-to-list 'auto-mode-alist '("defconfig\\'" . dts-mode))
+  (add-to-list 'auto-mode-alist '("defconfig\\'" . dts-mode))
+  (setopt auto-mode-alist (append auto-mode-alist '(("defconfig\\'" . dts-mode)
+                                                  ("\\.its" . dts-mode)))))
 ;; (use-package devicetree-ts-mode
 ;;   )
 
@@ -710,7 +734,7 @@ on the current line, if any."
 
 (use-package notifications)
 
-;; (use-package systemd)
+(use-package systemd)
 
 (use-package dired
   :straight (:type built-in)
@@ -736,6 +760,12 @@ on the current line, if any."
   (defun enable-hl-line-mode ()
     (interactive)
     (hl-line-mode +1)))
+
+(use-package flyspell
+  :straight (flyspell :type built-in)
+  :config
+  ;; flyspell should not be active until correcting
+  )
 
 ;; (use-package rcirc
 ;;   :config
