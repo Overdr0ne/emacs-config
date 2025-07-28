@@ -250,6 +250,24 @@
    ("p" sam-project-persp-switch-project)
    ("v" magit-status)))
 
+(defvar +profiler-keymap (make-sparse-keymap))
+(skey-define-keys
+ '(+profiler-keymap)
+ `(
+   ("s" profiler-start)
+   ("S" profiler-stop)
+   ("r" profiler-reset)
+   ("R" profiler-report)))
+
+(defvar +llm-keymap (make-sparse-keymap))
+(skey-define-keys
+ '(+llm-keymap)
+ `(
+   ("C-SPC" gptel)
+   ("C-a" gptel-add)
+   ("C-<return>" gptel-menu)
+   ("C-t" gptel-tools)))
+
 (defvar +command-mode-map (make-sparse-keymap))
 (skey-define-keys
  '(+command-mode-map)
@@ -259,7 +277,7 @@
    (","    switch-to-buffer)
    ("."    find-file)
    ("<return>" bookmark-jump)
-   ("SPC" persp-switch)
+   ("SPC" neotree-toggle)
    ("<tab>" mode-line-other-buffer)
 
    ("a"   ,kde-activities-keymap)
@@ -321,6 +339,8 @@
 
    ("P l" list-packages)
    ("P s" helm-system-packages)
+
+   ("M-p" ,+profiler-keymap)
 
    ("q q" save-buffers-kill-terminal)
 
@@ -402,13 +422,13 @@
    ("C-s" slink-save)
    ("C-e" slink-edit-label)))
 
-(defvar +metallic-keymap (make-sparse-keymap))
-(skey-define-keys
- '(+metallic-keymap)
- `(("M-;" execute-extended-command)
-   ("M-b" persp-ibuffer)
-   ("M-g" consult-find)
-   ("M-f" consult-recent-file)))
+;; (defvar +metallic-keymap (make-sparse-keymap))
+;; (skey-define-keys
+;;  '(+metallic-keymap)
+;;  `(("M-;" execute-extended-command)
+;;    ("M-b" persp-ibuffer)
+;;    ("M-g" consult-find)
+;;    ("M-f" consult-recent-file)))
 
 (defvar +shifty-keymap (make-sparse-keymap))
 (skey-define-keys
@@ -546,6 +566,7 @@
      ("[" ,(sam-make-region-wrapper "[" "]"))
      ("<return>" sam-pushb-or-embark)
      ("C-m" sam-match)
+     ("M-;" shelldon-command-on-region)
      ("s" nil)
      ("s f" ctrlf-forward-default)
      ("s b" ctrlf-backward-default)
@@ -644,9 +665,11 @@
      ("o o" sam-open)
      ("o j" evim-open-line-below)
      ("o k" evim-open-line-above)
+     ("O" app-launcher-run-app)
 
      ("M-p" ,perspective-map)
      ("C-p" ,+paste-keymap)
+     ("p a" sam-paste-after-sexp)
 
      ;;  "C-r" #'iedit-mode
      ("C-r" remember)
@@ -710,9 +733,8 @@
 ;;  "C-l" (my/embark-split-action find-file windmove-display-right))
 (skey-define-keys
  '(embark-symbol-map)
- `(("<return>" helpful-at-point)
-   ;; ("C-<return>" #'xref-find-definitions)
-   ("C-<return>" embark-find-definition)
+ `(
+   ;; ("C-<return>" embark-find-definition)
    ))
 
 (skey-define-keys
@@ -884,12 +906,20 @@
      ("C-n" ,+note-keymap)))
 
   (evim-define-default-derived-modes 'markdown)
-  (add-hook 'magit-blame-mode-hook #'evim-normal-markdown-mode)
   (skey-define-keys
    '(evim-normal-markdown-mode-map evim-visual-markdown-mode-map)
    `(
      ("C-;" eval-expression)
      ))
+  (skey-define-keys
+   '(evim-normal-markdown-mode-map)
+   `(
+     ("M-y" markdown-copy-full-heading-link-at-point-as-kill)
+     ("C-y" markdown-copy-partial-heading-link-at-point-as-kill)
+     ("C-p" nil)
+     ("C-p" markdown-yank-link)
+     ))
+  (add-hook 'markdown-mode-hook #'evim-normal-markdown-mode)
 
   (skey-define-keys
    '(evim-normal-mode-map evim-visual-mode-map)
@@ -905,6 +935,7 @@
   (skey-define-keys
    '(evim-normal-mode-map evim-visual-mode-map)
    `(
+     ("SPC d" ,edebug-global-map)
      ("("   backward-up-list)
      (")"   sp-up-sexp)
      ("C-h" sp-backward-slurp-sexp)
@@ -1017,6 +1048,13 @@
    ("M-n" next-line-or-history-element)
    ("M-p" previous-line-or-history-element)))
 
+(with-eval-after-load 'yequake
+  (skey-define-keys
+   '(evim-normal-mode-map)
+   `(
+     ("M-<return>" yequake-toggle)
+     )))
+
 (with-eval-after-load 'vertico
   (skey-define-keys
    '(vertico-map)
@@ -1051,15 +1089,6 @@
      ("C-w" nil)
      ("C-w" ,+window-map))))
 
-(defvar +llm-keymap (make-sparse-keymap))
-(skey-define-keys
- '(+llm-keymap)
- `(
-   ("C-SPC" nil)
-   ("C-SPC" repllm-display)
-   ("C-v" repllm-insert)
-   ))
-
 (with-eval-after-load 'evim
   (skey-define-keys
    (cl-set-difference +all-maps (append +repl-maps +minibuffer-maps '(evim-insert-mode-map)))
@@ -1068,7 +1097,7 @@
      (";" execute-extended-command)
      ;; ("C-SPC" ,+controller-keymap)
      ("C-SPC" ,+llm-keymap)
-     ("M-SPC" ,+metallic-keymap)
+     ;; ("M-SPC" +llm-keymap) ;; used by kde system
      ("S-SPC" ,+shifty-keymap)
      ("A-SPC" ,+alter-keymap)
      ("SPC" ,+command-mode-map)
