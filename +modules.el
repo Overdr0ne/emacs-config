@@ -941,13 +941,18 @@ on the current line, if any."
   :straight (shelldon :local-repo "~/src/shelldon")
   :init
   (start-file-process-shell-command "ls" "test" "ls -l ~")
-  ;; (load "~/src/shelldon/shelldon.el")
   ;; tell bash this shell is interactive
-  ;; (setopt shell-command-switch "-ic")
-  (setopt shell-command-switch "-c")
+  (setopt shell-command-switch "-ic")
+  ;; (setopt shell-command-switch "-c")
+  (setopt shelldon-autohistory-p t)
+  (setopt shelldon-desktop-notify-p t)
   ;; recursive minibuffers for nested autocompletion from minibuffer commands,
   ;; to e.g. interactively select from the kill-ring
   (setopt enable-recursive-minibuffers t)
+  ;; autohistory automatically shows your command history as you type
+  ;; using your default autocompletion engine
+  (setopt shelldon-autohistory-p t)
+  (setopt global-shelldon-async-p nil)
   ;; comint output may contain SGR control sequences that may be translated into
   ;; text properties if emacs has something equivalent. This requires special
   ;; processing.
@@ -962,7 +967,6 @@ on the current line, if any."
   ;;                (window-height . (lambda (win) (sit-for 1) (fit-window-to-buffer win 20)))
   ;;                ))
   (defun shelldon-fit-window-to-buffer (&optional window max-height min-height max-width min-width preserve-size)
-    (message "sam")
     (set-window-point win 0)
     (fit-window-to-buffer win 20))
 
@@ -1028,11 +1032,13 @@ on the current line, if any."
                                    :repo "antonj/Highlight-Indentation-for-Emacs"
                                    :branch "master"))
 
-(use-package indent-guide
-  :straight (indent-guide :type git
-                          :host github
-                          :repo "zk-phi/indent-guide"
-                          :branch "master"))
+;; great package but terrible performance
+;; very noticable when scrolling
+;; (use-package indent-guide
+;;   :straight (indent-guide :type git
+;;                           :host github
+;;                           :repo "zk-phi/indent-guide"
+;;                           :branch "master"))
 
 (use-package buffer-move)
 
@@ -1115,10 +1121,12 @@ on the current line, if any."
                     (preserve-size . t)
                     (side . top)
                     (slot . 2))))
-      (completionist--complete "processes:" #'process-names
-                               (lambda (process) (switch-to-buffer (process-buffer process)))
-                               "*comp-procs*"
-                               action)))
+      (unwind-protect
+          (completionist--complete "processes:" #'process-names
+                                   (lambda (process) (switch-to-buffer (process-buffer process)))
+                                   "*comp-procs*"
+                                   action)
+        )))
   (add-hook 'persp-created-hook #'completionist-persp-switch-unfocused)
   ;; (remove-hook 'persp-created-hook #'completionist-persp-switch-unfocused)
   )
@@ -1130,11 +1138,23 @@ on the current line, if any."
 
 (use-package embark
   :config
+  (setopt embark-cycle-key "<return>")
   ;; (setopt embark-prompter 'embark-completing-read-prompter)
   (setopt embark-prompter 'embark-keymap-prompter)
+  ;; (setopt embark-verbose-indicator-display-action
+  ;;         '((display-buffer-in-side-window)
+  ;;           (side . bottom)))
+  ;; (setopt embark-verbose-indicator-display-action
+  ;;         '(
+  ;;           (display-buffer-reuse-window)
+  ;;           ))
   (setopt embark-verbose-indicator-display-action
-          '((display-buffer-in-side-window)
-            (side . bottom)))
+          '(
+            (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-in-side-window display-buffer-pop-up-window)
+            (side . right)
+            (slot . 0)
+            (window-width . 80)
+            ))
   (add-hook 'embark-collect-mode-hook #'consult-preview-at-point-mode)
   (add-to-list 'display-buffer-alist
                '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
@@ -1465,48 +1485,14 @@ on the current line, if any."
 
 ;; (use-package helm)
 
-(use-package neotree)
-
-;; (use-package gptel
-;;   :config
-;;   (setopt gptel-gpt-backend
-;;         (gptel-make-anthropic "GPT"
-;;           :stream t
-;;           :key (f-read-text (expand-file-name (concat overdr0ne-directory "/keys/chatgpt.key")))
-;;           ))
-;;   (setopt gptel-openai-backend
-;;         (gptel-make-openai
-;;             "ChatGPT"
-;;           :key (f-read-text (concat overdr0ne-directory "/keys/chatgpt.key"))
-;;           :stream t
-;;           :models '("gpt-3.5-turbo" "gpt-3.5-turbo-16k" "gpt-4o-mini"
-;;                     "gpt-4" "gpt-4o" "gpt-4-turbo" "gpt-4-turbo-preview"
-;;                     "gpt-4-32k" "gpt-4-1106-preview" "gpt-4-0125-preview")))
-;;   (setopt gptel-claude-backend
-;;         (gptel-make-anthropic "Claude"       ;Any name you want
-;;           :stream t                          ;Streaming responses
-;;           :key (f-read-text (expand-file-name (concat overdr0ne-directory "/keys/anthropic.key")))
-;;           ))
-
-;;   (setopt gptel-model "gpt-4o-mini")
-;;   (setopt gptel-backend gptel--openai))
-
-(when t
-  (add-to-list 'load-path "~/src/repllm")
-  (load "~/src/repllm/repllm.el")
-  (load "~/src/repllm/repllm-curl.el")
-  (load "~/src/repllm/repllm-openai.el")
-  (setopt repllm-model "gpt-4o-mini")
-  (setopt repllm-api-key (f-read-text (expand-file-name (concat overdr0ne-directory "/keys/chatgpt.key"))))
-  (setopt repllm-openai-backend
-          (repllm-make-openai "GPT"
-            :stream t
-            :key (f-read-text (expand-file-name (concat overdr0ne-directory "/keys/chatgpt.key")))
-            ))
-  )
+(use-package neotree
+  :config
+  (setopt neo-smart-open t)
+  (setopt neo-theme 'icons))
 
 (use-package aptitude
-  :straight (:local-repo "~/src/aptitude"))
+  :straight (aptitiude
+             :local-repo "~/src/aptitude"))
 
 (use-package linux-commands
   :straight (linux-commands
@@ -1518,6 +1504,192 @@ on the current line, if any."
 (use-package clean-kill-ring)
 
 (use-package launch)
+
+(use-package string-inflection)
+
+(use-package markdown-mode
+  :straight (markdown-mode
+             :local-repo "~/src/markdown-mode"))
+
+(use-package gptel
+  :straight (gptel
+             :files ("*.el"))
+  :config
+  (require 'gptel-integrations)
+  ;; (setopt gptel-gpt-backend
+  ;;       (gptel-make-anthropic "GPT"
+  ;;         :stream t
+  ;;         :key (f-read-text (expand-file-name (concat overdr0ne-directory "/keys/chatgpt.key")))
+  ;;         ))
+  ;; (setopt gptel-openai-backend
+  ;;       (gptel-make-openai
+  ;;           "ChatGPT"
+  ;;         :key (f-read-text (concat overdr0ne-directory "/keys/chatgpt.key"))
+  ;;         :stream t
+  ;;         :models '("gpt-3.5-turbo" "gpt-3.5-turbo-16k" "gpt-4o-mini"
+  ;;                   "gpt-4" "gpt-4o" "gpt-4-turbo" "gpt-4-turbo-preview"
+  ;;                   "gpt-4-32k" "gpt-4-1106-preview" "gpt-4-0125-preview")))
+  (setopt gptel-display-buffer-action
+          '((display-buffer-reuse-window display-buffer-in-previous-window display-buffer-in-side-window display-buffer-pop-up-window)
+            (side . right)
+            (slot . 0)
+            (window-width . 80)))
+
+  (setopt gptel-claude-backend
+          (gptel-make-anthropic "Claude"
+            :stream t
+            :key (f-read-text (expand-file-name (concat overdr0ne-directory "/keys/anthropic.key")))))
+
+  (setopt gptel-backend gptel-claude-backend)
+  (setopt gptel-model 'claude-3-7-sonnet-20250219)
+  ;;   (setopt gptel-model "gpt-4o-mini")
+  ;; (setopt gptel-backend gptel--openai)
+
+  (gptel-make-tool
+   :name "read_buffer"
+   :function (lambda (buffer)
+               (unless (buffer-live-p (get-buffer buffer))
+                 (error "error: buffer %s is not live." buffer))
+               (with-current-buffer  buffer
+                 (buffer-substring-no-properties (point-min) (point-max))))
+   :description "return the contents of an emacs buffer"
+   :args (list '(:name "buffer"
+                       :type string
+                       :description "the name of the buffer whose contents are to be retrieved"))
+   :category "emacs")
+
+  (gptel-make-tool
+   :name "create_file"
+   :function (lambda (path filename content)
+               (let ((full-path (expand-file-name filename path)))
+                 (with-temp-buffer
+                   (insert content)
+                   (write-file full-path))
+                 (format "Created file %s in %s" filename path)))
+   :description "Create a new file with the specified content"
+   :args (list '(:name "path"             ; a list of argument specifications
+	                     :type string
+	                     :description "The directory where to create the file")
+               '(:name "filename"
+	                     :type string
+	                     :description "The name of the file to create")
+               '(:name "content"
+	                     :type string
+	                     :description "The content to write to the file"))
+   :category "filesystem")                ; An arbitrary label for grouping
+  )
+
+;; (when t
+;;   (add-to-list 'load-path "~/src/repllm")
+;;   (load "~/src/repllm/repllm.el")
+;;   (load "~/src/repllm/repllm-curl.el")
+;;   (load "~/src/repllm/repllm-openai.el")
+;;   (setopt repllm-model "gpt-4o-mini")
+;;   (setopt repllm-api-key (f-read-text (expand-file-name (concat overdr0ne-directory "/keys/chatgpt.key"))))
+;;   (setopt repllm-openai-backend
+;;           (repllm-make-openai "GPT"
+;;             :stream t
+;;             :key (f-read-text (expand-file-name (concat overdr0ne-directory "/keys/chatgpt.key")))
+;;             ))
+;;   )
+
+(use-package aider
+  :straight (:host github :repo "tninja/aider.el")
+  :config
+  ;; For latest claude sonnet model
+  (setq aider-args '("--model" "sonnet" "--no-auto-accept-architect"))
+  (setenv "ANTHROPIC_API_KEY" (f-read-text (expand-file-name (concat overdr0ne-directory "/keys/anthropic.key"))))
+  ;; Or chatgpt model
+  ;; (setq aider-args '("--model" "o4-mini"))
+  ;; (setenv "OPENAI_API_KEY" <your-openai-api-key>)
+  ;; Or gemini model
+  ;; (setq aider-args '("--model" "gemini-exp"))
+  ;; (setenv "GEMINI_API_KEY" <your-gemini-api-key>)
+  ;; Or use your personal config file
+  ;; (setq aider-args `("--config" ,(expand-file-name "~/.aider.conf.yml")))
+  ;; ;;
+  ;; Optional: Set a key binding for the transient menu
+  ;; (global-set-key (kbd "C-c a") 'aider-transient-menu)
+  )
+
+(use-package yequake
+  :straight (yequake :fetcher github :repo "alphapapa/yequake")
+  :config
+  (setq yequake-frames
+        '(
+          ("terminal" .
+           ((width . 0.90)
+            (height . 0.5)
+            (alpha . 0.95)
+            ;; (buffer-fns . ((lambda () (interactive) (ansi-term "/usr/bin/zsh"))))
+            (buffer-fns . (sam-switch-to-recent-term))
+            ;; (buffer-fns . ((lambda () (interactive) (gptel-menu))))
+            (frame-parameters . ((undecorated . t)))))
+          ("gptel" .
+           ((width . 0.90)
+            (height . 0.5)
+            (alpha . 0.95)
+            ;; (buffer-fns . ((lambda () (interactive) (ansi-term "/usr/bin/zsh"))))
+            ;; (buffer-fns . (sam-switch-to-recent-term))
+            (buffer-fns . ((lambda () (interactive) (gptel "Claude"))))
+            (frame-parameters . ((undecorated . t)))))
+          ;; ("Yequake & scratch" .
+          ;;  ((width . 0.65)
+          ;;   (height . 0.4)
+          ;;   (alpha . 0.95)
+          ;;   (buffer-fns . ("~/"
+          ;;                  split-window-horizontally
+          ;;                  "*scratch*"))
+          ;;   (frame-parameters . ((undecorated . t)))))
+          )))
+
+;; (use-package copilot
+;;   :straight (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
+;;   :ensure t
+;;   :bind (
+;;          :map copilot-completion-map
+;;               ("C-c TAB" . 'copilot-accept-completion))
+;;   :config
+;;   (set-face-attribute 'copilot-overlay-face nil :foreground "grey30"))
+
+(use-package minuet
+  :after (evim)
+  :bind
+  (("C-M-l" . #'minuet-show-suggestion)
+   :map minuet-active-mode-map
+   ("C-M-l" . #'minuet-accept-suggestion)
+   ("C-l" . #'minuet-accept-suggestion)
+   ("C-p" . #'minuet-previous-suggestion)
+   ("C-n" . #'minuet-next-suggestion)))
+
+;; (use-package spookfox
+;;   :straight
+;;   (spookfox :type git
+;;             :host github
+;;             :repo "bitspook/spookfox"
+;;             :files ("lisp/*.el" "lisp/apps/*.el"))
+;;   :config
+;;   (spookfox-init))
+
+(use-package app-launcher
+  :straight (app-launcher :local-repo "~/src/app-launcher")
+  ;; :straight (app-launcher
+  ;;            :type git
+  ;;            :fetcher github
+  ;;            :branch "main"
+  ;;            :repo "SebastienWae/app-launcher")
+  )
+
+;; (use-package json-rpc)
+
+(use-package mcp
+  :straight (:host github :repo "lizqwerscott/mcp.el")
+  :custom
+  (mcp-hub-servers
+   `(("filesystem" . (:command "npx" :args ("-y" "@modelcontextprotocol/server-filesystem" "/home/sam/src/")))
+     ;; ("fetch" . (:command "uvx" :args ("mcp-server-fetch")))
+     ))
+  :hook (after-init . mcp-hub-start-all-server))
 
 (provide '+modules)
 ;;; +modules.el ends here
