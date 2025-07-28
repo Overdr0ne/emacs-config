@@ -241,6 +241,50 @@ current buffer directory."
                 ))
   (switch-to-buffer dir-buffer))
 
+(defun term-buffer-p (buffer)
+  (if (and buffer (consp buffer))
+      (with-current-buffer (car buffer)
+        (equal major-mode #'term-mode))
+    nil))
+
+(defun sam-switch-to-term (term-buffer)
+  (interactive (list
+                (read-buffer "Terminal buffer: " nil nil #'term-buffer-p)
+                ))
+  (switch-to-buffer term-buffer))
+
+(defun mode-derived-from-p (mode ancestor)
+  "Check if MODE is derived from ANCESTOR mode."
+  (let ((current mode))
+    (while (and current (not (eq current ancestor)))
+      (setq current (get current 'derived-mode-parent)))
+    (eq current ancestor)))
+
+(defun most-recent-buffer-in-mode (mode)
+  "Return a list of active buffers that have the specified major MODE.
+MODE should be a symbol representing the major mode (e.g., 'python-mode)."
+  (catch 'done
+    (dolist (buffer (buffer-list))
+      (with-current-buffer buffer
+        (when (mode-derived-from-p major-mode mode)
+          (throw 'done buffer))))))
+
+(defun sam-switch-to-recent-term ()
+  (interactive)
+  (let ((buffer (most-recent-buffer-in-mode 'term-mode)))
+    (if buffer
+        (switch-to-buffer buffer)
+      (evim--term "zsh"))))
+
+(defun read-elisp-with-highlighting (prompt &optional initial-contents)
+  "Read Emacs Lisp code with syntax highlighting."
+  (let ((minibuffer-setup-hook
+         (cons (lambda ()
+                 (emacs-lisp-mode)
+                 (font-lock-ensure))
+               minibuffer-setup-hook)))
+    (read-string prompt initial-contents)))
+
 (defun file-list (&optional frame)
   (seq-filter #'stringp (mapcar #'buffer-file-name (buffer-list))))
 
@@ -1159,7 +1203,8 @@ target."
   (sam-delete-side-window 'bottom))
 
 (defun sam-plist ()
-  (split-string (shell-command-to-string "ps x -o comm=") "[\f\n]+" t))
+  (split-string (shell-command-to-string "ps x -o comm=") "[\f\n
+]+" t))
 
 (defmacro comment-out (&rest args) nil)
 
@@ -1514,6 +1559,31 @@ UPDATE function is passed to it."
                   (daemons--completing-read))))
   (let ((daemons-systemd-is-user t))
     (daemons--run-with-output-buffer 'start name)))
+
+(defun sam-paste-after-sexp ()
+  (interactive)
+  (forward-sexp)
+  (newline-and-indent)
+  (yank))
+
+;; (minibuffer-with-setup-hook
+;;                (lambda () (add-hook 'completion-at-point-functions
+;;                                #'gptel-preset-capf nil t))
+;;              (read-string
+;;               (format "Ask %s: " (gptel-backend-name gptel-backend))
+;;               (and (use-region-p)
+;;                    (buffer-substring-no-properties
+;;                     (region-beginning) (region-end)))))
+(defun gptel-minibuffer-query (query)
+  "Query gptel and display result in minibuffer."
+  ;; (interactive (concat "sAsk " (gptel-backend-name gptel-backend) ": "))
+  (interactive (list (read-string (concat "Ask " (gptel-backend-name gptel-backend) ": "))))
+
+  (gptel-request query
+    :callback (lambda (response info)
+                (if response
+                    (message "GPT: %s" (string-trim response))
+                  (message "Error: %s" info)))))
 
 (provide '+functions)
 ;;; +functions.el ends here
