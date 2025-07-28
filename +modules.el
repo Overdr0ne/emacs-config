@@ -611,6 +611,7 @@
   (add-to-list 'exec-path "/usr/lib/git-core")
   (transient-replace-suffix 'magit-commit 'magit-commit-autofixup
     '("x" "Absorb changes" magit-commit-absorb))
+  (transient-append-suffix 'magit-merge "-s" '("-a" "Allow unrelated histories" "--allow-unrelated-histories"))
   (setopt magit-buffer-log-args '("-n256" "--color" "--decorate" "--graph"))
   (put 'magit-log-mode 'magit-log-default-arguments
        magit-buffer-log-args)
