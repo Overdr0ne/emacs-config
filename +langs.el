@@ -55,7 +55,8 @@
   ;; (add-to-list 'completion-at-point-functions #'cape-file)
   )
 (dolist (fun
-         '( highlight-defined-mode  hs-minor-mode sam-set-cape-funcs rainbow-delimiters-mode indent-guide-mode
+         '( highlight-defined-mode  hs-minor-mode sam-set-cape-funcs rainbow-delimiters-mode
+            ;; indent-guide-mode
             (lambda ()
               (setq-local show-trailing-whitespace t))))
   (dolist (hook '(prog-mode-hook conf-mode-hook))
@@ -96,7 +97,7 @@
 
 ;;; text
 (remove-hook 'text-mode-hook 'auto-fill-mode)
-(dolist (fun '(visual-line-mode flyspell-mode))
+(dolist (fun '(visual-line-mode))
   (add-hook 'text-mode-hook fun))
 
 (dolist (fun '(visual-line-mode))
@@ -146,6 +147,19 @@
 
 ;;; Python
 (setq-default python-indent-offset 4)
+
+;; don’t ask to kill term-mode buffers
+(defun process-kill-buffer-query-function ()
+  "Ask before killing a buffer that has a running process."
+  (let ((process (get-buffer-process (current-buffer))))
+    (and
+     ;; (not (mode-derived-from-p major-mode 'term-mode))
+     (or (not process)
+         (not (memq (process-status process) '(run stop open listen)))
+         (not (process-query-on-exit-flag process))
+         (yes-or-no-p
+	        (format "Buffer %S has a running process; kill it? "
+		              (buffer-name (current-buffer))))))))
 
 (provide '+langs)
 ;;; +langs.el ends here
