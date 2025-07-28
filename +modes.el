@@ -29,6 +29,7 @@
 (global-hl-line-mode +1)
 (minions-mode)
 (which-key-mode)
+(electric-quote-mode -1)
 
 (load-theme 'dracula t)
 ;; (pixel-scroll-mode +1)
