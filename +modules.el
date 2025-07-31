@@ -293,6 +293,14 @@
   ;; :config
   (add-to-list 'auto-mode-alist '("*Shell Command Output*\\'" . text-mode))
   ;; (add-to-list 'auto-mode-alist '("\\.Async Shell Command\\'" . text-mode))
+  ;; weird hack to prevent spurious appends to kill ring
+  ;; why in the hell is that the default behaviour??
+  ;; TODO: it shouldn’t be appending when I move the cursor between kills...
+  (advice-add 'kill-whole-line :around
+            (lambda (fn &rest args)
+              (let (last-command)
+                (push "" kill-ring)
+                (apply fn args))))
   )
 
 (use-package view
