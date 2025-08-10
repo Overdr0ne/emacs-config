@@ -114,7 +114,7 @@
 (setopt x-select-request-type nil)
 
 ;; (setopt shell-file-name "/home/sam/.guix-profile/bin/zsh")
-(setopt shell-file-name "/usr/bin/zsh")
+(setopt shell-file-name "/home/sam/.guix-home/profile/bin/bash")
 
 (setopt custom-file "~/.emacs.d/overdr0ne/customize.el")
 
@@ -153,11 +153,11 @@
 ;; (setopt sam-font "FreeMono")
 ;; (setopt sam-font "FreeSans")
 ;; (setopt sam-font "MaterialIcons")
-;; (add-to-list 'default-frame-alist '(alpha . (93 . 70)))
-(add-to-list 'default-frame-alist '(alpha . (97 . 93)))
 (add-to-list 'default-frame-alist `(font . ,sam-font))
-;; (set-frame-parameter (selected-frame) 'alpha '(93 . 70))
-(set-frame-parameter (selected-frame) 'alpha '(97 . 93))
+;; full transparency slowing down window reset dramatically on wayland
+;; (set-frame-parameter (selected-frame) 'alpha '(97 . 93))
+(setopt sam-alpha-background 90)
+(add-to-list 'default-frame-alist `(alpha-background . ,sam-alpha-background))
 
 (setopt tags-add-tables nil)
 (setopt large-file-warning-threshold nil)
@@ -198,9 +198,11 @@
 ;; (setopt initial-buffer-choice (buffer-name (find-file-noselect "/home/sam/notes/todo.md")))
 
 (setopt user-mail-address "scmorris.dev@gmail.com"
-        user-full-name "Samuel Morris")
+      user-full-name "Samuel Morris")
 (setopt copyright-names-regexp
-        (format "%s <%s>" user-full-name user-mail-address))
+      (format "%s <%s>" user-full-name user-mail-address))
+
+;; (add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
 
 (provide '+core)
 ;;; +core.el ends here
