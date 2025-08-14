@@ -114,7 +114,8 @@
 (setopt x-select-request-type nil)
 
 ;; (setopt shell-file-name "/home/sam/.guix-profile/bin/zsh")
-(setopt shell-file-name "/home/sam/.guix-home/profile/bin/bash")
+;; (setopt shell-file-name "/home/sam/.guix-home/profile/bin/bash")
+(setopt shell-file-name "/usr/bin/zsh")
 
 (setopt custom-file "~/.emacs.d/overdr0ne/customize.el")
 

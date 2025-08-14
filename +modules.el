@@ -892,35 +892,35 @@ on the current line, if any."
   ;;             ))
   )
 
-(use-package gumshoe
-  ;; :straight (gumshoe :type git
-  ;;                    :host github
-  ;;                    :repo "Overdr0ne/gumshoe"
-  ;;                    :branch "master"
-  ;;                    ;; :branch "feature/footprint-strategy"
-  ;;                    )
-  :straight (gumshoe :local-repo "~/src/gumshoe")
-  :init
-  ;; (setopt gumshoe-slot-schema '(time perspective buffer position line))
-  ;; (setopt gumshoe-footprint-strategy 'delete-overlapping)
-  (setopt gumshoe-slot-schema '(time buffer position line))
-  (setopt gumshoe-backlog-type 'ring)
+;; (use-package gumshoe
+;;   ;; :straight (gumshoe :type git
+;;   ;;                    :host github
+;;   ;;                    :repo "Overdr0ne/gumshoe"
+;;   ;;                    :branch "master"
+;;   ;;                    ;; :branch "feature/footprint-strategy"
+;;   ;;                    )
+;;   :straight (gumshoe :local-repo "~/src/gumshoe")
+;;   :init
+;;   ;; (setopt gumshoe-slot-schema '(time perspective buffer position line))
+;;   ;; (setopt gumshoe-footprint-strategy 'delete-overlapping)
+;;   (setopt gumshoe-slot-schema '(time buffer position line))
+;;   (setopt gumshoe-backlog-type 'ring)
   
-  ;;  (global-gumshoe-persp-mode 1)
-  ;; (setopt gumshoe-slot-schema '(time perspective buffer position line))
-  ;; (advice-add #'gumshoe-peruse-globally :around
-  ;;              (lambda (old-fn)
-  ;;                (let ((selectrum-should-sort nil))
-  ;;                  (funcall old-fn))))
-  ;; (advice-add #'gumshoe-peruse-in-persp :around
-  ;;              (lambda (old-fn)
-  ;;                (let ((selectrum-should-sort nil))
-  ;;                  (funcall old-fn))))
-  ;; (advice-add #'gumshoe-peruse-in-buffer :around
-  ;;              (lambda (old-fn)
-  ;;                (let ((selectrum-should-sort nil))
-  ;;                  (funcall old-fn))))
-  )
+;;   ;;  (global-gumshoe-persp-mode 1)
+;;   ;; (setopt gumshoe-slot-schema '(time perspective buffer position line))
+;;   ;; (advice-add #'gumshoe-peruse-globally :around
+;;   ;;              (lambda (old-fn)
+;;   ;;                (let ((selectrum-should-sort nil))
+;;   ;;                  (funcall old-fn))))
+;;   ;; (advice-add #'gumshoe-peruse-in-persp :around
+;;   ;;              (lambda (old-fn)
+;;   ;;                (let ((selectrum-should-sort nil))
+;;   ;;                  (funcall old-fn))))
+;;   ;; (advice-add #'gumshoe-peruse-in-buffer :around
+;;   ;;              (lambda (old-fn)
+;;   ;;                (let ((selectrum-should-sort nil))
+;;   ;;                  (funcall old-fn))))
+;;   )
 
 (use-package exec-path-from-shell
   :config
@@ -1623,6 +1623,7 @@ on the current line, if any."
 (use-package yequake
   :straight (yequake :fetcher github :repo "alphapapa/yequake")
   :config
+  ;; (yequake-toggle "project")
   (setq yequake-frames
         '(
           ("terminal" .
@@ -1632,6 +1633,18 @@ on the current line, if any."
             ;; (buffer-fns . ((lambda () (interactive) (ansi-term "/usr/bin/zsh"))))
             (buffer-fns . (sam-switch-to-recent-term))
             ;; (buffer-fns . ((lambda () (interactive) (gptel-menu))))
+            (frame-parameters . ((undecorated . t)))))
+          ("project" .
+           ((width . 0.90)
+            (height . 0.5)
+            (alpha . 0.95)
+            ;; (buffer-fns . (project-switch-project))
+            (buffer-fns . ((lambda ()
+                             (interactive)
+                             (unwind-protect
+                                 (call-interactively #'sam-project-persp-switch-project)
+                               (yequake-toggle "project"))
+                             )))
             (frame-parameters . ((undecorated . t)))))
           ("gptel" .
            ((width . 0.90)
@@ -1690,14 +1703,14 @@ on the current line, if any."
 
 ;; (use-package json-rpc)
 
-(use-package mcp
-  :straight (:host github :repo "lizqwerscott/mcp.el")
-  :custom
-  (mcp-hub-servers
-   `(("filesystem" . (:command "npx" :args ("-y" "@modelcontextprotocol/server-filesystem" "/home/sam/src/")))
-     ;; ("fetch" . (:command "uvx" :args ("mcp-server-fetch")))
-     ))
-  :hook (after-init . mcp-hub-start-all-server))
+;; (use-package mcp
+;;   :straight (:host github :repo "lizqwerscott/mcp.el")
+;;   :custom
+;;   (mcp-hub-servers
+;;    `(("filesystem" . (:command "npx" :args ("-y" "@modelcontextprotocol/server-filesystem" "/home/sam/src/")))
+;;      ;; ("fetch" . (:command "uvx" :args ("mcp-server-fetch")))
+;;      ))
+;;   :hook (after-init . mcp-hub-start-all-server))
 
 (provide '+modules)
 ;;; +modules.el ends here
