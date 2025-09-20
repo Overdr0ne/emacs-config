@@ -65,13 +65,18 @@
   )
 
 (use-package skey
-  :straight (skey :local-repo "~/src/skey")
+  :straight (skey :local-repo "~/.emacs.d/packages/skey")
   ;;   :straight (skey :type git
   ;;                   :host github
   ;;                   :repo "Overdr0ne/skey"
   ;;                   :branch "main"))
   )
 
+(use-package whitespace
+  :straight (whitespace :type built-in)
+  :config
+  (global-whitespace-mode +1)
+  )
 
 (use-package seq)
 (use-package let-alist)
@@ -92,7 +97,7 @@
 (use-package tramp
   :straight (tramp :type built-in)
   :config
-  (setopt tramp-verbose 6)
+  ;; (setopt tramp-verbose 6)
   ;; (defun add-ssh-agent-to-tramp ()
   ;;   (cl-pushnew '("-A")
   ;;               (cadr (assoc 'tramp-login-args
@@ -275,6 +280,11 @@
   :config
   (add-to-list 'auto-mode-alist '("\\.env\\'" . sh-mode)))
 
+(use-package lua-ts-mode
+  :config
+  :init
+  (add-to-list 'auto-mode-alist '("\\.lua\\'" . lua-ts-mode)))
+
 (use-package typescript-ts-mode
   :straight (typescript-ts-mode :type built-in)
   :init
@@ -297,10 +307,10 @@
   ;; why in the hell is that the default behaviour??
   ;; TODO: it shouldn’t be appending when I move the cursor between kills...
   (advice-add 'kill-whole-line :around
-            (lambda (fn &rest args)
-              (let (last-command)
-                (push "" kill-ring)
-                (apply fn args))))
+              (lambda (fn &rest args)
+                (let (last-command)
+                  (push "" kill-ring)
+                  (apply fn args))))
   )
 
 (use-package view
@@ -651,7 +661,7 @@ on the current line, if any."
   (add-to-list 'auto-mode-alist '("defconfig\\'" . dts-mode))
   (add-to-list 'auto-mode-alist '("defconfig\\'" . dts-mode))
   (setopt auto-mode-alist (append auto-mode-alist '(("defconfig\\'" . dts-mode)
-                                                  ("\\.its" . dts-mode)))))
+                                                    ("\\.its" . dts-mode)))))
 ;; (use-package devicetree-ts-mode
 ;;   )
 
@@ -827,7 +837,7 @@ on the current line, if any."
 ;;   ;;                :host github
 ;;   ;;                :repo "Overdr0ne/sfs"
 ;;   ;;                :branch "master"
-;;   :straight (sfs :local-repo "~/src/sfs"
+;;   :straight (sfs :local-repo "~/.emacs.d/packages/sfs"
 ;;                  :files ("sfs.el"
 ;;                          "sfs-recoll.el"
 ;;                          "sfs-tui.el"
@@ -887,40 +897,40 @@ on the current line, if any."
   ;;             ;; (setopt gumshoe-footprint-strategy 'nil)
   ;;             (setopt gumshoe-backlog-type 'ring)
   ;;             ;; (setopt gumshoe-backlog-type 'tree)
-  ;;             (add-to-list 'load-path "~/src/gumshoe")
-  ;;             (load "~/src/gumshoe/gumshoe.el")
+  ;;             (add-to-list 'load-path "~/.emacs.d/packages/gumshoe")
+  ;;             (load "~/.emacs.d/packages/gumshoe/gumshoe.el")
   ;;             ))
   )
 
-;; (use-package gumshoe
-;;   ;; :straight (gumshoe :type git
-;;   ;;                    :host github
-;;   ;;                    :repo "Overdr0ne/gumshoe"
-;;   ;;                    :branch "master"
-;;   ;;                    ;; :branch "feature/footprint-strategy"
-;;   ;;                    )
-;;   :straight (gumshoe :local-repo "~/src/gumshoe")
-;;   :init
-;;   ;; (setopt gumshoe-slot-schema '(time perspective buffer position line))
-;;   ;; (setopt gumshoe-footprint-strategy 'delete-overlapping)
-;;   (setopt gumshoe-slot-schema '(time buffer position line))
-;;   (setopt gumshoe-backlog-type 'ring)
+(use-package gumshoe
+  ;; :straight (gumshoe :type git
+  ;;                    :host github
+  ;;                    :repo "Overdr0ne/gumshoe"
+  ;;                    :branch "master"
+  ;;                    ;; :branch "feature/footprint-strategy"
+  ;;                    )
+  :straight (gumshoe :local-repo "~/.emacs.d/packages/gumshoe")
+  :init
+  ;; (setopt gumshoe-slot-schema '(time perspective buffer position line))
+  ;; (setopt gumshoe-footprint-strategy 'delete-overlapping)
+  (setopt gumshoe-slot-schema '(time buffer position line))
+  (setopt gumshoe-backlog-type 'ring)
   
-;;   ;;  (global-gumshoe-persp-mode 1)
-;;   ;; (setopt gumshoe-slot-schema '(time perspective buffer position line))
-;;   ;; (advice-add #'gumshoe-peruse-globally :around
-;;   ;;              (lambda (old-fn)
-;;   ;;                (let ((selectrum-should-sort nil))
-;;   ;;                  (funcall old-fn))))
-;;   ;; (advice-add #'gumshoe-peruse-in-persp :around
-;;   ;;              (lambda (old-fn)
-;;   ;;                (let ((selectrum-should-sort nil))
-;;   ;;                  (funcall old-fn))))
-;;   ;; (advice-add #'gumshoe-peruse-in-buffer :around
-;;   ;;              (lambda (old-fn)
-;;   ;;                (let ((selectrum-should-sort nil))
-;;   ;;                  (funcall old-fn))))
-;;   )
+  ;;  (global-gumshoe-persp-mode 1)
+  ;; (setopt gumshoe-slot-schema '(time perspective buffer position line))
+  ;; (advice-add #'gumshoe-peruse-globally :around
+  ;;              (lambda (old-fn)
+  ;;                (let ((selectrum-should-sort nil))
+  ;;                  (funcall old-fn))))
+  ;; (advice-add #'gumshoe-peruse-in-persp :around
+  ;;              (lambda (old-fn)
+  ;;                (let ((selectrum-should-sort nil))
+  ;;                  (funcall old-fn))))
+  ;; (advice-add #'gumshoe-peruse-in-buffer :around
+  ;;              (lambda (old-fn)
+  ;;                (let ((selectrum-should-sort nil))
+  ;;                  (funcall old-fn))))
+  )
 
 (use-package exec-path-from-shell
   :config
@@ -946,7 +956,7 @@ on the current line, if any."
   ;;                       :repo "Overdr0ne/shelldon"
   ;;                       :branch "master"
   ;;                       :files ("shelldon.el"))
-  :straight (shelldon :local-repo "~/src/shelldon")
+  :straight (shelldon :local-repo "~/.emacs.d/packages/shelldon")
   :init
   (start-file-process-shell-command "ls" "test" "ls -l ~")
   ;; tell bash this shell is interactive
@@ -1067,11 +1077,11 @@ on the current line, if any."
 (use-package treepy)
 
 (use-package kactivities
-  :straight (kactivities :local-repo "~/src/emacs-kde")
+  :straight (kactivities :local-repo "~/.emacs.d/packages/emacs-kde")
   )
 
 (use-package firmware
-  :straight (firmware :local-repo "~/src/firmware-el")
+  :straight (firmware :local-repo "~/.emacs.d/packages/firmware-el")
   :config
   (setopt etc-power-golden (firmware-target :name "golden" :power-ip "10.102.3.11" :power-port "Outlet1"))
   (setopt etc-power-fdrive (firmware-target :name "fdrive" :power-ip "10.102.3.11" :power-port "Outlet2"))
@@ -1079,14 +1089,14 @@ on the current line, if any."
   )
 
 (use-package completionist
-  :straight (completionist :local-repo "~/src/completionist"
+  :straight (completionist :local-repo "~/.emacs.d/packages/completionist"
                            :files ("*.el" "extensions/*.el"))
   :after (perspective)
   ;; (when t
-  ;;   (add-to-list 'load-path "~/src/completionist")
-  ;;   (load "~/src/completionist/completionist.el")
-  ;;   (load "~/src/completionist/extensions/completionist-flat.el")
-  ;;   (load "~/src/completionist/extensions/completionist-mouse.el")
+  ;;   (add-to-list 'load-path "~/.emacs.d/packages/completionist")
+  ;;   (load "~/.emacs.d/packages/completionist/completionist.el")
+  ;;   (load "~/.emacs.d/packages/completionist/extensions/completionist-flat.el")
+  ;;   (load "~/.emacs.d/packages/completionist/extensions/completionist-mouse.el")
   :init
   (defun completionist-persp-switch ()
     (interactive)
@@ -1200,7 +1210,7 @@ on the current line, if any."
 ;;   ;; (prism-save-colors)
 ;;  )
 
-;; (load "~/src/winblows/winblows.el")
+;; (load "~/.emacs.d/packages/winblows/winblows.el")
 
 ;; (use-package loccur)
 
@@ -1355,7 +1365,7 @@ on the current line, if any."
      ("<return>" exit-recursive-edit)
      ))
 
-  (add-to-list 'yas-snippet-dirs "~/src/guix/etc/snippets/yas"))
+  (add-to-list 'yas-snippet-dirs "~/.emacs.d/packages/guix/etc/snippets/yas"))
 (use-package yasnippet-snippets)
 (use-package consult-yasnippet)
 
@@ -1374,13 +1384,13 @@ on the current line, if any."
 
 ;; (eval-after-load 'avy
 ;;   (progn
-;;     (load "~/src/holymotion/holymotion.el")
+;;     (load "~/.emacs.d/packages/holymotion/holymotion.el")
 ;;     ;;(holymotion-make-motion
 ;;     ;; holymotion-backward-whitespace #'sp-backward-whitespace
 ;;     ;; :scope 'line))
 ;;     ))
 (use-package holymotion
-  :straight (holymotion :local-repo "~/src/holymotion")
+  :straight (holymotion :local-repo "~/.emacs.d/packages/holymotion")
   ;; :straight (holymotion :type git
   ;;                       :host github
   ;;                       :repo "Overdr0ne/holymotion"
@@ -1405,7 +1415,7 @@ on the current line, if any."
 
 (use-package evim
   :straight (evim
-             :local-repo "~/src/evim"))
+             :local-repo "~/.emacs.d/packages/evim"))
 ;; (use-package wrap-region
 ;;   :config
 ;;   (wrap-region-add-wrapper "~" "~" "~" '(org-mode))
@@ -1500,11 +1510,11 @@ on the current line, if any."
 
 (use-package aptitude
   :straight (aptitiude
-             :local-repo "~/src/aptitude"))
+             :local-repo "~/.emacs.d/packages/aptitude"))
 
 (use-package linux-commands
   :straight (linux-commands
-             :local-repo "~/src/linux-commands-el"
+             :local-repo "~/.emacs.d/packages/linux-commands-el"
              :type nil))
 
 (use-package itail)
@@ -1516,8 +1526,9 @@ on the current line, if any."
 (use-package string-inflection)
 
 (use-package markdown-mode
-  :straight (markdown-mode
-             :local-repo "~/src/markdown-mode"))
+  ;; :straight (markdown-mode
+  ;;            :local-repo "~/.emacs.d/packages/markdown-mode")
+  )
 
 (use-package gptel
   :straight (gptel
@@ -1543,13 +1554,16 @@ on the current line, if any."
             (slot . 0)
             (window-width . 80)))
 
+  (setopt gptel-gemini-backend
+          (gptel-make-gemini "Gemini" :key (f-read-text (expand-file-name (concat overdr0ne-directory "/keys/gemini.key"))) :stream t))
+
   (setopt gptel-claude-backend
           (gptel-make-anthropic "Claude"
             :stream t
             :key (f-read-text (expand-file-name (concat overdr0ne-directory "/keys/anthropic.key")))))
 
-  (setopt gptel-backend gptel-claude-backend)
-  (setopt gptel-model 'claude-3-7-sonnet-20250219)
+  (setopt gptel-backend gptel-gemini-backend)
+  (setopt gptel-model 'gemini-2.5-pro-exp-03-25)
   ;;   (setopt gptel-model "gpt-4o-mini")
   ;; (setopt gptel-backend gptel--openai)
 
@@ -1565,6 +1579,11 @@ on the current line, if any."
                        :type string
                        :description "the name of the buffer whose contents are to be retrieved"))
    :category "emacs")
+
+  (add-to-list 'display-buffer-alist
+               '("*Gemini*"
+                 (display-buffer-full-frame)
+                 (window-height . fit-window-to-buffer)))
 
   (gptel-make-tool
    :name "create_file"
@@ -1588,10 +1607,10 @@ on the current line, if any."
   )
 
 ;; (when t
-;;   (add-to-list 'load-path "~/src/repllm")
-;;   (load "~/src/repllm/repllm.el")
-;;   (load "~/src/repllm/repllm-curl.el")
-;;   (load "~/src/repllm/repllm-openai.el")
+;;   (add-to-list 'load-path "~/.emacs.d/packages/repllm")
+;;   (load "~/.emacs.d/packages/repllm/repllm.el")
+;;   (load "~/.emacs.d/packages/repllm/repllm-curl.el")
+;;   (load "~/.emacs.d/packages/repllm/repllm-openai.el")
 ;;   (setopt repllm-model "gpt-4o-mini")
 ;;   (setopt repllm-api-key (f-read-text (expand-file-name (concat overdr0ne-directory "/keys/chatgpt.key"))))
 ;;   (setopt repllm-openai-backend
@@ -1693,7 +1712,7 @@ on the current line, if any."
 ;;   (spookfox-init))
 
 (use-package app-launcher
-  :straight (app-launcher :local-repo "~/src/app-launcher")
+  :straight (app-launcher :local-repo "~/.emacs.d/packages/app-launcher")
   ;; :straight (app-launcher
   ;;            :type git
   ;;            :fetcher github
@@ -1701,13 +1720,16 @@ on the current line, if any."
   ;;            :repo "SebastienWae/app-launcher")
   )
 
+;; (use-package eaf)
+;; (use-package eaf-browser)
+
 ;; (use-package json-rpc)
 
 ;; (use-package mcp
 ;;   :straight (:host github :repo "lizqwerscott/mcp.el")
 ;;   :custom
 ;;   (mcp-hub-servers
-;;    `(("filesystem" . (:command "npx" :args ("-y" "@modelcontextprotocol/server-filesystem" "/home/sam/src/")))
+;;    `(("filesystem" . (:command "npx" :args ("-y" "@modelcontextprotocol/server-filesystem" "/home/sam/.emacs.d/packages/")))
 ;;      ;; ("fetch" . (:command "uvx" :args ("mcp-server-fetch")))
 ;;      ))
 ;;   :hook (after-init . mcp-hub-start-all-server))
