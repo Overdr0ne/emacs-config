@@ -16,3 +16,6 @@
 [submodule "packages/skey"]
 	path = packages/skey
 	url = file:///home/sam/.emacs.d/packages/skey
+[submodule "packages/slink"]
+	path = packages/slink
+	url = git@github.com:Overdr0ne/slink.git
