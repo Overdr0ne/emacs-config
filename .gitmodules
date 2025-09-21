@@ -34,3 +34,6 @@
 [submodule "packages/completionist"]
 	path = packages/completionist
 	url = git@github.com:Overdr0ne/completionist.git
+[submodule "packages/evim"]
+	path = packages/evim
+	url = git@github.com:Overdr0ne/evim.git
