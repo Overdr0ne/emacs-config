@@ -10,3 +10,6 @@
 [submodule "packages/bitbake-el"]
 	path = packages/bitbake-el
 	url = git@github.com:Overdr0ne/bitbake-el.git
+[submodule "packages/firmware-el"]
+	path = packages/firmware-el
+	url = file:///home/sam/.emacs.d/packages/firmware-el
