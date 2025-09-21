@@ -1,0 +1,3 @@
+[submodule "overdr0ne"]
+	path = overdr0ne
+	url = git@github.com:Overdr0ne/emacs-config.git
