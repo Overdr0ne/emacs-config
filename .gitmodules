@@ -1,3 +1,9 @@
 [submodule "overdr0ne"]
 	path = overdr0ne
 	url = git@github.com:Overdr0ne/emacs-config.git
+[submodule "packages/app-launcher"]
+	path = packages/app-launcher
+	url = /home/sam/.emacs.d/packages/app-launcher
+[submodule "packages/aptitude"]
+	path = packages/aptitude
+	url = /home/sam/.emacs.d/packages/aptitude
