@@ -7,3 +7,6 @@
 [submodule "packages/aptitude"]
 	path = packages/aptitude
 	url = /home/sam/.emacs.d/packages/aptitude
+[submodule "packages/bitbake-el"]
+	path = packages/bitbake-el
+	url = git@github.com:Overdr0ne/bitbake-el.git
