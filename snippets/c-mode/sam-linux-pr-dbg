@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: sam-linux-pr-dbg
+# key: sam
+# --
+pr_err("${1:message}: %s: (line %d)\n", __func __LINE__);

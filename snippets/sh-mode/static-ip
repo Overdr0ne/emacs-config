@@ -1,0 +1,13 @@
+# -*- mode: snippet -*-
+# name: static-ip
+# --
+export iface=${1:eno1}
+export ip=${2:192.168.1.110}
+export gateway=${3:10.102.0.254}
+export netmask=24
+ip address flush dev ${iface}
+ip route flush dev ${iface}
+ip address add ${ip}/${netmask} brd + dev ${iface}
+ip route add ${gateway} dev ${iface}
+ip route add default via ${gateway} dev ${iface}
+ip address show dev ${iface}

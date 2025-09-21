@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: sam-linux-dev-dbg
+# key: sam
+# --
+dev_err(${1:device_pointer},"${2:message}: %s: (line %d)\n", __func__, __LINE__);
