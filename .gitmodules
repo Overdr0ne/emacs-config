@@ -13,3 +13,6 @@
 [submodule "packages/firmware-el"]
 	path = packages/firmware-el
 	url = file:///home/sam/.emacs.d/packages/firmware-el
+[submodule "packages/skey"]
+	path = packages/skey
+	url = file:///home/sam/.emacs.d/packages/skey
