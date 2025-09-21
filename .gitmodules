@@ -28,3 +28,6 @@
 [submodule "packages/shelldon"]
 	path = packages/shelldon
 	url = git@github.com:Overdr0ne/shelldon.git
+[submodule "packages/emacs-kde"]
+	path = packages/emacs-kde
+	url = file:///home/sam/.emacs.d/packages/emacs-kde

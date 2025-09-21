@@ -1,0 +1,2 @@
+* appify emacs
+** make an autocompleter, either based on deft or completionist
