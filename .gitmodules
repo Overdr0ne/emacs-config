@@ -3,7 +3,7 @@
 	url = git@github.com:Overdr0ne/emacs-config.git
 [submodule "packages/app-launcher"]
 	path = packages/app-launcher
-	url = /home/sam/.emacs.d/packages/app-launcher
+	url = git@github.com:SebastienWae/app-launcher.git
 [submodule "packages/aptitude"]
 	path = packages/aptitude
 	url = /home/sam/.emacs.d/packages/aptitude
