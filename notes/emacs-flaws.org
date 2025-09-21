@@ -1,0 +1,3 @@
+* no namespaces
+* no major mode local variables
+* no multiple major modes
