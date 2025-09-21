@@ -22,3 +22,6 @@
 [submodule "packages/gumshoe"]
 	path = packages/gumshoe
 	url = git@github.com:Overdr0ne/gumshoe.git
+[submodule "packages/holymotion"]
+	path = packages/holymotion
+	url = https://github.com/PythonNut/evil-easymotion
