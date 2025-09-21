@@ -19,3 +19,6 @@
 [submodule "packages/slink"]
 	path = packages/slink
 	url = git@github.com:Overdr0ne/slink.git
+[submodule "packages/gumshoe"]
+	path = packages/gumshoe
+	url = git@github.com:Overdr0ne/gumshoe.git
