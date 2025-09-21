@@ -31,3 +31,6 @@
 [submodule "packages/emacs-kde"]
 	path = packages/emacs-kde
 	url = file:///home/sam/.emacs.d/packages/emacs-kde
+[submodule "packages/completionist"]
+	path = packages/completionist
+	url = git@github.com:Overdr0ne/completionist.git
