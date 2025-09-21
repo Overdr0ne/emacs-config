@@ -151,6 +151,26 @@
    ("w" wordnut-lookup-current-word)
    ("x" sx-search)))
 
+(defvar +frame-map (make-sparse-keymap))
+(skey-define-keys
+ '(+frame-map)
+
+ `(("C-d" delete-frame)
+   ("C-r" raise-frame)
+   ("C-l" lower-frame)
+   ("C-m" make-frame)
+   ("C-s" select-frame)
+   ("C-o" other-frame)))
+
+(defvar +windmove-swap-states-map (make-sparse-keymap))
+(skey-define-keys
+ '(+windmove-swap-states-map)
+
+ `(("C-h" windmove-swap-states-left)
+   ("C-j" windmove-swap-states-down)
+   ("C-k" windmove-swap-states-up)
+   ("C-l" windmove-swap-states-right)))
+
 ;;; windows
 (defvar +window-map (make-sparse-keymap))
 (skey-define-keys
@@ -175,7 +195,7 @@
 
    ("C-p" window-swap-states)
    ("C-q" quit-window)
-   ("C-s" window-swap-states)
+   ("C-s" ,+windmove-swap-states-map)
    ("C-t" window-toggle-side-windows)
    ("C-v" split-window-right)
    ("C-n" split-window-vertically)
@@ -189,8 +209,7 @@
 
    ("C-m" sam-ace-move-window)
    ("C-u"   winner-undo)
-   ("C-r"   winner-redo)
-   ))
+   ("C-r"   winner-redo)))
 
 ;; (defvar version-control-keymap (make-sparse-keymap))
 ;; (general-define-key
@@ -552,6 +571,8 @@
    '(evim-insert-mode-map)
    `(
      ("`" (lambda () (interactive) (insert "`")))
+     ("<tab>" (lambda () (interactive) (insert "\t")))
+
      ("M-h" sp-backward-delete-symbol)
      ("C-M-h" sam-kill-backward-line)
      ("C-m" sam-match)
@@ -580,6 +601,8 @@
      ;;  "s"   nil
      ;;  "<M-mouse-3>" #'sam-toggle-cursor
      ;;  "<mouse-2>" #'sam-helpful-click
+
+     ("<tab>" minuet-show-suggestion)
 
      ("<backspace>" switch-to-prev-buffer)
      ("S-<backspace>" switch-to-next-buffer)
@@ -617,6 +640,7 @@
      ;;  "M-:" #'shelldon-loop
      ;;  "M-C-;" #'shelldon-output-history
 
+     ("C-a" ,+frame-map)
      ("M-A" sam-insert-at-end-of-form)
 
      ("C-b" ,+buffer-keymap)
@@ -1063,6 +1087,13 @@
      ("C-l" vertico-insert)
      )))
 
+(with-eval-after-load 'yasnippet
+  (skey-define-keys
+   '(yas-keymap)
+   `(
+     ("<tab>" yas-next-field-or-maybe-expand)
+     )))
+
 (with-eval-after-load 'icomplete
   (skey-define-keys
    '(icomplete-vertical-mode-minibuffer-map)
@@ -1097,6 +1128,7 @@
      (";" execute-extended-command)
      ;; ("C-SPC" ,+controller-keymap)
      ("C-SPC" ,+llm-keymap)
+     ("C-a" ,+frame-map)
      ;; ("M-SPC" +llm-keymap) ;; used by kde system
      ("S-SPC" ,+shifty-keymap)
      ("A-SPC" ,+alter-keymap)

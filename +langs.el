@@ -27,10 +27,12 @@
 
 (setq auto-insert-mode 't)
 
-(setq global-whitespace-mode +1)
 ;; (setq-default show-trailing-whitespace t)
+;; (defvar whitespace-style
+;;   '(face tabs spaces trailing lines space-before-tab newline indentation empty space-after-tab space-mark tab-mark))
 (defvar whitespace-style
-  '(face tabs spaces trailing lines space-before-tab newline indentation empty space-after-tab space-mark tab-mark))
+  '(face trailing tabs lines newline empty indentation space-after-tab
+         space-before-tab tab-mark))
 ;; (smart-tabs-mode nil)
 ;; (setq indent-tabs-mode nil)
 
@@ -55,7 +57,7 @@
   ;; (add-to-list 'completion-at-point-functions #'cape-file)
   )
 (dolist (fun
-         '( highlight-defined-mode  hs-minor-mode sam-set-cape-funcs rainbow-delimiters-mode
+         '( highlight-defined-mode  hs-minor-mode sam-set-cape-funcs rainbow-delimiters-mode whitespace-mode
             ;; indent-guide-mode
             (lambda ()
               (setq-local show-trailing-whitespace t))))
